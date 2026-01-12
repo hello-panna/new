@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>奶酪計算 V6 (咖啡置底版)</title>
+    <style>
+        :root { --primary: #2b6cb0; --bg: #f7fafc; --border: #e2e8f0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #333; padding-bottom: 110px; }
+        
+        /* 頂部標題 */
+        header { background: white; padding: 12px 15px; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        h2 { margin: 0 0 10px 0; font-size: 1.1rem; text-align: center; color: #2d3748; display: flex; justify-content: space-between; align-items: center;}
+        
+        /* 表頭欄位說明 */
+        .table-header { display: flex; font-size: 0.75rem; color: #718096; padding: 5px 10px 5px 10px; border-bottom: 1px solid #cbd5e0; background: #fff; }
+        .th-name { width: 35%; flex-shrink: 0; }
+        .th-data { flex-grow: 1; display: flex; justify-content: space-between; padding-left: 10px; }
+        .th-item { width: 20%; text-align: center; white-space: nowrap; }
+
+        /* 列表樣式 */
+        .list-container { background: white; }
+        .row-item { display: flex; align-items: center; border-bottom: 1px solid var(--border); padding: 8px 10px; height: 50px; }
+        
+        /* 左側控制區 */
+        .col-left { width: 35%; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #edf2f7; padding-right: 5px; }
+        .flavor-name { font-size: 0.95rem; font-weight: bold; color: var(--primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;}
+        .cup-input { width: 100%; box-sizing: border-box; padding: 4px; border: 1px solid #cbd5e0; border-radius: 4px; text-align: center; font-size: 1rem; font-weight: bold; background: #ebf8ff; color: #2b6cb0; }
+        
+        /* 右側數據區 */
+        .col-right { flex-grow: 1; display: flex; overflow-x: auto; align-items: center; padding-left: 10px; }
+        .col-right::-webkit-scrollbar { display: none; }
+        .data-box { min-width: 19%; text-align: center; font-size: 0.9rem; font-weight: 500; color: #4a5568; display: flex; flex-direction: column; justify-content: center; }
+        .data-val { display: block; }
+        .data-unit { font-size: 0.6rem; color: #a0aec0; margin-top: -2px;}
+
+        /* 底部總量儀表板 */
+        .footer-dashboard { 
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            background: #2d3748; color: white; 
+            padding: 10px 15px; 
+            z-index: 50; 
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .totals-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px 15px;
+            font-size: 0.8rem; flex-grow: 1; margin-right: 10px;
+        }
+        .t-item { white-space: nowrap; }
+        .t-label { color: #a0aec0; font-size: 0.75rem; margin-right: 2px; }
+        .t-val { font-weight: bold; color: #63b3ed; font-size: 0.95rem; }
+        .t-val.highlight { color: #f6ad55; }
+
+        .btn-save { 
+            background: #48bb78; color: white; border: none; padding: 0 20px; height: 45px;
+            border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); white-space: nowrap;
+        }
+
+        /* 歷史紀錄區 */
+        #historySection { display: none; background: white; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; overflow-y: auto; }
+        .history-header { padding: 15px 15px 5px 15px; background: #edf2f7; border-bottom: 1px solid #cbd5e0; }
+        .history-top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .date-picker { padding: 8px; font-size: 1rem; border: 1px solid #cbd5e0; border-radius: 6px; }
+        
+        /* 歷史日期快選列 (新功能) */
+        .date-chips-container { 
+            display: flex; overflow-x: auto; padding-bottom: 10px; gap: 8px; 
+            scrollbar-width: none; /* Firefox */
+        }
+        .date-chips-container::-webkit-scrollbar { display: none; /* Chrome */ }
+        .date-chip { 
+            background: white; border: 1px solid #cbd5e0; color: #4a5568; 
+            padding: 6px 12px; border-radius: 15px; font-size: 0.85rem; white-space: nowrap; cursor: pointer;
+        }
+        .date-chip.active { background: #4299e1; color: white; border-color: #4299e1; font-weight: bold; }
+
+        .history-list { padding: 15px; padding-bottom: 60px; }
+        .history-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .h-time { font-size: 0.8rem; color: #718096; border-bottom: 1px solid #edf2f7; padding-bottom: 5px; margin-bottom: 5px; display: flex; justify-content: space-between;}
+        .h-summary { background: #ebf8ff; padding: 8px; border-radius: 4px; margin-bottom: 8px; font-size: 0.85rem; color: #2c5282; line-height: 1.6; }
+        .h-detail { font-size: 0.85rem; color: #718096; }
+
+        /* 編輯彈窗 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+        .modal-content { background: white; width: 85%; max-width: 350px; padding: 20px; border-radius: 12px; }
+        .form-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
+        .form-row label { font-size: 0.9rem; color: #4a5568; }
+        .form-row input { width: 80px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; text-align: right; }
+        .modal-btn-group { margin-top: 20px; display: flex; gap: 10px; }
+        .modal-btn { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>
+            <span>🍮 材料計算 v6</span>
+            <button onclick="toggleHistory()" style="background:#4299e1; color:white; border:none; border-radius:4px; padding:5px 12px; font-size:0.8rem; cursor:pointer;">📅 查歷史</button>
+        </h2>
+        
+        <div class="table-header">
+            <div class="th-name">口味 / 杯數</div>
+            <div class="th-data">
+                <div class="th-item">奶</div>
+                <div class="th-item">鮮油</div>
+                <div class="th-item">糖</div>
+                <div class="th-item">吉</div>
+                <div class="th-item">粉/酒</div>
+            </div>
+        </div>
+    </header>
+
+    <div id="listContainer" class="list-container">
+        </div>
+
+    <div class="footer-dashboard">
+        <div class="totals-grid">
+            <div class="t-item"><span class="t-label">總杯數:</span><span id="t-cups" class="t-val" style="color:white;">0</span></div>
+            <div class="t-item"><span class="t-label">鮮奶:</span><span id="t-milk" class="t-val">0</span></div>
+            <div class="t-item"><span class="t-label">鮮油:</span><span id="t-cream" class="t-val">0</span></div>
+            <div class="t-item"><span class="t-label">總糖:</span><span id="t-sugar" class="t-val highlight">0</span></div>
+            <div class="t-item" style="grid-column: span 2;"><span class="t-label">總吉利丁:</span><span id="t-gelatin" class="t-val highlight">0</span> <span style="font-size:0.7rem; color:#aaa;">片</span></div>
+        </div>
+        <button class="btn-save" onclick="saveData()">存檔</button>
+    </div>
+
+    <div id="historySection">
+        <div class="history-header">
+            <div class="history-top-row">
+                <strong>📜 歷史查詢</strong>
+                <button onclick="toggleHistory()" style="background:transparent; border:none; font-size:1.5rem; color:#718096;">×</button>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <label style="font-size:0.8rem; color:#718096;">選擇日期:</label>
+                <input type="date" id="historyDateInput" class="date-picker" onchange="onDateInputChange()">
+            </div>
+
+            <div style="font-size:0.75rem; color:#718096; margin-bottom:5px;">已存檔的日期 (點擊切換):</div>
+            <div id="dateChips" class="date-chips-container">
+                </div>
+        </div>
+
+        <div id="historyListDisplay" class="history-list"></div>
+        
+        <div style="text-align:center; padding-bottom:50px;">
+             <button onclick="clearAllHistory()" style="color:#e53e3e; background:none; border:1px solid #e53e3e; padding:5px 10px; border-radius:4px; font-size:0.8rem;">清除所有資料</button>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:#2b6cb0;" id="modalTitle">編輯配方</h3>
+            <p style="font-size:0.8rem; color:#e53e3e;">修改每 1 杯的基礎用量</p>
+            <div class="form-row"><label>鮮奶 (ml)</label><input type="number" id="e-milk" step="0.1"></div>
+            <div class="form-row"><label>鮮奶油 (g)</label><input type="number" id="e-cream" step="0.1"></div>
+            <div class="form-row"><label>糖 (g)</label><input type="number" id="e-sugar" step="0.1"></div>
+            <div class="form-row"><label>吉利丁 (片)</label><input type="number" id="e-gelatin" step="0.1"></div>
+            <div class="form-row"><label id="e-powder-label">粉類 (g)</label><input type="number" id="e-powder" step="0.1"></div>
+            <div class="modal-btn-group">
+                <button class="modal-btn" style="background:#ed8936; color:white;" onclick="saveRecipeEdit()">確認修改</button>
+                <button class="modal-btn" style="background:#edf2f7; color:#333;" onclick="closeModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultRecipes = {
+            "經典原味": { milk: 66, cream: 46.2, sugar: 6, gelatin: 0.4, powder: 0 },
+            "巧克力": { milk: 77, cream: 38.5, sugar: 11.6, gelatin: 0.6, powder: 2.8 },
+            "芝麻": { milk: 55, cream: 55, sugar: 6.6, gelatin: 0.5, powder: 3.6 },
+            "抹茶": { milk: 66, cream: 46.2, sugar: 6.9, gelatin: 0.4, powder: 1.4 },
+            "咖啡": { milk: 71.5, cream: 38.5, sugar: 8, gelatin: 0.6, powder: 1.4 },
+            "伯爵紅茶": { milk: 82.5, cream: 38.5, sugar: 6.7, gelatin: 0.4, powder: 1.8 },
+            "泰式奶茶": { milk: 88, cream: 44, sugar: 9.1, gelatin: 0.5, powder: 7.7 },
+            "芋香紫薯": { milk: 88, cream: 33, sugar: 8.8, gelatin: 0.5, powder: 4.4 },
+            "十薰茉綠": { milk: 82.5, cream: 38.5, sugar: 6.7, gelatin: 0.4, powder: 1.5 },
+            "微醺蘭姆": { milk: 66, cream: 46.2, sugar: 6, gelatin: 0.4, powder: 6 }
+        };
+
+        // 指定顯示順序：咖啡放最後
+        const displayOrder = [
+            "經典原味", "巧克力", "芝麻", "抹茶",
+            "伯爵紅茶", "泰式奶茶", "芋香紫薯", "十薰茉綠", "微醺蘭姆",
+            "咖啡"
+        ];
+
+        let recipes = {};
+        let currentEditFlavor = "";
+
+        function init() {
+            const saved = localStorage.getItem('pannaRecipes_v4');
+            if(saved) {
+                recipes = JSON.parse(saved);
+                for(let k in defaultRecipes) if(!recipes[k]) recipes[k] = defaultRecipes[k];
+            } else {
+                recipes = JSON.parse(JSON.stringify(defaultRecipes));
+            }
+            renderList();
+            document.getElementById('historyDateInput').valueAsDate = new Date();
+        }
+
+        function renderList() {
+            const container = document.getElementById('listContainer');
+            container.innerHTML = "";
+            
+            // 使用 displayOrder 陣列來決定渲染順序
+            displayOrder.forEach(flavor => {
+                if(!recipes[flavor]) return; // 防呆
+                const r = recipes[flavor];
+                const div = document.createElement('div');
+                div.className = "row-item";
+                div.innerHTML = `
+                    <div class="col-left">
+                        <div class="flavor-name" onclick="openEdit('${flavor}')">${flavor}</div>
+                        <input type="number" class="cup-input" id="in-${flavor}" placeholder="0" oninput="calc()" onclick="this.select()">
+                    </div>
+                    <div class="col-right">
+                        <div class="data-box"><span class="data-val" id="out-m-${flavor}">-</span><span class="data-unit">ml</span></div>
+                        <div class="data-box"><span class="data-val" id="out-c-${flavor}">-</span><span class="data-unit">g</span></div>
+                        <div class="data-box"><span class="data-val" id="out-s-${flavor}">-</span><span class="data-unit">g</span></div>
+                        <div class="data-box"><span class="data-val" id="out-g-${flavor}">-</span><span class="data-unit">片</span></div>
+                        <div class="data-box"><span class="data-val" id="out-p-${flavor}">-</span><span class="data-unit">${flavor==="微醺蘭姆"?"ml":"g"}</span></div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function calc() {
+            let totalCups = 0, totalMilk = 0, totalCream = 0, totalSugar = 0, totalGelatin = 0;
+            
+            for(let flavor in recipes) {
+                const r = recipes[flavor];
+                const input = document.getElementById(`in-${flavor}`);
+                if(!input) continue; // Skip if not rendered
+                const val = parseFloat(input.value) || 0;
+                
+                document.getElementById(`out-m-${flavor}`).textContent = val > 0 ? (r.milk * val).toFixed(0) : '-';
+                document.getElementById(`out-c-${flavor}`).textContent = val > 0 ? (r.cream * val).toFixed(0) : '-';
+                document.getElementById(`out-s-${flavor}`).textContent = val > 0 ? (r.sugar * val).toFixed(0) : '-';
+                document.getElementById(`out-g-${flavor}`).textContent = val > 0 ? (r.gelatin * val).toFixed(1) : '-';
+                document.getElementById(`out-p-${flavor}`).textContent = val > 0 ? (r.powder * val).toFixed(1) : '-';
+                
+                if (val > 0) {
+                    totalCups += val;
+                    totalMilk += (r.milk * val);
+                    totalCream += (r.cream * val);
+                    totalSugar += (r.sugar * val);
+                    totalGelatin += (r.gelatin * val);
+                }
+            }
+            
+            document.getElementById('t-cups').textContent = totalCups;
+            document.getElementById('t-milk').textContent = totalMilk.toFixed(0);
+            document.getElementById('t-cream').textContent = totalCream.toFixed(0);
+            document.getElementById('t-sugar').textContent = totalSugar.toFixed(0);
+            document.getElementById('t-gelatin').textContent = totalGelatin.toFixed(1);
+        }
+
+        function saveData() {
+            const today = new Date();
+            const dateKey = today.toISOString().split('T')[0];
+            const timeStr = today.getHours() + ":" + (today.getMinutes()<10?'0':'') + today.getMinutes();
+            
+            let details = [];
+            displayOrder.forEach(flavor => {
+                const input = document.getElementById(`in-${flavor}`);
+                const val = parseFloat(input.value) || 0;
+                if(val > 0) details.push(`${flavor} x${val}`);
+            });
+            
+            if(details.length === 0) { alert("請輸入數量"); return; }
+            
+            const summaryStr = `總杯數:${document.getElementById('t-cups').textContent} | 鮮奶:${document.getElementById('t-milk').textContent}ml | 鮮油:${document.getElementById('t-cream').textContent}g | 糖:${document.getElementById('t-sugar').textContent}g | 吉:${document.getElementById('t-gelatin').textContent}片`;
+
+            const record = {
+                id: Date.now(),
+                time: timeStr,
+                dateKey: dateKey,
+                summary: summaryStr,
+                detailText: details.join(", ")
+            };
+            
+            let history = JSON.parse(localStorage.getItem('pannaHistory_v4') || "[]");
+            history.push(record);
+            localStorage.setItem('pannaHistory_v4', JSON.stringify(history));
+            
+            alert("✅ 已存檔");
+            toggleHistory(); // 存檔後直接開歷史看
+        }
+
+        function toggleHistory() {
+            const section = document.getElementById('historySection');
+            section.style.display = (section.style.display === 'block') ? 'none' : 'block';
+            if(section.style.display === 'block') {
+                updateDateChips(); // 更新快選列
+                loadHistoryByDate();
+            }
+        }
+
+        function onDateInputChange() {
+            loadHistoryByDate();
+            updateDateChips(); // 更新選中狀態
+        }
+
+        // --- 新增：產生日期快選按鈕 ---
+        function updateDateChips() {
+            const history = JSON.parse(localStorage.getItem('pannaHistory_v4') || "[]");
+            // 取得所有不重複的日期
+            const dates = [...new Set(history.map(item => item.dateKey))];
+            // 排序：新的日期在前面
+            dates.sort((a, b) => new Date(b) - new Date(a));
+
+            const container = document.getElementById('dateChips');
+            container.innerHTML = "";
+            const currentDate = document.getElementById('historyDateInput').value;
+
+            if(dates.length === 0) {
+                container.innerHTML = "<span style='padding:5px; color:#cbd5e0;'>尚無存檔資料</span>";
+                return;
+            }
+
+            dates.forEach(date => {
+                const btn = document.createElement('div');
+                btn.className = 'date-chip ' + (date === currentDate ? 'active' : '');
+                btn.textContent = date;
+                btn.onclick = () => {
+                    document.getElementById('historyDateInput').value = date;
+                    loadHistoryByDate();
+                    updateDateChips(); // 重新渲染以更新 active 樣式
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function loadHistoryByDate() {
+            const targetDate = document.getElementById('historyDateInput').value;
+            const listDiv = document.getElementById('historyListDisplay');
+            const history = JSON.parse(localStorage.getItem('pannaHistory_v4') || "[]");
+            
+            const filtered = history.filter(h => h.dateKey === targetDate).reverse();
+            
+            listDiv.innerHTML = "";
+            if(filtered.length === 0) {
+                listDiv.innerHTML = `<div style="text-align:center; color:#a0aec0; margin-top:20px;">📅 該日期無資料</div>`;
+                return;
+            }
+            
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "history-card";
+                div.innerHTML = `
+                    <div class="h-time">
+                        <span>⏰ ${item.time}</span>
+                        <span style="color:#2b6cb0; cursor:pointer;" onclick="deleteItem(${item.id})">🗑️</span>
+                    </div>
+                    <div class="h-summary">${item.summary}</div>
+                    <div class="h-detail">${item.detailText}</div>
+                `;
+                listDiv.appendChild(div);
+            });
+        }
+        
+        function deleteItem(id) {
+            if(!confirm("刪除此筆紀錄？")) return;
+            let history = JSON.parse(localStorage.getItem('pannaHistory_v4') || "[]");
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem('pannaHistory_v4', JSON.stringify(history));
+            updateDateChips(); // 如果刪光了某天，按鈕要消失
+            loadHistoryByDate();
+        }
+        
+        function clearAllHistory() {
+            if(confirm("確定清空【所有】歷史資料？")) {
+                localStorage.removeItem('pannaHistory_v4');
+                updateDateChips();
+                loadHistoryByDate();
+            }
+        }
+
+        function openEdit(flavor) {
+            currentEditFlavor = flavor;
+            const r = recipes[flavor];
+            document.getElementById('modalTitle').textContent = flavor;
+            document.getElementById('e-milk').value = r.milk;
+            document.getElementById('e-cream').value = r.cream;
+            document.getElementById('e-sugar').value = r.sugar;
+            document.getElementById('e-gelatin').value = r.gelatin;
+            document.getElementById('e-powder').value = r.powder;
+            document.getElementById('e-powder-label').textContent = (flavor==="微醺蘭姆") ? "酒 (ml)" : "粉類 (g)";
+            document.getElementById('editModal').style.display = "flex";
+        }
+        function closeModal() { document.getElementById('editModal').style.display = "none"; }
+        function saveRecipeEdit() {
+            if(!confirm(`確定修改【${currentEditFlavor}】配方？`)) return;
+            recipes[currentEditFlavor] = {
+                milk: parseFloat(document.getElementById('e-milk').value)||0,
+                cream: parseFloat(document.getElementById('e-cream').value)||0,
+                sugar: parseFloat(document.getElementById('e-sugar').value)||0,
+                gelatin: parseFloat(document.getElementById('e-gelatin').value)||0,
+                powder: parseFloat(document.getElementById('e-powder').value)||0,
+            };
+            localStorage.setItem('pannaRecipes_v4', JSON.stringify(recipes));
+            closeModal();
+            calc();
+            alert("已更新配方");
+        }
+
+        init();
+    </script>
+</body>
+</html>
