@@ -759,7 +759,7 @@
             if (existingItem) existingItem.quantity++;
             else cart.push({ ...menuData.find(p => p.id === id), quantity: 1 });
             
-            // Google Ads Conversion
+            // Google Ads Conversion (加入購物車)
             gtag('event', 'conversion', {'send_to': 'AW-17855729381/CJdUcKeW794bEOwDo8JC'});
 
             renderCart();
@@ -1095,6 +1095,17 @@
 
         // 修改 showReceipt 接收更多參數，以顯示詳細明細
         function showReceipt(name, phone, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName) {
+            
+            // ★★★ Google Ads 購買轉換追蹤 ★★★
+            // 請將 'AW-17855729381/請在此填入您的購買轉換標籤' 替換成您實際的 Label
+            gtag('event', 'conversion', {
+                'send_to': 'AW-17855729381/請在此填入您的購買轉換標籤', 
+                'value': finalAllPrice,      // 傳送訂單金額
+                'currency': 'TWD',           // 幣別
+                'transaction_id': orderId    // 訂單編號 (防止重複計算)
+            });
+            // ★★★ 結束追蹤代碼 ★★★
+
             const now = new Date();
             document.getElementById('receipt-time').innerText = "訂單時間：" + now.toLocaleString('zh-TW', {hour12: false});
             document.getElementById('receipt-order-id').innerText = orderId;
