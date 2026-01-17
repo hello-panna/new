@@ -269,34 +269,53 @@
         }
         .line-btn-style:active { transform: scale(0.98); }
 
-        /* --- 新增：懸浮 LINE 加入好友按鈕 --- */
-        .floating-line-btn {
+        /* --- 修改：右側書籤式 LINE 按鈕 --- */
+        .bookmark-line-btn {
             position: fixed;
-            bottom: 100px; /* 避開底部結帳欄位 (約80px高 + 間距) */
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background-color: #06c755;
-            border-radius: 50%;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            top: 60%; /* 垂直位置：大約在螢幕中下方，避開 header 和 bottom-bar */
+            right: 0; /* 緊貼右側邊緣 */
+            transform: translateY(-50%); /* 垂直置中修正 */
+            
+            width: 42px; /* 寬度稍微窄一點，像個標籤 */
+            height: auto;
+            padding: 12px 4px;
+            
+            background-color: #06c755; /* LINE 綠色 */
+            color: white;
+            
+            /* 設定左邊圓角，右邊直角，看起來像插在邊緣 */
+            border-radius: 8px 0 0 8px;
+            
+            box-shadow: -2px 2px 8px rgba(0,0,0,0.2); /* 陰影改向左邊 */
+            
             display: flex;
+            flex-direction: column; /* 垂直排列：圖在上，字在下 */
             align-items: center;
             justify-content: center;
-            z-index: 998; /* 低於 bottom-bar (999) 和 loading (1000)，但高於內容 */
+            
+            z-index: 998;
             cursor: pointer;
-            transition: transform 0.3s ease;
             text-decoration: none;
+            transition: right 0.2s;
         }
-        .floating-line-btn:hover {
-            transform: scale(1.05);
+        
+        .bookmark-line-btn:hover {
+            right: -3px; /* 滑鼠移過去稍微縮進去一點點的動態感 */
         }
-        .floating-line-btn:active {
-            transform: scale(0.95);
-        }
-        .floating-line-btn img {
-            width: 38px;
-            height: 38px;
+
+        .bookmark-line-btn img {
+            width: 28px;
+            height: 28px;
             object-fit: contain;
+            margin-bottom: 4px; /* 圖示與文字的間距 */
+        }
+        
+        .bookmark-line-btn span {
+            font-size: 13px;
+            font-weight: bold;
+            writing-mode: vertical-rl; /* 文字直排 */
+            text-orientation: upright;
+            letter-spacing: 2px;
         }
 
         #loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
@@ -326,8 +345,9 @@
 
     <div id="shop-view">
         
-        <a href="https://lin.ee/UHEkfgW" target="_blank" class="floating-line-btn" title="加入官方LINE">
+        <a href="https://lin.ee/UHEkfgW" target="_blank" class="bookmark-line-btn" title="加入官方LINE">
             <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE">
+            <span>首次買折扣碼</span>
         </a>
 
         <header>
