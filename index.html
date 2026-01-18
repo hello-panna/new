@@ -14,6 +14,26 @@
       gtag('config', 'AW-17855729381');
     </script>
     
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+    // 請將下方的 '請在此填入你的像素編號' 換成你的數字 ID (例如 '1234567890')
+    fbq('init', '849166567940376'); 
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+    
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=849166567940376&ev=PageView&noscript=1"
+    /></noscript>
     <style>
         /* --- 基礎樣式 (經典綠色風格) --- */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "Segoe UI", Roboto, sans-serif; }
@@ -848,8 +868,19 @@
             if (existingItem) existingItem.quantity++;
             else cart.push({ ...menuData.find(p => p.id === id), quantity: 1 });
             
-            // Google Ads Conversion (加入購物車)
+            // Google Ads Conversion (原本的)
             gtag('event', 'conversion', {'send_to': 'AW-17855729381/CJdUcKeW794bEOwDo8JC'});
+
+            // ★★★ 新增：Meta Pixel AddToCart 追蹤 ★★★
+            const product = menuData.find(p => p.id === id);
+            if(typeof fbq !== 'undefined') {
+                fbq('track', 'AddToCart', {
+                    content_name: product.name,
+                    value: product.price,
+                    currency: 'TWD'
+                });
+            }
+            // ★★★ 結束 ★★★
 
             renderCart();
         }
@@ -1185,15 +1216,25 @@
         // 修改 showReceipt 接收更多參數，以顯示詳細明細
         function showReceipt(name, phone, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName) {
             
-            // ★★★ Google Ads 購買轉換追蹤 ★★★
-            // 請將 'AW-17855729381/請在此填入您的購買轉換標籤' 替換成您實際的 Label
+            // Google Ads 購買轉換追蹤 (原本的)
             gtag('event', 'conversion', {
                 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 
-                'value': finalAllPrice,      // 傳送訂單金額
-                'currency': 'TWD',           // 幣別
-                'transaction_id': orderId    // 訂單編號 (防止重複計算)
+                'value': finalAllPrice,      
+                'currency': 'TWD',           
+                'transaction_id': orderId    
             });
-            // ★★★ 結束追蹤代碼 ★★★
+
+            // ★★★ 新增：Meta Pixel Purchase(購買) 追蹤 ★★★
+            if(typeof fbq !== 'undefined') {
+                fbq('track', 'Purchase', {
+                    value: finalAllPrice,       // 傳送最終結帳金額
+                    currency: 'TWD',            // 幣別
+                    content_name: '鮮奶酪訂單',  // 訂單名稱
+                    num_items: totalCups,       // 購買數量
+                    transaction_id: orderId     // 訂單編號 (避免重複計算)
+                });
+            }
+            // ★★★ 結束 ★★★
 
             const now = new Date();
             document.getElementById('receipt-time').innerText = "訂單時間：" + now.toLocaleString('zh-TW', {hour12: false});
