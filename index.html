@@ -1137,13 +1137,16 @@
             let orderDetails = ""; 
             let msgDetails = ""; 
             cart.forEach(p => {
-                rawTotal += p.price * p.quantity;
-                totalCups += p.quantity;
+                // ★★★ 強制轉型，避免字串問題導致「微醺蘭姆」或其他口味數量異常 ★★★
+                let qty = parseInt(p.quantity, 10) || 0;
+                
+                rawTotal += p.price * qty;
+                totalCups += qty;
                 
                 // ★ 純淨版訂單明細：只保留「品項數量」與「逗號」
-                orderDetails += `${p.name}x${p.quantity}, `; 
+                orderDetails += `${p.name}x${qty}, `; 
                 
-                msgDetails += `- ${p.name} x ${p.quantity} = $${p.price*p.quantity}\n`;
+                msgDetails += `- ${p.name} x ${qty} = $${p.price*qty}\n`;
             });
             
             if (delivery === '宅配' && totalCups % 6 !== 0) {
@@ -1248,6 +1251,11 @@
             const strawberryQty = strawberryItem ? strawberryItem.quantity : 0;
             // ★★★ 結束計算 ★★★
 
+            // ★★★ 新增：計算「微醺蘭姆」(ID:9) 數量，傳送到 entry.93299315 ★★★
+            const rumItem = cart.find(item => item.id === 9);
+            const rumQty = rumItem ? rumItem.quantity : 0;
+            // ★★★ 結束計算 ★★★
+
             let formData = new FormData();
             formData.append(FORM_FIELDS.orderContent, fullOrderInfo); 
             formData.append(FORM_FIELDS.name, name);                  
@@ -1266,6 +1274,8 @@
             
             // ★ 新增草莓數量欄位
             formData.append("entry.1494499065", strawberryQty);
+            // ★ 新增微醺蘭姆數量欄位
+            formData.append("entry.93299315", rumQty);
 
             fetch(GOOGLE_FORM_URL, {
                 method: "POST",
