@@ -719,7 +719,7 @@
             { id: 9, name: "微醺蘭姆", price: 50, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。" },
             { id: 10, name: "十薰茉綠 (限定口味)", price: 50, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。" },
             // ★★★ 修改這裡：更新副標題 ★★★
-            { id: 11, name: "蜜漬大果草莓", price: 79, image: "121713_0.jpg", desc: "兩顆 2 號大果！上層鮮切、底層 12 小時蜜漬，層次超豐富。限自取，四杯可裝盒。" }
+            { id: 11, name: "蜜漬大果草莓", price: 79, image: "121713_0.jpg", desc: "兩顆 2 號大果！上層鮮切、底層 12 小時蜜漬，層次超豐富。限自取，四杯可裝盒。自取日期 2026 / 01 / 27~28" }
         ];
 
         // 優惠券設定
@@ -805,39 +805,77 @@
 
         function generatePickupOptions(startDays) {
             const select = document.getElementById('pickup-slot-select');
+            const currentVal = select.value; // 暫存目前選的值 (若有的話)
             select.innerHTML = '<option value="" disabled selected>請選擇自取時段...</option>';
             
-            const now = new Date();
-            let startDate = new Date(now);
-            startDate.setDate(startDate.getDate() + startDays);
-            
-            for(let i=0; i<30; i++) {
-                let current = new Date(startDate);
-                current.setDate(startDate.getDate() + i);
+            // ★★★ 檢查購物車是否有草莓 (ID: 11) ★★★
+            const hasStrawberry = cart.some(item => item.id === 11);
+
+            if (hasStrawberry) {
+                // 如果有草莓，強制只能選 2026/01/27 和 2026/01/28
+                const specificDates = [
+                    { val: "2026/01/27 (二) 12:00~13:00", text: "1/27 (週二) 12:00~13:00" },
+                    { val: "2026/01/27 (二) 17:00~18:00", text: "1/27 (週二) 17:00~18:00" },
+                    { val: "2026/01/28 (三) 12:00~13:00", text: "1/28 (週三) 12:00~13:00" },
+                    { val: "2026/01/28 (三) 17:00~18:00", text: "1/28 (週三) 17:00~18:00" }
+                ];
+
+                specificDates.forEach(opt => {
+                    let el = document.createElement('option');
+                    el.value = opt.val;
+                    el.innerText = opt.text;
+                    select.appendChild(el);
+                });
                 
-                let day = current.getDay(); 
-                let month = current.getMonth() + 1;
-                let date = current.getDate();
-                let dayStr = ['日','一','二','三','四','五','六'][day];
-                let dateStr = `${month}/${date} (週${dayStr})`;
-                let fullDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (${dayStr})`;
+                // 更新提示文字
+                document.getElementById('date-hint').innerText = "提醒：訂單包含草莓限定口味，僅開放 1/27、1/28 自取。";
+                
+            } else {
+                // 如果沒有草莓，走原本的邏輯 (未來30天)
+                const now = new Date();
+                let startDate = new Date(now);
+                startDate.setDate(startDate.getDate() + startDays);
+                
+                for(let i=0; i<30; i++) {
+                    let current = new Date(startDate);
+                    current.setDate(startDate.getDate() + i);
 
-                if (day >= 2 && day <= 5) {
-                    let opt1 = document.createElement('option');
-                    opt1.value = `${fullDateStr} 12:00~13:00`;
-                    opt1.innerText = `${dateStr} 12:00~13:00`;
-                    select.appendChild(opt1);
+                    // --- 新增：排除特定日期區間 (2026/02/14 ~ 02/23) ---
+                    // 取得年份、月份(注意0=1月, 1=2月)、日期
+                    let cYear = current.getFullYear();
+                    let cMonth = current.getMonth();
+                    let cDate = current.getDate();
 
-                    let opt2 = document.createElement('option');
-                    opt2.value = `${fullDateStr} 17:00~18:00`;
-                    opt2.innerText = `${dateStr} 17:00~18:00`;
-                    select.appendChild(opt2);
-                }
-                else if (day === 6) {
-                    let opt3 = document.createElement('option');
-                    opt3.value = `${fullDateStr} 10:00~12:00`;
-                    opt3.innerText = `${dateStr} 10:00~12:00`;
-                    select.appendChild(opt3);
+                    // 判斷是否在 2026年 2月 14日 到 23日 之間
+                    if (cYear === 2026 && cMonth === 1 && cDate >= 14 && cDate <= 23) {
+                        continue; // 跳過這次迴圈，不產生選項
+                    }
+                    // ------------------------------------------------
+                    
+                    let day = current.getDay(); 
+                    let month = current.getMonth() + 1;
+                    let date = current.getDate();
+                    let dayStr = ['日','一','二','三','四','五','六'][day];
+                    let dateStr = `${month}/${date} (週${dayStr})`;
+                    let fullDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (${dayStr})`;
+
+                    if (day >= 2 && day <= 5) {
+                        let opt1 = document.createElement('option');
+                        opt1.value = `${fullDateStr} 12:00~13:00`;
+                        opt1.innerText = `${dateStr} 12:00~13:00`;
+                        select.appendChild(opt1);
+
+                        let opt2 = document.createElement('option');
+                        opt2.value = `${fullDateStr} 17:00~18:00`;
+                        opt2.innerText = `${dateStr} 17:00~18:00`;
+                        select.appendChild(opt2);
+                    }
+                    else if (day === 6) {
+                        let opt3 = document.createElement('option');
+                        opt3.value = `${fullDateStr} 10:00~12:00`;
+                        opt3.innerText = `${dateStr} 10:00~12:00`;
+                        select.appendChild(opt3);
+                    }
                 }
             }
         }
@@ -992,6 +1030,14 @@
             if (finalPrice < 0) finalPrice = 0;
 
             totalEl.innerText = finalPrice.toLocaleString();
+            
+            // ★★★ 關鍵修改：每次購物車更新時，重新檢查日期選單 ★★★
+            // 取得目前的配送方式 (自取或宅配)
+            const currentDelivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
+            // 如果目前是選自取，就呼叫更新日期選單 (因為草莓可能剛被加入或移除)
+            if (currentDelivery === '自取') {
+                updateDateSettings('pickup');
+            }
         }
 
         function changeQty(index, delta) {
