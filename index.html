@@ -135,7 +135,20 @@
             background-color: #eee; 
         }
         .menu-name { font-size: 1rem; font-weight: 600; margin-bottom: 3px; line-height: 1.2; }
-        .menu-desc { font-size: 0.8rem; color: #666; margin-bottom: 8px; line-height: 1.4; min-height: 3.5em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        /* ★★★ 修改：增加行數限制到 6 行，確保手機版文字完整顯示 ★★★ */
+        .menu-desc { 
+            font-size: 0.8rem; 
+            color: #666; 
+            margin-bottom: 8px; 
+            line-height: 1.4; 
+            min-height: 3.5em; 
+            display: -webkit-box; 
+            -webkit-line-clamp: 6; /* 從 3 改為 6 */
+            -webkit-box-orient: vertical; 
+            overflow: hidden; 
+        }
+        
         .menu-price { color: #d63031; font-weight: bold; font-size: 1rem; margin-bottom: 8px; }
         .add-btn { background: #fff; border: 1px solid #00c300; color: #00c300; padding: 5px 20px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; transition: 0.2s; font-weight: bold; }
         .add-btn:active { background: #00c300; color: #fff; }
@@ -1290,9 +1303,10 @@
             
             // ★★★ 批次填入各口味數量到對應的 entry ★★★
             for (let id in FLAVOR_MAPPING) {
-                // FLAVOR_MAPPING[id] 是 entry.xxxxx 字串
-                // flavorCounts[id] 是該口味的數量
-                formData.append(FLAVOR_MAPPING[id], flavorCounts[id]);
+                // 修改：只有數量大於 0 才傳送，這樣 0 杯就會顯示為空白
+                if (flavorCounts[id] > 0) {
+                    formData.append(FLAVOR_MAPPING[id], flavorCounts[id]);
+                }
             }
 
             fetch(GOOGLE_FORM_URL, {
