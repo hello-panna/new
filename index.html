@@ -703,6 +703,21 @@
             discountAmount: "entry.1977990591" // ★ 新增折扣金額欄位
         };
 
+        // ★★★ 新增：各口味 ID 對應的表單欄位 (Entry ID) ★★★
+        const FLAVOR_MAPPING = {
+            1: "entry.1878923092", // 經典原味
+            2: "entry.1221947009", // 巧克力
+            3: "entry.513696828",  // 芝麻
+            4: "entry.629066213",  // 抹茶
+            5: "entry.56980633",   // 咖啡
+            6: "entry.2021049410", // 泰式奶茶
+            7: "entry.1968820040", // 伯爵紅茶
+            8: "entry.73334113",   // 芋香紫薯
+            9: "entry.93299315",   // 微醺蘭姆
+            10: "entry.799869452", // 十薰茉綠
+            11: "entry.1494499065" // 蜜漬大果草莓
+        };
+
         // LINE Pay 連結
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/uemRyQGLoTi6F3OUSEUgEtlr9QjZ1vTlUUVy930W3RPAgapaVWJM%252BrFuHzZRvpGA";
         
@@ -1132,21 +1147,32 @@
                 finalDateStr = "宅配不指定日期 (需指定請洽客服)";
             }
 
+            // ★★★ 初始化各口味數量計數器 (預設為0) ★★★
+            let flavorCounts = {};
+            for (let id in FLAVOR_MAPPING) {
+                flavorCounts[id] = 0;
+            }
+
             let rawTotal = 0;
             let totalCups = 0;
             let orderDetails = ""; 
             let msgDetails = ""; 
+            
             cart.forEach(p => {
-                // ★★★ 強制轉型，避免字串問題導致「微醺蘭姆」或其他口味數量異常 ★★★
+                // ★★★ 強制轉型，避免字串問題導致數量異常 ★★★
                 let qty = parseInt(p.quantity, 10) || 0;
                 
                 rawTotal += p.price * qty;
                 totalCups += qty;
                 
-                // ★ 純淨版訂單明細：只保留「品項數量」與「逗號」
+                // ★ 純淨版訂單明細
                 orderDetails += `${p.name}x${qty}, `; 
-                
                 msgDetails += `- ${p.name} x ${qty} = $${p.price*qty}\n`;
+
+                // ★★★ 累加各口味數量 ★★★
+                if (flavorCounts.hasOwnProperty(p.id)) {
+                    flavorCounts[p.id] += qty;
+                }
             });
             
             if (delivery === '宅配' && totalCups % 6 !== 0) {
@@ -1154,7 +1180,7 @@
                 return; 
             }
 
-            // 計算最終金額 (傳送給後端的資料 + 顯示給客人看)
+            // 計算最終金額
             let productFinalPrice = rawTotal;
             let discountName = "";
             let discountAmount = 0;
@@ -1246,16 +1272,6 @@
             let fullOrderInfo = orderDetails + ` [共${totalCups}個]`;
             if(shippingFee > 0) fullOrderInfo += ` [運費$${shippingFee}]`;
 
-            // ★★★ 計算草莓數量，傳送到指定 entry ★★★
-            const strawberryItem = cart.find(item => item.id === 11);
-            const strawberryQty = strawberryItem ? strawberryItem.quantity : 0;
-            // ★★★ 結束計算 ★★★
-
-            // ★★★ 新增：計算「微醺蘭姆」(ID:9) 數量，傳送到 entry.93299315 ★★★
-            const rumItem = cart.find(item => item.id === 9);
-            const rumQty = rumItem ? rumItem.quantity : 0;
-            // ★★★ 結束計算 ★★★
-
             let formData = new FormData();
             formData.append(FORM_FIELDS.orderContent, fullOrderInfo); 
             formData.append(FORM_FIELDS.name, name);                  
@@ -1272,10 +1288,12 @@
             formData.append(FORM_FIELDS.orderId, orderId); 
             formData.append(FORM_FIELDS.discountAmount, discountAmount); 
             
-            // ★ 新增草莓數量欄位
-            formData.append("entry.1494499065", strawberryQty);
-            // ★ 新增微醺蘭姆數量欄位
-            formData.append("entry.93299315", rumQty);
+            // ★★★ 批次填入各口味數量到對應的 entry ★★★
+            for (let id in FLAVOR_MAPPING) {
+                // FLAVOR_MAPPING[id] 是 entry.xxxxx 字串
+                // flavorCounts[id] 是該口味的數量
+                formData.append(FLAVOR_MAPPING[id], flavorCounts[id]);
+            }
 
             fetch(GOOGLE_FORM_URL, {
                 method: "POST",
