@@ -255,15 +255,15 @@
         .bank-detail-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
         .bank-detail { font-size: 1.2rem; font-weight: bold; color: #333; letter-spacing: 1px; }
         
-        .copy-btn {
-            background-color: #333;
-            color: #fff;
-            border: none;
-            padding: 4px 10px;
-            font-size: 0.8rem;
-            border-radius: 5px;
-            cursor: pointer;
-            flex-shrink: 0;
+        .copy-btn { 
+            background-color: #333; 
+            color: #fff; 
+            border: none; 
+            padding: 4px 10px; 
+            font-size: 0.8rem; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            flex-shrink: 0; 
         }
         .copy-btn:active { transform: scale(0.95); background-color: #555; }
         
@@ -717,7 +717,9 @@
             { id: 7, name: "伯爵紅茶", price: 50, image: "230241_0.jpg", desc: "大人系口味，佛手柑清香，茶香與奶香圓潤融合。" },
             { id: 8, name: "芋香紫薯", price: 50, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。" },
             { id: 9, name: "微醺蘭姆", price: 50, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。" },
-            { id: 10, name: "十薰茉綠 (限定口味)", price: 50, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。" }
+            { id: 10, name: "十薰茉綠 (限定口味)", price: 50, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。" },
+            // ★★★ 修改這裡：更新副標題 ★★★
+            { id: 11, name: "蜜漬大果草莓", price: 79, image: "121713_0.jpg", desc: "兩顆 2 號大果！上層鮮切、底層 12 小時蜜漬，層次超豐富。限自取，四杯可裝盒。" }
         ];
 
         // 優惠券設定
@@ -930,6 +932,10 @@
                 if (item.id === 9) {
                     warningHtml = '<div class="adult-warn">(未滿18歲請勿購買)</div>';
                 }
+                // ★ 新增草莓提示
+                if (item.id === 11) {
+                    warningHtml = '<div class="adult-warn" style="color:#d35400;">(限自取)</div>';
+                }
 
                 const div = document.createElement('div');
                 div.className = 'cart-item';
@@ -1004,6 +1010,14 @@
             const payment = document.querySelector('input[name="paymentMethod"]:checked').value;
             const remarks = document.getElementById('cust-remarks').value.trim(); 
             
+            // ★★★ 新增：檢查是否有草莓口味 (ID: 11) 且選擇了宅配 ★★★
+            const hasStrawberry = cart.some(item => item.id === 11);
+            if (hasStrawberry && delivery === '宅配') {
+                alert("【系統提醒】\n蜜漬大果草莓因含有新鮮水果，僅限「自取」，無法宅配。\n請修改取貨方式，或是移除該商品。");
+                return;
+            }
+            // ★★★ 結束檢查 ★★★
+
             let fullAddress = "";
             const city = document.getElementById('cust-city').value;
             const detailAddr = document.getElementById('cust-addr-detail').value.trim();
@@ -1183,14 +1197,19 @@
             let fullOrderInfo = orderDetails + ` [共${totalCups}個]`;
             if(shippingFee > 0) fullOrderInfo += ` [運費$${shippingFee}]`;
 
+            // ★★★ 計算草莓數量，傳送到指定 entry ★★★
+            const strawberryItem = cart.find(item => item.id === 11);
+            const strawberryQty = strawberryItem ? strawberryItem.quantity : 0;
+            // ★★★ 結束計算 ★★★
+
             let formData = new FormData();
             formData.append(FORM_FIELDS.orderContent, fullOrderInfo); 
             formData.append(FORM_FIELDS.name, name);                  
             formData.append(FORM_FIELDS.phone, phone);                
             formData.append(FORM_FIELDS.payment, payment);            
-            formData.append(FORM_FIELDS.delivery, delivery);          
+            formData.append(FORM_FIELDS.delivery, delivery);           
             formData.append(FORM_FIELDS.address, fullAddress);        
-            formData.append(FORM_FIELDS.date, finalDateStr);          
+            formData.append(FORM_FIELDS.date, finalDateStr);           
             formData.append(FORM_FIELDS.cups, totalCups);             
             formData.append(FORM_FIELDS.subtotal, productFinalPrice); 
             formData.append(FORM_FIELDS.shipping, shippingFee);       
@@ -1198,6 +1217,9 @@
             formData.append(FORM_FIELDS.remarks, remarks);
             formData.append(FORM_FIELDS.orderId, orderId); 
             formData.append(FORM_FIELDS.discountAmount, discountAmount); 
+            
+            // ★ 新增草莓數量欄位
+            formData.append("entry.1494499065", strawberryQty);
 
             fetch(GOOGLE_FORM_URL, {
                 method: "POST",
@@ -1219,9 +1241,9 @@
             // Google Ads 購買轉換追蹤 (原本的)
             gtag('event', 'conversion', {
                 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 
-                'value': finalAllPrice,      
-                'currency': 'TWD',           
-                'transaction_id': orderId    
+                'value': finalAllPrice,       
+                'currency': 'TWD',            
+                'transaction_id': orderId     
             });
 
             // ★★★ 新增：Meta Pixel Purchase(購買) 追蹤 ★★★
@@ -1314,6 +1336,3 @@
     </script>
 </body>
 </html>
-
-
-
