@@ -1181,6 +1181,9 @@
             let orderDetails = ""; 
             let msgDetails = ""; 
             
+            // ★★★ NEW: 用來顯示在確認視窗的明細字串 ★★★
+            let itemsDetailStr = "";
+
             cart.forEach(p => {
                 // ★★★ 強制轉型，避免字串問題導致數量異常 ★★★
                 let qty = parseInt(p.quantity, 10) || 0;
@@ -1191,6 +1194,9 @@
                 // ★ 純淨版訂單明細
                 orderDetails += `${p.name}x${qty}, `; 
                 msgDetails += `- ${p.name} x ${qty} = $${p.price*qty}\n`;
+
+                // ★★★ 構建確認視窗的明細 ★★★
+                itemsDetailStr += `• ${p.name} x ${qty}\n`;
 
                 // ★★★ 累加各口味數量 ★★★
                 if (flavorCounts.hasOwnProperty(p.id)) {
@@ -1257,6 +1263,10 @@
 
             // ★★★ 詳細結帳小跳窗 (Popup) ★★★
             let confirmMsg = `【訂單確認】\n`;
+            confirmMsg += `---------------------\n`;
+            confirmMsg += `[購買明細]\n`; // ★ 新增標題
+            confirmMsg += itemsDetailStr;   // ★ 新增明細
+            confirmMsg += `總數量：${totalCups} 個\n`; // ★ 新增總數量
             confirmMsg += `---------------------\n`;
             confirmMsg += `商品原價：$${rawTotal}\n`;
             
