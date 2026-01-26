@@ -890,22 +890,169 @@
             cart[index].quantity += delta;
             if (cart[index].quantity <= 0) cart.splice(index, 1);
             renderCart();
-        }
-
+        // ★★★ 結帳主流程 (已包含：草莓檢查、跳窗確認、折扣檢查) ★★★
         async function processCheckout() {
             if (cart.length === 0) { alert("請先加入商品"); return; }
+
             const name = document.getElementById('cust-name').value.trim();
             const phone = document.getElementById('cust-phone').value.trim();
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             const payment = document.querySelector('input[name="paymentMethod"]:checked').value;
-            const remarks = document.getElementById('cust-remarks').value.trim();
+            const remarks = document.getElementById('cust-remarks').value.trim(); 
+            
             if(!name || !phone) { alert("請填寫姓名與電話"); return; }
 
+            // 1. 檢查草莓口味配送限制 (草莓 ID: 11)
             const hasStrawberry = cart.some(item => item.id === 11);
             if (hasStrawberry && delivery === '宅配') {
-                alert("【系統提醒】\n蜜漬大果草莓僅限「自取」，無法宅配。");
+                alert("【系統提醒】\n蜜漬大果草莓因含有新鮮水果，僅限「自取」，無法宅配。\n請修改取貨方式，或是移除該商品。");
                 return;
             }
+
+            // 2. 如果有折扣碼，進行伺服器端檢查
+            if (appliedCoupon) {
+                const submitBtn = document.getElementById('submit-btn');
+                const originalBtnText = submitBtn.innerText;
+                submitBtn.innerText = "驗證折扣資格中...";
+                submitBtn.disabled = true;
+
+                try {
+                    const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkDiscount&phone=" + encodeURIComponent(phone);
+                    const response = await fetch(checkUrl);
+                    const data = await response.json();
+
+                    if (data.used === true) {
+                        alert("【系統攔截】\n此電話號碼 (" + phone + ") 已經使用過折扣優惠，無法再次使用。系統將自動移除折扣。");
+                        appliedCoupon = null;
+                        document.getElementById('coupon-code').value = "";
+                        renderCart(); 
+                        submitBtn.innerText = originalBtnText;
+                        submitBtn.disabled = false;
+                        return; 
+                    }
+                } catch (error) {
+                    console.error("驗證失敗:", error);
+                }
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+            }
+
+            // 3. 準備配送與金額數據
+            let finalDateStr = "";
+            let fullAddress = "";
+            if(delivery === '自取') {
+                const slot = document.getElementById('pickup-slot-select').value;
+                if(!slot) { alert("請選擇自取時段"); return; }
+                finalDateStr = slot;
+            } else {
+                const city = document.getElementById('cust-city').value;
+                const detailAddr = document.getElementById('cust-addr-detail').value.trim();
+                if(!city || !detailAddr) { alert("宅配請填寫完整地址"); return; }
+                fullAddress = city + detailAddr;
+                finalDateStr = "宅配不指定日期 (需指定請洽客服)";
+            }
+
+            let rawTotal = 0;
+            let totalCups = 0;
+            cart.forEach(p => {
+                let qty = parseInt(p.quantity, 10) || 0;
+                rawTotal += p.price * qty;
+                totalCups += qty;
+            });
+            
+            if (delivery === '宅配' && totalCups % 6 !== 0) {
+                alert(`宅配訂單為了防止運送碰撞，數量必須是 6 的倍數。\n目前數量：${totalCups} 個`);
+                return; 
+            }
+
+            // 4. 計算折扣金額
+            let productFinalPrice = rawTotal;
+            let discountName = "";
+            let discountAmount = 0;
+
+            if (appliedCoupon) {
+                productFinalPrice = (appliedCoupon.type === 'rate') ? Math.floor(rawTotal * appliedCoupon.value) : rawTotal - appliedCoupon.value;
+                discountName = appliedCoupon.name;
+                discountAmount = rawTotal - productFinalPrice;
+            } else {
+                if (rawTotal >= 5000) {
+                    productFinalPrice = Math.floor(rawTotal * 0.9);
+                    discountName = "滿額9折";
+                    discountAmount = rawTotal - productFinalPrice;
+                } else if (rawTotal >= 3000) {
+                    productFinalPrice = Math.floor(rawTotal * 0.95);
+                    discountName = "滿額95折";
+                    discountAmount = rawTotal - productFinalPrice;
+                }
+            }
+
+            // 5. 計算運費
+            let shippingFee = 0;
+            if (delivery === '宅配') {
+                const boxes = totalCups / 6; 
+                shippingFee = (boxes <= 2) ? 130 : (boxes <= 8 ? 170 : 210);
+            }
+            let finalAllPrice = productFinalPrice + shippingFee;
+
+            // 6. === 重要：跳窗確認功能 ===
+            let confirmMsg = `【訂單確認】\n`;
+            confirmMsg += `---------------------\n`;
+            confirmMsg += `商品原價：$${rawTotal}\n`;
+            if (discountAmount > 0) confirmMsg += `折扣優惠：-$${discountAmount} (${discountName})\n`;
+            confirmMsg += `運費小計：$${shippingFee}\n`;
+            confirmMsg += `---------------------\n`;
+            confirmMsg += `應付總額：$${finalAllPrice}\n`;
+            confirmMsg += `---------------------\n`;
+            confirmMsg += `取貨方式：${delivery}\n`;
+            confirmMsg += `日期：${finalDateStr}\n`; 
+            confirmMsg += `姓名：${name}\n`;
+            confirmMsg += `電話：${phone}\n`;
+            if(delivery === '宅配') confirmMsg += `地址：${fullAddress}\n`;
+            confirmMsg += `\n請確認以上資訊無誤，點擊「確定」送出訂單。`;
+
+            if (!confirm(confirmMsg)) {
+                return; // 使用者點取消，不動作
+            }
+
+            // 7. 正式送出訂單 (Fetch 至 Google Form)
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('submit-btn').disabled = true;
+
+            const orderId = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${String(new Date().getHours()).padStart(2, '0')}${String(new Date().getMinutes()).padStart(2, '0')}${String(new Date().getSeconds()).padStart(2, '0')}`;
+
+            let formData = new FormData();
+            formData.append(FORM_FIELDS.orderContent, cart.map(p => `${p.name}x${p.quantity}`).join(", ") + ` [共${totalCups}個]`); 
+            formData.append(FORM_FIELDS.name, name);                  
+            formData.append(FORM_FIELDS.phone, phone);                
+            formData.append(FORM_FIELDS.payment, payment);            
+            formData.append(FORM_FIELDS.delivery, delivery);           
+            formData.append(FORM_FIELDS.address, fullAddress);        
+            formData.append(FORM_FIELDS.date, finalDateStr);           
+            formData.append(FORM_FIELDS.cups, totalCups);             
+            formData.append(FORM_FIELDS.subtotal, productFinalPrice); 
+            formData.append(FORM_FIELDS.shipping, shippingFee);       
+            formData.append(FORM_FIELDS.totalPrice, finalAllPrice);
+            formData.append(FORM_FIELDS.remarks, remarks);
+            formData.append(FORM_FIELDS.orderId, orderId); 
+            formData.append(FORM_FIELDS.discountAmount, discountAmount); 
+
+            cart.forEach(p => {
+                if (FLAVOR_MAPPING[p.id]) formData.append(FLAVOR_MAPPING[p.id], p.quantity);
+            });
+
+            fetch(GOOGLE_FORM_URL, {
+                method: "POST",
+                body: formData,
+                mode: "no-cors"
+            }).then(() => {
+                showReceipt(name, phone, finalDateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName);
+                document.getElementById('loading-overlay').style.display = 'none';
+            }).catch(err => {
+                alert("傳送失敗：" + err);
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('submit-btn').disabled = false;
+            });
+        }
 
             if (appliedCoupon) {
                 const submitBtn = document.getElementById('submit-btn');
@@ -1036,3 +1183,4 @@
     </script>
 </body>
 </html>
+
