@@ -861,12 +861,8 @@
                 } else {
                     // 若不在購物車，顯示加入按鈕
                     if (item.id === 11) {
-                        // 草莓特殊邏輯 (範例：這裡假設草莓正常販售，若要禁用可改回 disabled)
-                        // 若要改為「下週開賣」且不可點，請將下方 onclick 移除並加 disabled
-                        btnHtml = `<button class="add-btn" onclick="addToCart(${item.id})">加入</button>`;
-                        
-                        // 若草莓真的是下週開賣，請使用這行取代上面那行：
-                        // btnHtml = `<button class="add-btn" disabled style="background-color: #e0e0e0; border-color: #e0e0e0; color: #999; cursor: not-allowed;">下週開賣</button>`;
+                        // 草莓口味改為下週開賣，按鈕停用
+                        btnHtml = `<button class="add-btn" disabled style="background-color: #e0e0e0; border-color: #e0e0e0; color: #999; cursor: not-allowed;">(下週開賣)</button>`;
                     } else {
                         btnHtml = `<button class="add-btn" onclick="addToCart(${item.id})">加入</button>`;
                     }
@@ -1245,15 +1241,15 @@
 
             let formData = new FormData();
             formData.append(FORM_FIELDS.orderContent, fullOrderInfo); 
-            formData.append(FORM_FIELDS.name, name);                   
-            formData.append(FORM_FIELDS.phone, phone);                 
-            formData.append(FORM_FIELDS.payment, payment);             
-            formData.append(FORM_FIELDS.delivery, delivery);           
-            formData.append(FORM_FIELDS.address, fullAddress);         
-            formData.append(FORM_FIELDS.date, finalDateStr);           
-            formData.append(FORM_FIELDS.cups, totalCups);             
+            formData.append(FORM_FIELDS.name, name);                    
+            formData.append(FORM_FIELDS.phone, phone);                  
+            formData.append(FORM_FIELDS.payment, payment);              
+            formData.append(FORM_FIELDS.delivery, delivery);            
+            formData.append(FORM_FIELDS.address, fullAddress);          
+            formData.append(FORM_FIELDS.date, finalDateStr);            
+            formData.append(FORM_FIELDS.cups, totalCups);               
             formData.append(FORM_FIELDS.subtotal, productFinalPrice); 
-            formData.append(FORM_FIELDS.shipping, shippingFee);        
+            formData.append(FORM_FIELDS.shipping, shippingFee);         
             formData.append(FORM_FIELDS.totalPrice, finalAllPrice);
             formData.append(FORM_FIELDS.remarks, remarks);
             formData.append(FORM_FIELDS.orderId, orderId); 
