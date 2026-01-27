@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>好酪 鮮奶酪 線上預訂</title>
+    <title>好酪 Hello Panna Cotta - 職人手作預訂</title>
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17855729381"></script>
     <script>
@@ -149,26 +149,30 @@
             box-shadow: var(--shadow-soft);
         }
         
+        /* ★ 修改 1: 圖片放大 1.3 倍 */
         .menu-img { 
             width: 100%; aspect-ratio: 1 / 1; object-fit: cover;     
             border-radius: 12px; margin-bottom: 12px; background-color: #f0f0f0; 
             transition: transform 0.3s;
+            transform: scale(1.3); /* 預設放大 1.3 倍 */
         }
-        .menu-item:hover .menu-img { transform: scale(1.03); }
+        .menu-item:hover .menu-img { transform: scale(1.4); } /* 滑鼠懸停稍微再大一點 */
 
-        .menu-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 5px; color: var(--primary-dark); }
+        .menu-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 5px; color: var(--primary-dark); z-index: 1; position: relative; background: #fff;}
         .menu-desc { 
             font-size: 0.8rem; color: #777; margin-bottom: 12px; line-height: 1.4; 
             min-height: 3.4em; display: -webkit-box; -webkit-line-clamp: 6; 
             -webkit-box-orient: vertical; overflow: hidden; 
+            z-index: 1; position: relative; background: #fff;
         }
-        .menu-price { color: var(--primary); font-weight: 800; font-size: 1.1rem; margin-bottom: 12px; }
+        .menu-price { color: var(--primary); font-weight: 800; font-size: 1.1rem; margin-bottom: 12px; z-index: 1; position: relative; background: #fff;}
 
         /* 按鈕樣式 */
         .add-btn { 
             background: var(--bg-card); border: 2px solid var(--primary); color: var(--primary); 
             padding: 6px 24px; border-radius: var(--radius-btn); font-size: 0.9rem; 
             cursor: pointer; transition: all 0.2s; font-weight: 600; width: 100%;
+            z-index: 2; position: relative;
         }
         .add-btn:active, .add-btn:hover { 
             background: var(--primary); color: #fff; transform: translateY(-2px);
@@ -294,7 +298,7 @@
         .bookmark-line-btn img { width: 28px; height: 28px; object-fit: contain; margin-bottom: 4px; }
         .bookmark-line-btn span { font-size: 13px; font-weight: bold; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; }
 
-        /* ★★★ 收據頁面樣式 ★★★ */
+        /* 收據頁面樣式 */
         .receipt-card { border: none; box-shadow: var(--shadow-soft); background: #fff; padding: 25px 20px; margin-bottom: 20px; border-radius: 16px; }
         
         .receipt-row { 
@@ -624,7 +628,10 @@
                 <img src="logo.jpg" alt="Logo" class="receipt-logo" style="width:80px; border-radius:50%; margin-bottom:15px;">
                 <div class="receipt-icon" style="font-size:3rem; margin-bottom:10px;">✔</div>
                 <div class="receipt-title" style="font-size:1.5rem; font-weight:bold; color:var(--primary-dark);">訂單已成立</div>
-                <div class="receipt-time" id="receipt-time" style="color:#999; font-size:0.9rem; margin-bottom:30px;"></div>
+                
+                <div style="color:#d63031; font-weight:bold; margin-top:5px; font-size:1rem;">(請傳送此畫面截圖至官方LINE)</div>
+                
+                <div class="receipt-time" id="receipt-time" style="color:#999; font-size:0.9rem; margin-bottom:30px; margin-top:5px;"></div>
             </div>
 
             <div class="receipt-card">
@@ -917,7 +924,6 @@
 
         function copyBankAccount() {
             // ★ 修改：從新生成的動態HTML中獲取內容
-            // 因為ID可能在innerHTML置換後才出現，直接用document.getElementById沒問題
             const accNum = document.getElementById('bank-acc-num-display').innerText;
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(accNum).then(() => { alert("帳號已複製！"); })
@@ -1074,7 +1080,7 @@
                         renderCart(); // 重新計算價格
                         submitBtn.innerText = originalBtnText; 
                         submitBtn.disabled = false; 
-                        return; 
+                        return; // ★★★ 終止結帳流程 ★★★
                     }
                 } catch (error) { 
                     console.error("驗證失敗:", error); 
