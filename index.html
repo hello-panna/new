@@ -502,7 +502,7 @@
                     <div class="radio-group" style="margin-bottom:20px;">
                         <label class="radio-label">
                             <input type="radio" name="deliveryMethod" value="自取" class="radio-input" checked onchange="updateDateSettings('pickup')">
-                            <span>店面自取</span>
+                            <span>自取</span>
                         </label>
                         <label class="radio-label">
                             <input type="radio" name="deliveryMethod" value="宅配" class="radio-input" onchange="updateDateSettings('delivery')">
@@ -806,8 +806,8 @@
                     `;
                 } else {
                     if (item.id === 11) {
-                         // 強制關閉草莓口味
-                         btnHtml = `<button class="add-btn" disabled style="border-color:#ccc; color:#ccc; cursor: not-allowed;">(下週開賣)</button>`;
+                          // 強制關閉草莓口味
+                          btnHtml = `<button class="add-btn" disabled style="border-color:#ccc; color:#ccc; cursor: not-allowed;">(下週開賣)</button>`;
                     } else {
                         btnHtml = `<button class="add-btn" onclick="addToCart(${item.id})">加入購物車</button>`;
                     }
@@ -1081,6 +1081,7 @@
 
             if(!name || !phone) { alert("請填寫姓名與電話"); return; }
             
+            // --- 修正：確保手機號碼驗證功能存在 ---
             if (appliedCoupon) {
                 if (!TRAFFIC_SCRIPT_URL || TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     alert("系統錯誤：尚未設定後端檢查網址，請聯繫管理員。"); return;
@@ -1112,6 +1113,7 @@
                 submitBtn.innerText = originalBtnText; 
                 submitBtn.disabled = false;
             }
+            // ------------------------------------
 
             let finalDateStr = "";
             if(delivery === '自取') {
@@ -1181,8 +1183,8 @@
             let formData = new FormData();
             formData.append(FORM_FIELDS.orderContent, fullOrderInfo); 
             formData.append(FORM_FIELDS.name, name);                    
-            formData.append(FORM_FIELDS.phone, phone);                   
-            formData.append(FORM_FIELDS.payment, payment);               
+            formData.append(FORM_FIELDS.phone, phone);                  
+            formData.append(FORM_FIELDS.payment, payment);              
             formData.append(FORM_FIELDS.delivery, delivery);             
             formData.append(FORM_FIELDS.address, fullAddress);           
             formData.append(FORM_FIELDS.date, finalDateStr);             
@@ -1292,4 +1294,3 @@
     </script>
 </body>
 </html>
-
