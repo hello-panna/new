@@ -637,15 +637,26 @@
             <div style="text-align:center;">
                 <div style="width:60px; height:60px; background:var(--c-primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 20px;">✓</div>
                 <div style="font-family:var(--font-title); font-size:1.5rem; font-weight:700; color:var(--c-text); margin-bottom:5px;">訂單已成立</div>
-                <div style="color:var(--c-danger); font-size:0.95rem; margin-bottom:20px;">(請截圖此畫面傳送給客服)</div>
+                
+                <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:20px;">
+                    <div style="color:var(--c-danger); font-size:0.95rem;">(請複製訂單編號傳給客服)</div>
+                    <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" style="width:24px; height:24px; vertical-align:middle;">
+                    </a>
+                </div>
+
                 <div class="receipt-time" id="receipt-time" style="color:#aaa; font-size:0.85rem; margin-bottom:30px;"></div>
             </div>
 
             <div class="receipt-card">
-                <div class="receipt-row highlight">
+                <div class="receipt-row highlight" style="align-items: center;">
                     <span>訂單編號</span>
-                    <span id="receipt-order-id" style="font-family:monospace; font-size:1.1rem; color:var(--c-text);"></span>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <span id="receipt-order-id" style="font-family:monospace; font-size:1.1rem; color:var(--c-text);"></span>
+                        <button onclick="copyOrderId()" style="font-size:0.8rem; padding:2px 8px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer; color:#666;">複製</button>
+                    </div>
                 </div>
+                
                 <div class="receipt-row highlight">
                     <span>應付金額</span>
                     <span id="receipt-total-highlight" style="font-size:1.2rem; color:var(--c-danger);"></span>
@@ -941,6 +952,20 @@
                 const textArea = document.createElement("textarea");
                 textArea.value = accNum; document.body.appendChild(textArea); textArea.select();
                 try { document.execCommand('copy'); alert("帳號已複製！"); } catch (err) { alert("複製失敗，請手動複製"); }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        // 新增的複製訂單編號函式
+        function copyOrderId() {
+            const orderId = document.getElementById('receipt-order-id').innerText;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(orderId).then(() => { alert("訂單編號已複製！"); })
+                .catch(err => { alert("複製失敗，請手動複製"); });
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = orderId; document.body.appendChild(textArea); textArea.select();
+                try { document.execCommand('copy'); alert("訂單編號已複製！"); } catch (err) { alert("複製失敗"); }
                 document.body.removeChild(textArea);
             }
         }
