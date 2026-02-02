@@ -45,10 +45,10 @@
             /* 基礎色調 */
             --c-bg: #FDFBF8;         /* 背景：溫暖的米白色 */
             --c-surface: #FFFFFF;    /* 卡片：純白 */
-            --c-primary: #8C7B75;    /* 主色：焙茶棕 (取代原本的深咖) */
+            --c-primary: #8C7B75;    /* 主色：焙茶棕 */
             --c-primary-light: #BCAAA4; 
             --c-accent: #AFA88B;     /* 點綴：抹茶灰綠 */
-            --c-text: #594A42;       /* 文字：深咖啡灰 (比純黑更柔和) */
+            --c-text: #594A42;       /* 文字：深咖啡灰 */
             --c-text-light: #9E9E9E;
             --c-line: #EFEBE9;       /* 線條 */
             --c-danger: #D87C7C;     /* 警告/強調：豆沙紅 */
@@ -556,7 +556,7 @@
                     </div>
                     <div class="form-group" style="margin-top:15px;">
                         <label class="form-label">手機號碼</label>
-                        <input type="tel" id="cust-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10">
+                        <input type="tel" id="cust-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric">
                     </div>
                     
                     <div class="form-group" id="address-row" style="margin-top:15px;">
@@ -748,7 +748,7 @@
             remarks:      "entry.370850133",  
             orderId:      "entry.846286532",
             discountAmount: "entry.1977990591",
-            couponCode:   "entry.562394796"  // 新增折扣碼欄位
+            couponCode:   "entry.562394796"
         };
 
         const FLAVOR_MAPPING = {
@@ -956,7 +956,6 @@
             }
         }
 
-        // 新增的複製訂單編號函式
         function copyOrderId() {
             const orderId = document.getElementById('receipt-order-id').innerText;
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1107,7 +1106,13 @@
 
             if(!name || !phone) { alert("請填寫姓名與電話"); return; }
             
-            // --- 驗證手機號碼與折扣碼 ---
+            // 修改處：增加手機號碼格式驗證
+            if (!/^09\d{8}$/.test(phone)) {
+                alert("手機號碼格式不正確！\n請輸入 09 開頭的 10 碼數字 (無需輸入 - 符號)");
+                return;
+            }
+
+            // --- 驗證折扣碼 ---
             if (appliedCoupon) {
                 if (!TRAFFIC_SCRIPT_URL || TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     alert("系統錯誤：尚未設定後端檢查網址，請聯繫管理員。"); return;
@@ -1118,7 +1123,6 @@
                 submitBtn.disabled = true;
 
                 try {
-                    // 修改：增加 &code= 參數，將折扣碼傳給後端檢查
                     const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkDiscount&phone=" + encodeURIComponent(phone) + "&code=" + encodeURIComponent(appliedCoupon.code);
                     const response = await fetch(checkUrl);
                     const data = await response.json();
@@ -1222,7 +1226,6 @@
             formData.append(FORM_FIELDS.remarks, remarks);
             formData.append(FORM_FIELDS.orderId, orderId); 
             formData.append(FORM_FIELDS.discountAmount, discountAmount); 
-            // 提交折扣碼至 Google 表單 (若無使用則為空字串)
             formData.append(FORM_FIELDS.couponCode, appliedCoupon ? appliedCoupon.code : "");
             
             for (let id in FLAVOR_MAPPING) {
