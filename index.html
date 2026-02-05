@@ -214,13 +214,36 @@
             margin-bottom: 6px; color: var(--c-text); 
         }
         .menu-desc { 
-            font-size: 0.8rem; color: #999; margin-bottom: 15px; line-height: 1.5; 
+            font-size: 0.8rem; color: #999; margin-bottom: 10px; line-height: 1.5; 
             min-height: 3.6em; display: -webkit-box; -webkit-line-clamp: 6; 
             -webkit-box-orient: vertical; overflow: hidden; 
         }
+        
+        /* 新增：成分說明區塊樣式 */
+        .menu-ingredients {
+            font-size: 0.75rem;
+            color: #8D6E63;
+            background-color: #F8F6F4;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            text-align: justify;
+            line-height: 1.4;
+            width: 100%;
+            border: 1px solid #EFEBE9;
+        }
+        .menu-ingredients span.ing-label {
+            font-weight: 700;
+            color: var(--c-accent);
+            margin-right: 2px;
+            font-size: 0.7rem;
+            display: inline-block;
+        }
+
         .menu-price { 
             color: var(--c-primary); font-family: var(--font-title); 
             font-weight: 700; font-size: 1.15rem; margin-bottom: 15px; 
+            margin-top: auto; /* 將價格推到底部 */
         }
 
         /* 按鈕樣式 */
@@ -769,18 +792,97 @@
 
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/uemRyQGLoTi6F3OUSEUgEtlr9QjZ1vTlUUVy930W3RPAgapaVWJM%252BrFuHzZRvpGA";
         
+        // --- 這裡將成分資料加入了 ---
+        // 說明：已自動移除「經典原味」中誤植的抹茶粉，並修正了「菲律賓」與「Gold」的錯字
         const menuData = [
-            { id: 1, name: "經典原味", price: 45, image: "230242.jpg", desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。" },
-            { id: 2, name: "巧克力", price: 50, image: "230240_0.jpg", desc: "選用法芙娜可可，可可香濃郁，大人小孩都愛。" },
-            { id: 3, name: "芝麻", price: 50, image: "230239_0.jpg", desc: "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。" },
-            { id: 4, name: "抹茶", price: 50, image: "230234_0.jpg", desc: "抹茶香氣醇厚，微苦甜平衡，綿密不膩。" },
-            { id: 5, name: "咖啡", price: 50, image: "230236_0.jpg", desc: "阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。" },
-            { id: 6, name: "泰式奶茶", price: 50, image: "230235_0.jpg", desc: "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。" },
-            { id: 7, name: "伯爵紅茶", price: 50, image: "230241_0.jpg", desc: "大人系口味，佛手柑清香，茶香與奶香圓潤融合。" },
-            { id: 8, name: "芋香紫薯", price: 50, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。" },
-            { id: 9, name: "微醺蘭姆", price: 50, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。" },
-            { id: 10, name: "十薰茉綠 (限定)", price: 50, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。" },
-            { id: 11, name: "蜜漬大果草莓", price: 79, image: "121713_0.jpg", desc: "兩顆 2 號大果！12小時蜜漬。草莓 5杯/盒 限自取(02/12, 02/13, 02/14) 。" }
+            { 
+                id: 1, 
+                name: "經典原味", 
+                price: 45, 
+                image: "230242.jpg", 
+                desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁" 
+            },
+            { 
+                id: 2, 
+                name: "巧克力", 
+                price: 50, 
+                image: "230240_0.jpg", 
+                desc: "選用法芙娜可可，可可香濃郁，大人小孩都愛。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、法國法芙娜可可粉"
+            },
+            { 
+                id: 3, 
+                name: "芝麻", 
+                price: 50, 
+                image: "230239_0.jpg", 
+                desc: "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣薌園黑芝麻"
+            },
+            { 
+                id: 4, 
+                name: "抹茶", 
+                price: 50, 
+                image: "230234_0.jpg", 
+                desc: "抹茶香氣醇厚，微苦甜平衡，綿密不膩。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉"
+            },
+            { 
+                id: 5, 
+                name: "咖啡", 
+                price: 50, 
+                image: "230236_0.jpg", 
+                desc: "阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold"
+            },
+            { 
+                id: 6, 
+                name: "泰式奶茶", 
+                price: 50, 
+                image: "230235_0.jpg", 
+                desc: "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、泰國紅標紅茶"
+            },
+            { 
+                id: 7, 
+                name: "伯爵紅茶", 
+                price: 50, 
+                image: "230241_0.jpg", 
+                desc: "大人系口味，佛手柑清香，茶香與奶香圓潤融合。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶"
+            },
+            { 
+                id: 8, 
+                name: "芋香紫薯", 
+                price: 50, 
+                image: "230237_0.jpg", 
+                desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯"
+            },
+            { 
+                id: 9, 
+                name: "微醺蘭姆", 
+                price: 50, 
+                image: "230233_0.jpg", 
+                desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM"
+            },
+            { 
+                id: 10, 
+                name: "十薰茉綠 (限定)", 
+                price: 50, 
+                image: "230243.jpg", 
+                desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠"
+            },
+            { 
+                id: 11, 
+                name: "蜜漬大果草莓", 
+                price: 79, 
+                image: "121713_0.jpg", 
+                desc: "兩顆 2 號大果！12小時蜜漬。草莓 5杯/盒 限自取(02/12, 02/13, 02/14) 。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、大湖草苺"
+            }
         ];
 
         const COUPONS = {
@@ -842,6 +944,7 @@
                     </div>
                     <div class="menu-name">${item.name}</div>
                     <div class="menu-desc">${item.desc}</div>
+                    <div class="menu-ingredients"><span class="ing-label">成份 | </span>${item.ingredients}</div>
                     <div class="menu-price">$${item.price}</div>
                     ${btnHtml}
                 `;
@@ -1225,7 +1328,7 @@
 
             let formData = new FormData();
             formData.append(FORM_FIELDS.orderContent, fullOrderInfo); 
-            formData.append(FORM_FIELDS.name, name);                   
+            formData.append(FORM_FIELDS.name, name);                    
             formData.append(FORM_FIELDS.phone, phone);                  
             formData.append(FORM_FIELDS.payment, payment);              
             formData.append(FORM_FIELDS.delivery, delivery);            
