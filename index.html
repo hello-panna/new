@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>hello好酪 線上預訂</title>
+    <title>hello好酪 | 線上預訂</title>
+    
+    <meta property="og:title" content="hello好酪 | 線上預訂">
+    <meta property="og:description" content="隱身在工作室的濃郁滋味，三寶媽的純粹堅持。立即線上預訂，品嚐最溫柔的甜點。">
+    <meta property="og:image" content="230242.jpg"> <meta property="og:url" content="">
+    <meta property="og:type" content="website">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,11 +38,6 @@
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=869022205734424&ev=PageView&noscript=1"
     /></noscript>
-    
-    <script>
-      gtag('event', 'conversion', {'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC'});
-    </script>
-
     <style>
         /* --- 日系質感風格設定 (Japanese Zakka Style) --- */
         
@@ -552,7 +552,7 @@
 
                     <div class="form-group" style="margin-top:25px;">
                         <label class="form-label">訂購人姓名</label>
-                        <input type="text" id="cust-name" class="form-input" placeholder="您的稱呼">
+                        <input type="text" id="cust-name" class="form-input" placeholder="您的稱呼" onfocus="trackInitiateCheckout()">
                     </div>
                     <div class="form-group" style="margin-top:15px;">
                         <label class="form-label">手機號碼</label>
@@ -788,6 +788,7 @@
 
         let cart = []; 
         let appliedCoupon = null; 
+        let initiateCheckoutFired = false; // 避免重複發送結帳訊號
 
         const menuContainer = document.getElementById('menu-list');
         const cartContainer = document.getElementById('cart-list');
@@ -800,6 +801,17 @@
             renderMenu(); 
             updateDateSettings('pickup');
             renderCart();
+        }
+
+        // 新增追蹤：當使用者開始填寫姓名，視為開始結帳
+        function trackInitiateCheckout() {
+            if (!initiateCheckoutFired && cart.length > 0) {
+                if(typeof fbq !== 'undefined') {
+                    fbq('track', 'InitiateCheckout');
+                    console.log('Pixel: InitiateCheckout');
+                    initiateCheckoutFired = true;
+                }
+            }
         }
 
         function renderMenu() {
@@ -973,7 +985,8 @@
             
             renderMenu();
             
-            gtag('event', 'conversion', {'send_to': 'AW-17855729381/CJdUcKeW794bEOwDo8JC'});
+            // 這裡保留 AddToCart，但移除錯誤的 conversion
+            // conversion 只在真正結帳後觸發
             const product = menuData.find(p => p.id === id);
             if(typeof fbq !== 'undefined') {
                 fbq('track', 'AddToCart', { content_name: product.name, value: product.price, currency: 'TWD' });
@@ -1055,7 +1068,7 @@
                 if (appliedCoupon.type === 'rate') finalPrice = Math.floor(rawTotal * appliedCoupon.value);
                 else if (appliedCoupon.type === 'minus') finalPrice = rawTotal - appliedCoupon.value;
             } else {
-                discountBadge.style.backgroundColor = 'var(--c-danger)';
+                discountBadge.style.backgroundColor = 'var(--c-danger)'; 
                 
                 if (rawTotal >= 5000) {
                     finalPrice = Math.floor(rawTotal * 0.9);
@@ -1103,7 +1116,7 @@
 
             if(!name || !phone) { alert("請填寫姓名與電話"); return; }
             
-            // 修改處：增加手機號碼格式驗證
+            // 手機號碼格式驗證
             if (!/^09\d{8}$/.test(phone)) {
                 alert("手機號碼格式不正確！\n請輸入 09 開頭的 10 碼數字 (無需輸入 - 符號)");
                 return;
@@ -1210,15 +1223,15 @@
 
             let formData = new FormData();
             formData.append(FORM_FIELDS.orderContent, fullOrderInfo); 
-            formData.append(FORM_FIELDS.name, name);                    
-            formData.append(FORM_FIELDS.phone, phone);                   
-            formData.append(FORM_FIELDS.payment, payment);               
-            formData.append(FORM_FIELDS.delivery, delivery);             
-            formData.append(FORM_FIELDS.address, fullAddress);           
-            formData.append(FORM_FIELDS.date, finalDateStr);             
-            formData.append(FORM_FIELDS.cups, totalCups);                
+            formData.append(FORM_FIELDS.name, name);                   
+            formData.append(FORM_FIELDS.phone, phone);                  
+            formData.append(FORM_FIELDS.payment, payment);              
+            formData.append(FORM_FIELDS.delivery, delivery);            
+            formData.append(FORM_FIELDS.address, fullAddress);          
+            formData.append(FORM_FIELDS.date, finalDateStr);            
+            formData.append(FORM_FIELDS.cups, totalCups);               
             formData.append(FORM_FIELDS.subtotal, rawTotal); 
-            formData.append(FORM_FIELDS.shipping, shippingFee);         
+            formData.append(FORM_FIELDS.shipping, shippingFee);        
             formData.append(FORM_FIELDS.totalPrice, finalAllPrice);
             formData.append(FORM_FIELDS.remarks, remarks);
             formData.append(FORM_FIELDS.orderId, orderId); 
@@ -1242,7 +1255,10 @@
 
         function showReceipt(name, phone, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName) {
             
+            // 觸發 Google Ads 轉換 (只在這裡觸發才對)
             gtag('event', 'conversion', { 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 'value': finalAllPrice, 'currency': 'TWD', 'transaction_id': orderId });
+            
+            // 觸發 FB Pixel 購買事件
             if(typeof fbq !== 'undefined') {
                 fbq('track', 'Purchase', { value: finalAllPrice, currency: 'TWD', content_name: '鮮奶酪訂單', num_items: totalCups, transaction_id: orderId });
             }
