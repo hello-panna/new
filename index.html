@@ -571,6 +571,11 @@
                         <input type="tel" id="cust-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric">
                     </div>
                     
+                    <div class="form-group" style="margin-top:15px;">
+                        <label class="form-label">Email (選填，可收到訂購資訊)</label>
+                        <input type="email" id="cust-email" class="form-input" placeholder="example@email.com">
+                    </div>
+                    
                     <div class="form-group" id="address-row" style="margin-top:15px;">
                         <label class="form-label">宅配地址</label>
                         <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -760,6 +765,7 @@
             orderContent: "entry.1214769536", 
             name:         "entry.537178649",  
             phone:        "entry.1240845794", 
+            email:        "entry.586707224",  // 新增 email 欄位
             payment:      "entry.36879241",   
             delivery:     "entry.2126181854", 
             address:      "entry.1346414492", 
@@ -1203,6 +1209,7 @@
 
             const name = document.getElementById('cust-name').value.trim();
             const phone = document.getElementById('cust-phone').value.trim();
+            const email = document.getElementById('cust-email').value.trim(); // 取得 Email 值
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             const payment = document.querySelector('input[name="paymentMethod"]:checked').value;
             const remarks = document.getElementById('cust-remarks').value.trim(); 
@@ -1328,6 +1335,7 @@
             formData.append(FORM_FIELDS.orderContent, fullOrderInfo); 
             formData.append(FORM_FIELDS.name, name);                    
             formData.append(FORM_FIELDS.phone, phone);                  
+            formData.append(FORM_FIELDS.email, email); // 加入 Email 到表單資料
             formData.append(FORM_FIELDS.payment, payment);              
             formData.append(FORM_FIELDS.delivery, delivery);            
             formData.append(FORM_FIELDS.address, fullAddress);          
