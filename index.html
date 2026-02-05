@@ -510,19 +510,6 @@
                 <div class="section-header">配送資訊</div>
                 <div class="options-section">
                     
-                    <div class="coupon-section">
-                        <a href="https://lin.ee/UHEkfgW" target="_blank" style="display:block; margin-bottom:15px;">
-                            <img src="line_promo.jpg" alt="加入LINE好友領取優惠" style="width:100%; border-radius:6px;">
-                        </a>
-                        
-                        <label class="form-label" style="color:var(--c-primary);">使用折扣碼</label>
-                        <div class="coupon-input-group">
-                            <input type="text" id="coupon-code" class="form-input" placeholder="輸入折扣碼">
-                            <button type="button" class="coupon-btn" onclick="applyCoupon()">兌換</button>
-                        </div>
-                        <div id="coupon-msg" style="font-size:0.9rem; margin-top:8px;"></div>
-                    </div>
-
                     <div class="form-label">取貨方式</div>
                     <div class="radio-group" style="margin-bottom:20px;">
                         <label class="radio-label">
@@ -620,6 +607,17 @@
                     <div class="form-group" style="margin-top: 15px;">
                         <label class="form-label">備註 (需分裝請填寫)</label>
                         <textarea id="cust-remarks" class="form-input" rows="2" placeholder="例：原味x2 巧克力x2 抹茶x2 裝一盒"></textarea>
+                    </div>
+                    
+                    <div style="margin-top: 25px;">
+                        <div class="coupon-section" style="margin-bottom: 0;">
+                            <label class="form-label" style="color:var(--c-primary);">使用折扣碼</label>
+                            <div class="coupon-input-group">
+                                <input type="text" id="coupon-code" class="form-input" placeholder="輸入折扣碼">
+                                <button type="button" class="coupon-btn" onclick="applyCoupon()">兌換</button>
+                            </div>
+                            <div id="coupon-msg" style="font-size:0.9rem; margin-top:8px;"></div>
+                        </div>
                     </div>
 
                 </div>
