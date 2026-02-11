@@ -796,7 +796,8 @@
             8: "entry.73334113",   
             9: "entry.93299315",   
             10: "entry.799869452", 
-            11: "entry.1494499065" 
+            11: "entry.1494499065",
+            12: "entry.1854787344"
         };
 
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/uemRyQGLoTi6F3OUSEUgEtlr9QjZ1vTlUUVy930W3RPAgapaVWJM%252BrFuHzZRvpGA";
@@ -891,6 +892,14 @@
                 image: "121713_0.jpg", 
                 desc: "兩顆 2 號大果！12小時蜜漬。草莓 5杯/盒 限自取(02/12, 02/13, 02/14) 。",
                 ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、大湖草苺"
+            },
+            {
+                id: 12,
+                name: "杜拜巧克力",
+                price: 135,
+                image: "125136.jpg",
+                desc: "濃厚杜拜脆絲內餡，薄脆64%黑巧隔層，焙香開心果粒，濃郁黑巧64%甘納許。",
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、無鹽奶油、白巧克力32%、酥皮絲、64%黑巧克力、法國進口100%純開心果醬、頂級翠綠開心果仁"
             }
         ];
 
@@ -982,10 +991,18 @@
             if (mode === 'delivery') {
                 selectEl.style.display = 'none';
                 deliveryText.style.display = 'block';
-                hint.innerText = "提醒：宅配默認不指定日期出貨，若需指定日期請先與店家詢問。";
                 addressRow.style.display = 'block';
                 pickupInfoBox.style.display = 'none'; 
                 deliveryInfoBox.style.display = 'block'; 
+
+                // 檢查是否有杜拜巧克力 (ID 12)
+                const hasDubai = cart.some(item => item.id === 12);
+                if (hasDubai) {
+                    hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間到貨。";
+                } else {
+                    hint.innerText = "提醒：宅配默認不指定日期出貨，若需指定日期請先與店家詢問。";
+                }
+
             } else {
                 selectEl.style.display = 'block';
                 deliveryText.style.display = 'none';
@@ -1004,8 +1021,19 @@
 
         function generatePickupOptions(startDays) {
             const select = document.getElementById('pickup-slot-select');
+            const hint = document.getElementById('date-hint');
             select.innerHTML = '<option value="" disabled selected>請選擇自取時段...</option>';
+            
             const hasStrawberry = cart.some(item => item.id === 11);
+            const hasDubai = cart.some(item => item.id === 12);
+
+            // 衝突檢測：草莓 (2/14前) 與 杜拜 (2/25後) 不能同時自取
+            if (hasStrawberry && hasDubai) {
+                select.innerHTML = '<option value="" disabled selected>日期衝突：草莓與杜拜巧克力取貨日不同</option>';
+                hint.innerText = "❌ 錯誤：草莓限 2/14 前取貨，杜拜巧克力為 2/25-26，請分開兩筆訂單結帳。";
+                hint.style.color = "var(--c-danger)";
+                return;
+            }
 
             if (hasStrawberry) {
                 // 草莓口味限定日期邏輯
@@ -1021,7 +1049,21 @@
                     el.value = opt.val; el.innerText = opt.text;
                     select.appendChild(el);
                 });
-                document.getElementById('date-hint').innerText = "提醒：訂單包含草莓限定口味，僅開放 02/12、02/13、02/14 自取。";
+                hint.innerText = "提醒：訂單包含草莓限定口味，僅開放 02/12、02/13、02/14 自取。";
+            } else if (hasDubai) {
+                // 杜拜巧克力限定日期邏輯 (2026/02/25 ~ 2026/02/26)
+                const specificDates = [
+                    { val: "2026/02/25 (三) 12:00~13:00", text: "02/25 (週三) 12:00~13:00" },
+                    { val: "2026/02/25 (三) 17:00~18:00", text: "02/25 (週三) 17:00~18:00" },
+                    { val: "2026/02/26 (四) 12:00~13:00", text: "02/26 (週四) 12:00~13:00" },
+                    { val: "2026/02/26 (四) 17:00~18:00", text: "02/26 (週四) 17:00~18:00" }
+                ];
+                specificDates.forEach(opt => {
+                    let el = document.createElement('option');
+                    el.value = opt.val; el.innerText = opt.text;
+                    select.appendChild(el);
+                });
+                hint.innerText = "提醒：訂單包含杜拜巧克力，統一於 02/25、02/26 自取。";
             } else {
                 const now = new Date();
                 let startDate = new Date(now);
@@ -1151,6 +1193,7 @@
                 let warningHtml = '';
                 if (item.id === 9) warningHtml = '<div style="font-size:0.75rem; color:#888;">(未滿18歲請勿購買)</div>';
                 if (item.id === 11) warningHtml = '<div style="font-size:0.75rem; color:var(--c-danger);">(限自取)</div>';
+                if (item.id === 12) warningHtml = '<div style="font-size:0.75rem; color:var(--c-primary);">(預購 2/25-2/26)</div>';
 
                 const div = document.createElement('div');
                 div.className = 'cart-item';
@@ -1199,6 +1242,7 @@
             
             const currentDelivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             if (currentDelivery === '自取') updateDateSettings('pickup');
+            else updateDateSettings('delivery');
         }
 
         function changeQty(index, delta) {
@@ -1220,6 +1264,14 @@
             const remarks = document.getElementById('cust-remarks').value.trim(); 
             
             const hasStrawberry = cart.some(item => item.id === 11);
+            const hasDubai = cart.some(item => item.id === 12);
+
+            // 再次檢查衝突
+            if (hasStrawberry && hasDubai) {
+                alert("【系統提醒】\n草莓(限2/14前) 與 杜拜巧克力(限2/25後) 取貨時間不同，無法合併訂單。\n請移除其中一項商品分開結帳。");
+                return;
+            }
+
             if (hasStrawberry && delivery === '宅配') {
                 alert("【系統提醒】\n蜜漬大果草莓因含有新鮮水果，僅限「自取」，無法宅配。\n請修改取貨方式，或是移除該商品。");
                 return;
@@ -1347,7 +1399,7 @@
             formData.append(FORM_FIELDS.date, finalDateStr);            
             formData.append(FORM_FIELDS.cups, totalCups);               
             formData.append(FORM_FIELDS.subtotal, rawTotal); 
-            formData.append(FORM_FIELDS.shipping, shippingFee);        
+            formData.append(FORM_FIELDS.shipping, shippingFee);         
             formData.append(FORM_FIELDS.totalPrice, finalAllPrice);
             formData.append(FORM_FIELDS.remarks, remarks);
             formData.append(FORM_FIELDS.orderId, orderId); 
