@@ -60,7 +60,7 @@
             --radius-box: 12px;      /* 卡片圓角 */
             --radius-pill: 50px;     /* 按鈕圓角 */
             --shadow-float: 0 10px 30px rgba(140, 123, 117, 0.1); /* 懸浮陰影 */
-            --shadow-card: 0 4px 12px rgba(0,0,0,0.03);           /* 卡片微陰影 */
+            --shadow-card: 0 4px 12px rgba(0,0,0,0.03);            /* 卡片微陰影 */
             --font-title: 'Noto Serif TC', serif;
             --font-body: 'Noto Sans TC', sans-serif;
             --max-w: 520px;          /* 收窄寬度，增加精緻感 */
@@ -795,9 +795,7 @@
             7: "entry.1968820040", 
             8: "entry.73334113",   
             9: "entry.93299315",   
-            10: "entry.799869452", 
-            11: "entry.1494499065",
-            12: "entry.1854787344"
+            10: "entry.799869452"
         };
 
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/uemRyQGLoTi6F3OUSEUgEtlr9QjZ1vTlUUVy930W3RPAgapaVWJM%252BrFuHzZRvpGA";
@@ -883,23 +881,7 @@
                 price: 50, 
                 image: "230243.jpg", 
                 desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠"
-            },
-            { 
-                id: 11, 
-                name: "蜜漬大果草莓", 
-                price: 79, 
-                image: "121713_0.jpg", 
-                desc: "兩顆 2 號大果！12小時蜜漬。草莓 5杯/盒 限自取(02/12, 02/13, 02/14) 。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、大湖草苺" 
-            },
-            {
-                id: 12,
-                name: "杜拜巧克力",
-                price: 135,
-                image: "125136.jpg",
-                desc: "濃厚杜拜脆絲內餡，薄脆64%黑巧隔層，焙香開心果粒，濃郁黑巧64%甘納許。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、無鹽奶油、白巧克力32%、酥皮絲、64%黑巧克力、法國進口100%純開心果醬、頂級翠綠開心果仁"
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠" 
             }
         ];
 
@@ -1390,13 +1372,13 @@
             formData.append(FORM_FIELDS.name, name);                    
             formData.append(FORM_FIELDS.phone, phone);                  
             formData.append(FORM_FIELDS.email, email); // 加入 Email 到表單資料
-            formData.append(FORM_FIELDS.payment, payment);              
-            formData.append(FORM_FIELDS.delivery, delivery);            
-            formData.append(FORM_FIELDS.address, fullAddress);          
-            formData.append(FORM_FIELDS.date, finalDateStr);            
-            formData.append(FORM_FIELDS.cups, totalCups);               
+            formData.append(FORM_FIELDS.payment, payment);               
+            formData.append(FORM_FIELDS.delivery, delivery);             
+            formData.append(FORM_FIELDS.address, fullAddress);           
+            formData.append(FORM_FIELDS.date, finalDateStr);             
+            formData.append(FORM_FIELDS.cups, totalCups);                
             formData.append(FORM_FIELDS.subtotal, rawTotal); 
-            formData.append(FORM_FIELDS.shipping, shippingFee);         
+            formData.append(FORM_FIELDS.shipping, shippingFee);          
             formData.append(FORM_FIELDS.totalPrice, finalAllPrice);
             formData.append(FORM_FIELDS.remarks, remarks);
             formData.append(FORM_FIELDS.orderId, orderId); 
