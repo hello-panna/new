@@ -40,6 +40,7 @@
     src="https://www.facebook.com/tr?id=907651728652331&ev=PageView&noscript=1"
     /></noscript>
     <style>
+        /* --- 日系質感風格設定 --- */
         :root {
             --c-bg: #FDFBF8;         
             --c-surface: #FFFFFF;    
@@ -226,6 +227,7 @@
         .coupon-section { background-color: #FCFBF9; border: 1px dashed var(--c-accent); box-shadow: none; }
         .coupon-input-group { display: flex; gap: 10px; margin-top: 10px; }
         .coupon-btn { background-color: var(--c-accent); color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+        .coupon-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 
         #pickup-info-box { background-color: #F4F2EE; color: var(--c-text); border: none; }
         #delivery-info-box { background-color: #FFF8E1; color: #8D6E63; border: none; }
@@ -347,7 +349,7 @@
                 </div>
 
                 <div class="section-header">訂購與配送資訊</div>
-                <div class="options-section">
+                <div class="options-section" style="margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: none;">
                     
                     <div class="form-group">
                         <label class="form-label">訂購人姓名</label>
@@ -364,14 +366,15 @@
                         <input type="email" id="cust-email" class="form-input" placeholder="example@email.com" oninput="checkMemberUnlock()">
                     </div>
 
-                    <div style="margin-top: 20px; padding: 15px; background: #F9F6F0; border: 1px dashed var(--c-accent); border-radius: 8px;">
-                        <div style="font-size: 1.05rem; font-weight: bold; color: var(--c-primary); margin-bottom: 8px;">👑 好酪會員專區</div>
+                    <div style="margin-top: 20px; padding: 20px; background: #FFFDF9; border: 1px solid var(--c-line); border-radius: 8px;">
+                        <div style="font-size: 1.05rem; font-weight: bold; color: var(--c-primary); margin-bottom: 10px; text-align: center;">👑 好酪會員專區</div>
                         
-                        <div id="member-pre-query-msg" style="font-size: 0.85rem; color: var(--c-danger); font-weight: bold;">
+                        <div id="member-pre-query-msg" style="font-size: 0.85rem; color: var(--c-danger); margin-bottom: 5px; font-weight: bold; text-align: center;">
                             請先填寫上方「姓名」、「手機」與「Email」解鎖會員功能
                         </div>
                         
-                        <div id="points-query-box" style="display: none;">
+                        <div id="points-query-box" class="points-box" style="display: none; margin-top: 0; padding: 15px; background: #F9F6F0; border-radius: 8px; border: 1px dashed var(--c-accent);">
+                            <div class="form-label" style="font-size: 0.9rem; color: var(--c-primary); margin-bottom: 8px;">查詢會員狀態與點數</div>
                             <div class="points-check-group" style="display: flex; gap: 10px; align-items: center;">
                                 <button type="button" class="btn-check-points" id="btn-query-points" onclick="queryPoints()" style="height: 38px; background-color: var(--c-primary); color: white; border: none; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold;">查詢會員</button>
                                 <div id="points-display" style="padding: 8px 0; font-weight: bold; color: var(--c-danger); display: flex; align-items: center;">尚未查詢</div>
@@ -663,7 +666,6 @@
         let cart = []; 
         let initiateCheckoutFired = false; 
         
-        // 會員點數相關變數
         let isExistingMember = false;
         let availableMemberPoints = 0; 
         let usedMemberPoints = 0;
@@ -690,7 +692,6 @@
             }
         }
 
-        // === 會員解鎖邏輯 ===
         function checkMemberUnlock() {
             const name = document.getElementById('cust-name').value.trim();
             const phone = document.getElementById('cust-phone').value.trim();
@@ -699,7 +700,6 @@
             const preMsg = document.getElementById('member-pre-query-msg');
             const queryBox = document.getElementById('points-query-box');
             
-            // 姓名不為空，電話滿10碼，Email包含@符號
             if (name !== "" && phone.length === 10 && email.includes("@")) {
                 preMsg.style.display = "none";
                 queryBox.style.display = "block";
@@ -740,7 +740,6 @@
             btn.disabled = true;
 
             try {
-                // 查詢時將姓名、手機、Email一併傳送
                 const url = TRAFFIC_SCRIPT_URL + `?action=checkPoints&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&email=${encodeURIComponent(email)}`;
                 const response = await fetch(url);
                 const data = await response.json();
@@ -796,6 +795,56 @@
             renderCart();
         }
 
+        // ★ 修改：非同步的折扣碼驗證
+        async function applyCoupon() {
+            const input = document.getElementById('coupon-code');
+            const msg = document.getElementById('coupon-msg');
+            const btn = document.querySelector('.coupon-btn');
+            const code = input.value.trim().toUpperCase();
+            
+            const phone = document.getElementById('cust-phone').value.trim().replace(/-/g, '');
+
+            if (!code) { msg.innerText = "請輸入折扣碼"; msg.style.color = "var(--c-danger)"; return; }
+
+            if (!COUPONS[code]) {
+                appliedCoupon = null; msg.innerText = "❌ 無效的優惠碼"; msg.style.color = "var(--c-danger)"; renderCart();
+                return;
+            }
+
+            if (!phone || phone.length < 10) {
+                msg.innerText = "請先於上方填寫完整「手機號碼」再兌換"; msg.style.color = "var(--c-danger)"; return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "驗證中...";
+            msg.innerText = "";
+
+            try {
+                // 呼叫後端 API 檢查此手機號碼是否使用過此折扣碼
+                const checkUrl = TRAFFIC_SCRIPT_URL + `?action=checkDiscount&phone=${encodeURIComponent(phone)}&code=${encodeURIComponent(code)}`;
+                const response = await fetch(checkUrl);
+                const data = await response.json();
+                
+                if (data.used === true) {
+                    appliedCoupon = null;
+                    msg.innerText = "❌ 此手機號碼已經使用過該優惠碼";
+                    msg.style.color = "var(--c-danger)";
+                } else {
+                    appliedCoupon = { code: code, ...COUPONS[code] };
+                    msg.innerText = "✅ 優惠碼兌換成功！"; 
+                    msg.style.color = "var(--c-success)";
+                }
+            } catch (error) {
+                console.error("驗證失敗:", error);
+                msg.innerText = "驗證失敗，請檢查網路連接";
+                msg.style.color = "var(--c-danger)";
+            }
+            
+            btn.disabled = false;
+            btn.innerText = "兌換";
+            renderCart(); 
+        }
+
         function renderMenu() {
             menuContainer.innerHTML = '';
             menuData.forEach(item => {
@@ -828,11 +877,6 @@
                 `;
                 menuContainer.appendChild(div);
             });
-        }
-
-        function logVisit() {
-            if(!TRAFFIC_SCRIPT_URL || TRAFFIC_SCRIPT_URL.includes("YOUR_NEW_DEPLOYMENT_ID")) return;
-            fetch(TRAFFIC_SCRIPT_URL + "?action=view", { method: "POST", mode: "no-cors" }).catch(err => {});
         }
 
         function updateDateSettings(mode) {
@@ -1026,6 +1070,15 @@
                 discountBadge.innerText = `點數折抵 $${usedMemberPoints}`; 
                 discountBadge.style.backgroundColor = 'var(--c-success)'; 
                 promoHintBar.style.display = 'none'; 
+            } else if (appliedCoupon) {
+                // 折扣碼邏輯
+                discountBadge.style.display = 'inline-block'; 
+                discountBadge.innerText = '優惠券使用中'; 
+                discountBadge.style.backgroundColor = 'var(--c-danger)'; 
+                promoHintBar.style.display = 'none';
+                
+                if (appliedCoupon.type === 'rate') finalPrice = Math.floor(rawTotal * appliedCoupon.value);
+                else if (appliedCoupon.type === 'minus') finalPrice = rawTotal - appliedCoupon.value;
             } else {
                 discountBadge.style.backgroundColor = 'var(--c-danger)'; 
                 promoHintBar.style.display = 'block';
@@ -1072,7 +1125,6 @@
             const payment = document.querySelector('input[name="paymentMethod"]:checked').value;
             const remarks = document.getElementById('cust-remarks').value.trim(); 
             
-            // 判斷是否為會員或加入會員
             const joinMemberContainerVisible = document.getElementById('join-member-container').style.display === 'block';
             const isJoinMemberChecked = document.getElementById('join-member-checkbox').checked;
             const isJoinMember = isExistingMember || (joinMemberContainerVisible && isJoinMemberChecked);
@@ -1128,6 +1180,12 @@
                 productFinalPrice = Math.max(0, rawTotal - usedMemberPoints);
                 discountAmount = usedMemberPoints;
                 discountTypeStr = "點數折抵";
+            } else if (appliedCoupon) {
+                let original = rawTotal;
+                if (appliedCoupon.type === 'rate') { productFinalPrice = Math.floor(rawTotal * appliedCoupon.value); discountName = appliedCoupon.name; } 
+                else if (appliedCoupon.type === 'minus') { productFinalPrice = rawTotal - appliedCoupon.value; discountName = appliedCoupon.name; }
+                discountAmount = original - productFinalPrice;
+                discountTypeStr = appliedCoupon.name;
             } else {
                 if (rawTotal >= 5000) { productFinalPrice = Math.floor(rawTotal * 0.9); discountAmount = rawTotal - productFinalPrice; discountTypeStr = "滿額9折"; } 
                 else if (rawTotal >= 3000) { productFinalPrice = Math.floor(rawTotal * 0.95); discountAmount = rawTotal - productFinalPrice; discountTypeStr = "滿額95折"; }
@@ -1173,7 +1231,8 @@
                     remarks: remarks,
                     totalCups: totalCups,
                     isJoinMember: isJoinMember,
-                    otherDiscount: (usedMemberPoints === 0 && discountAmount > 0) ? discountAmount : 0
+                    otherDiscount: (usedMemberPoints === 0 && discountAmount > 0) ? discountAmount : 0,
+                    couponCode: appliedCoupon ? appliedCoupon.code : ""
                 }
             };
 
