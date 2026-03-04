@@ -133,7 +133,7 @@
             margin-top: 5px;
         }
         
-        .package-box, .video-box, .brand-story, .info-box, .options-section, .cart-item, .coupon-section, .member-section {
+        .package-box, .video-box, .brand-story, .info-box, .options-section, .cart-item, .coupon-section {
             background: var(--c-surface);
             border-radius: var(--radius-box);
             padding: 24px;
@@ -217,6 +217,8 @@
         .radio-input:checked + span { color: var(--c-primary); font-weight: bold; }
         .radio-label:has(.radio-input:checked) { border-color: var(--c-primary); background-color: rgba(140, 123, 117, 0.05); }
 
+        /* 會員與點數區塊 */
+        .member-section { background-color: #FFFDF9; border: 1px solid #E0D8CF; }
         .checkbox-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; color: var(--c-primary); }
         .checkbox-label input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--c-primary); }
         .points-box { background: #F9F6F0; padding: 15px; border-radius: 8px; border: 1px dashed var(--c-accent); }
@@ -227,7 +229,6 @@
         .coupon-section { background-color: #FCFBF9; border: 1px dashed var(--c-accent); box-shadow: none; }
         .coupon-input-group { display: flex; gap: 10px; margin-top: 10px; }
         .coupon-btn { background-color: var(--c-accent); color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
-        .coupon-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 
         #pickup-info-box { background-color: #F4F2EE; color: var(--c-text); border: none; }
         #delivery-info-box { background-color: #FFF8E1; color: #8D6E63; border: none; }
@@ -366,15 +367,14 @@
                         <input type="email" id="cust-email" class="form-input" placeholder="example@email.com" oninput="checkMemberUnlock()">
                     </div>
 
-                    <div style="margin-top: 20px; padding: 20px; background: #FFFDF9; border: 1px solid var(--c-line); border-radius: 8px;">
-                        <div style="font-size: 1.05rem; font-weight: bold; color: var(--c-primary); margin-bottom: 10px; text-align: center;">👑 好酪會員專區</div>
+                    <div style="margin-top: 20px; padding: 15px; background: #F9F6F0; border: 1px dashed var(--c-accent); border-radius: 8px;">
+                        <div style="font-size: 1.05rem; font-weight: bold; color: var(--c-primary); margin-bottom: 8px;">👑 好酪會員專區</div>
                         
-                        <div id="member-pre-query-msg" style="font-size: 0.85rem; color: var(--c-danger); margin-bottom: 5px; font-weight: bold; text-align: center;">
+                        <div id="member-pre-query-msg" style="font-size: 0.85rem; color: var(--c-danger); font-weight: bold;">
                             請先填寫上方「姓名」、「手機」與「Email」解鎖會員功能
                         </div>
                         
-                        <div id="points-query-box" class="points-box" style="display: none; margin-top: 0; padding: 15px; background: #F9F6F0; border-radius: 8px; border: 1px dashed var(--c-accent);">
-                            <div class="form-label" style="font-size: 0.9rem; color: var(--c-primary); margin-bottom: 8px;">查詢會員狀態與點數</div>
+                        <div id="points-query-box" style="display: none;">
                             <div class="points-check-group" style="display: flex; gap: 10px; align-items: center;">
                                 <button type="button" class="btn-check-points" id="btn-query-points" onclick="queryPoints()" style="height: 38px; background-color: var(--c-primary); color: white; border: none; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold;">查詢會員</button>
                                 <div id="points-display" style="padding: 8px 0; font-weight: bold; color: var(--c-danger); display: flex; align-items: center;">尚未查詢</div>
@@ -801,7 +801,6 @@
             renderCart();
         }
 
-        // ★ 修正：非同步的折扣碼驗證 (與後端比對)
         async function applyCoupon() {
             const input = document.getElementById('coupon-code');
             const msg = document.getElementById('coupon-msg');
@@ -827,7 +826,6 @@
             msg.innerText = "";
 
             try {
-                // 呼叫後端 API 檢查此組合是否使用過此折扣碼
                 const checkUrl = TRAFFIC_SCRIPT_URL + `?action=checkDiscount&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&code=${encodeURIComponent(code)}`;
                 const response = await fetch(checkUrl);
                 const data = await response.json();
@@ -1070,7 +1068,6 @@
             let finalPrice = rawTotal;
             const promoHintBar = document.getElementById('promo-hint-bar');
 
-            // 點數折抵與折扣碼互斥，且優先判斷點數
             if (usedMemberPoints > 0) {
                 finalPrice = Math.max(0, rawTotal - usedMemberPoints);
                 discountBadge.style.display = 'inline-block'; 
