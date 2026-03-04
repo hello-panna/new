@@ -459,7 +459,7 @@
 
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div id="loading-text" style="color: var(--c-text); font-family: var(--font-title); letter-spacing: 2px; margin-top: 20px;">訂單準備中...</div>
+        <div id="loading-text" style="color: var(--c-text); font-family: var(--font-title); letter-spacing: 2px; margin-top: 20px;">訂單處理中...</div>
     </div>
 
     <div id="app-container">
@@ -749,6 +749,13 @@
                     <span style="color:#999; font-size:0.85rem; margin-bottom: 5px;">備註</span>
                     <span id="receipt-remarks" style="color:var(--c-text); font-weight:bold;"></span>
                 </div>
+            </div>
+
+            <div id="receipt-points-section" style="display:none; background:#F9F6F0; padding:15px; border-radius:8px; margin-bottom:15px; border:1px dashed var(--c-accent);">
+                <div style="font-weight:bold; color:var(--c-primary); margin-bottom:8px; font-size:1.05rem;">👑 會員點數異動</div>
+                <div class="receipt-row" style="padding:4px 0; border:none;"><span>本次獲得點數</span><span id="receipt-earned-pts" style="color:var(--c-success); font-weight:bold;"></span></div>
+                <div class="receipt-row" style="padding:4px 0; border:none;"><span>本次折抵點數</span><span id="receipt-used-pts" style="color:var(--c-danger); font-weight:bold;"></span></div>
+                <div class="receipt-row" style="padding:8px 0 0 0; border:none; border-top:1px solid #EFEBE9; margin-top:4px;"><span>剩餘可用點數</span><span id="receipt-total-pts" style="font-weight:bold; font-size:1.1rem; color:var(--c-text);"></span></div>
             </div>
 
             <div class="receipt-card" style="margin-top:20px;">
@@ -1252,9 +1259,12 @@
             cart.forEach(p => {
                 let qty = parseInt(p.quantity, 10) || 0;
                 rawTotal += p.price * qty; totalCups += qty;
-                // 注意這裡名稱要與試算表欄位完全對應 (加上 '鮮奶酪')
-                let fullName = p.name;
+                
+                // ★ 修正「十薰茉綠」無法匯入數量的問題：濾除 (限定) 字眼
+                let cleanName = p.name.replace(' (限定)', '').replace('(限定)', '');
+                let fullName = cleanName;
                 if (!fullName.includes('鮮奶酪')) fullName += '鮮奶酪';
+                
                 orderItems.push({ name: fullName, qty: qty });
             });
             
@@ -1322,16 +1332,27 @@
             };
 
             try {
+                // 發送請求，要求隨 Google 自動重新導向
                 const response = await fetch(TRAFFIC_SCRIPT_URL, {
                     method: "POST",
                     body: JSON.stringify(payload),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // 避開 CORS preflight
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    redirect: "follow"
                 });
                 
-                const result = await response.json();
+                const textRes = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(textRes);
+                } catch (e) {
+                    console.error("Parse Error:", textRes);
+                    alert("訂單已送出，但接收系統回應時發生異常，請確認 LINE 是否有通知，或聯絡客服確認。");
+                    loadingOverlay.style.display = 'none';
+                    return;
+                }
                 
                 if (result.success) {
-                    showReceipt(name, phone, finalDateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, result.orderId, rawTotal, discountAmount, discountTypeStr);
+                    showReceipt(name, phone, finalDateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, result.orderId, rawTotal, discountAmount, discountTypeStr, result.pointsData);
                 } else {
                     alert("訂單建立失敗：" + result.message);
                     document.getElementById('submit-btn').disabled = false;
@@ -1344,7 +1365,7 @@
             }
         }
 
-        function showReceipt(name, phone, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName) {
+        function showReceipt(name, phone, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, pointsData) {
             
             gtag('event', 'conversion', { 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 'value': finalAllPrice, 'currency': 'TWD', 'transaction_id': orderId });
             if(typeof fbq !== 'undefined') { fbq('track', 'Purchase', { value: finalAllPrice, currency: 'TWD', content_name: '鮮奶酪訂單', num_items: totalCups, transaction_id: orderId }); }
@@ -1404,6 +1425,16 @@
                 document.getElementById('receipt-discount-name').innerText = discountName;
                 document.getElementById('receipt-discount-val').innerText = "-$" + discountAmount;
             } else { document.getElementById('receipt-discount-row').style.display = 'none'; }
+
+            // ★ 新增：收據點數明細
+            if (pointsData && pointsData.isMember) {
+                document.getElementById('receipt-points-section').style.display = 'block';
+                document.getElementById('receipt-earned-pts').innerText = `+${pointsData.earnedPoints} 點`;
+                document.getElementById('receipt-used-pts').innerText = `-${pointsData.usedPoints} 點`;
+                document.getElementById('receipt-total-pts').innerText = `${pointsData.totalPoints} 點`;
+            } else {
+                document.getElementById('receipt-points-section').style.display = 'none';
+            }
 
             document.getElementById('shop-view').style.display = 'none';
             document.getElementById('receipt-view').style.display = 'block';
