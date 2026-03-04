@@ -60,7 +60,7 @@
             --radius-box: 12px;      /* 卡片圓角 */
             --radius-pill: 50px;     /* 按鈕圓角 */
             --shadow-float: 0 10px 30px rgba(140, 123, 117, 0.1); /* 懸浮陰影 */
-            --shadow-card: 0 4px 12px rgba(0,0,0,0.03);            /* 卡片微陰影 */
+            --shadow-card: 0 4px 12px rgba(0,0,0,0.03);             /* 卡片微陰影 */
             --font-title: 'Noto Serif TC', serif;
             --font-body: 'Noto Sans TC', sans-serif;
             --max-w: 520px;          /* 收窄寬度，增加精緻感 */
@@ -507,7 +507,26 @@
                 <div class="section-header">配送資訊</div>
                 <div class="options-section">
                     
-                    <div class="form-label">取貨方式</div>
+                    <div class="form-group" style="margin-top:0;">
+                        <label class="form-label">訂購人姓名</label>
+                        <input type="text" id="cust-name" class="form-input" placeholder="您的稱呼" onfocus="trackInitiateCheckout()">
+                    </div>
+                    <div class="form-group" style="margin-top:15px;">
+                        <label class="form-label">手機號碼</label>
+                        <input type="tel" id="cust-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric">
+                    </div>
+                    
+                    <div class="form-group" style="margin-top:15px;">
+                        <label class="form-label">Email (選填，可收到訂購資訊)</label>
+                        <input type="email" id="cust-email" class="form-input" placeholder="example@email.com">
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label class="form-label">備註 (需分裝請填寫)</label>
+                        <textarea id="cust-remarks" class="form-input" rows="2" placeholder="例：原味x2 巧克力x2 抹茶x2 裝一盒"></textarea>
+                    </div>
+                    
+                    <div class="form-label" style="margin-top:20px;">取貨方式</div>
                     <div class="radio-group" style="margin-bottom:20px;">
                         <label class="radio-label">
                             <input type="radio" name="deliveryMethod" value="自取" class="radio-input" checked onchange="updateDateSettings('pickup')">
@@ -535,44 +554,6 @@
                         <div style="font-size:0.85rem; color:#D84315; margin-top:8px;">* 為確保運送安全，宅配請以「6的倍數」下單 (整盒出貨)。</div>
                     </div>
 
-                    <div class="form-group" style="margin-top:20px;">
-                        <label class="form-label" id="date-label">預計取貨/到貨日</label>
-                        
-                        <select id="pickup-slot-select" class="form-input" style="display:none;">
-                            <option value="" disabled selected>選擇時段...</option>
-                        </select>
-                        
-                        <input type="text" id="delivery-date-text" class="form-input" value="宅配不指定日期 (需指定請洽客服)" disabled style="display:none; background:#eee;">
-                        
-                        <div style="font-size:0.85rem; color:var(--c-danger); margin-top:8px;" id="date-hint"></div>
-                    </div>
-
-                    <div class="form-label" style="margin-top:20px;">付款方式</div>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="paymentMethod" value="linepay" class="radio-input" checked>
-                            <span>LINE Pay</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="paymentMethod" value="bank" class="radio-input">
-                            <span>銀行匯款</span>
-                        </label>
-                    </div>
-
-                    <div class="form-group" style="margin-top:25px;">
-                        <label class="form-label">訂購人姓名</label>
-                        <input type="text" id="cust-name" class="form-input" placeholder="您的稱呼" onfocus="trackInitiateCheckout()">
-                    </div>
-                    <div class="form-group" style="margin-top:15px;">
-                        <label class="form-label">手機號碼</label>
-                        <input type="tel" id="cust-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric">
-                    </div>
-                    
-                    <div class="form-group" style="margin-top:15px;">
-                        <label class="form-label">Email (選填，可收到訂購資訊)</label>
-                        <input type="email" id="cust-email" class="form-input" placeholder="example@email.com">
-                    </div>
-                    
                     <div class="form-group" id="address-row" style="margin-top:15px;">
                         <label class="form-label">宅配地址</label>
                         <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -606,9 +587,28 @@
                         </div>
                     </div>
 
-                    <div class="form-group" style="margin-top: 15px;">
-                        <label class="form-label">備註 (需分裝請填寫)</label>
-                        <textarea id="cust-remarks" class="form-input" rows="2" placeholder="例：原味x2 巧克力x2 抹茶x2 裝一盒"></textarea>
+                    <div class="form-group" style="margin-top:20px;">
+                        <label class="form-label" id="date-label">預計取貨/到貨日</label>
+                        
+                        <select id="pickup-slot-select" class="form-input" style="display:none;">
+                            <option value="" disabled selected>選擇時段...</option>
+                        </select>
+                        
+                        <input type="text" id="delivery-date-text" class="form-input" value="宅配不指定日期 (需指定請洽客服)" disabled style="display:none; background:#eee;">
+                        
+                        <div style="font-size:0.85rem; color:var(--c-danger); margin-top:8px;" id="date-hint"></div>
+                    </div>
+
+                    <div class="form-label" style="margin-top:20px;">付款方式</div>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="paymentMethod" value="linepay" class="radio-input" checked>
+                            <span>LINE Pay</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="paymentMethod" value="bank" class="radio-input">
+                            <span>銀行匯款</span>
+                        </label>
                     </div>
                     
                     <div style="margin-top: 25px;">
@@ -1372,13 +1372,13 @@
             formData.append(FORM_FIELDS.name, name);                    
             formData.append(FORM_FIELDS.phone, phone);                  
             formData.append(FORM_FIELDS.email, email); // 加入 Email 到表單資料
-            formData.append(FORM_FIELDS.payment, payment);               
-            formData.append(FORM_FIELDS.delivery, delivery);             
-            formData.append(FORM_FIELDS.address, fullAddress);           
-            formData.append(FORM_FIELDS.date, finalDateStr);             
-            formData.append(FORM_FIELDS.cups, totalCups);                
+            formData.append(FORM_FIELDS.payment, payment);                
+            formData.append(FORM_FIELDS.delivery, delivery);              
+            formData.append(FORM_FIELDS.address, fullAddress);            
+            formData.append(FORM_FIELDS.date, finalDateStr);              
+            formData.append(FORM_FIELDS.cups, totalCups);                 
             formData.append(FORM_FIELDS.subtotal, rawTotal); 
-            formData.append(FORM_FIELDS.shipping, shippingFee);          
+            formData.append(FORM_FIELDS.shipping, shippingFee);           
             formData.append(FORM_FIELDS.totalPrice, finalAllPrice);
             formData.append(FORM_FIELDS.remarks, remarks);
             formData.append(FORM_FIELDS.orderId, orderId); 
@@ -1486,4 +1486,3 @@
     </script>
 </body>
 </html>
-
