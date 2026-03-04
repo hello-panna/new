@@ -33,6 +33,7 @@
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     
+    // 這裡換成了您的新 ID
     fbq('init', '907651728652331'); 
     fbq('track', 'PageView');
     </script>
@@ -329,13 +330,16 @@
             width: 20px; height: 20px; accent-color: var(--c-primary);
         }
         .points-box {
-            background: #F9F6F0; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px dashed var(--c-accent);
+            background: #F9F6F0; padding: 15px; border-radius: 8px; border: 1px dashed var(--c-accent);
         }
         .points-check-group {
-            display: flex; gap: 10px; margin-bottom: 10px;
+            display: flex; gap: 10px;
         }
         .btn-check-points {
-            background-color: var(--c-primary); color: white; border: none; padding: 0 15px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+            background-color: var(--c-primary); color: white; border: none; padding: 0 15px; border-radius: 8px; cursor: pointer; white-space: nowrap; transition: 0.3s;
+        }
+        .btn-check-points:disabled {
+            background-color: #ccc; cursor: not-allowed;
         }
 
         /* 優惠券區塊 */
@@ -581,16 +585,15 @@
 
                     <div class="form-group" style="margin-top:25px;">
                         <label class="form-label">訂購人姓名</label>
-                        <input type="text" id="cust-name" class="form-input" placeholder="您的稱呼" onfocus="trackInitiateCheckout()">
+                        <input type="text" id="cust-name" class="form-input" placeholder="您的稱呼" onfocus="trackInitiateCheckout()" oninput="checkMemberUnlock()">
                     </div>
                     <div class="form-group" style="margin-top:15px;">
                         <label class="form-label">手機號碼</label>
-                        <input type="tel" id="cust-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric">
+                        <input type="tel" id="cust-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkMemberUnlock();">
                     </div>
-                    
                     <div class="form-group" style="margin-top:15px;">
-                        <label class="form-label">Email (選填，可收到訂購資訊)</label>
-                        <input type="email" id="cust-email" class="form-input" placeholder="example@email.com">
+                        <label class="form-label">Email (必填，以解鎖會員功能)</label>
+                        <input type="email" id="cust-email" class="form-input" placeholder="example@email.com" oninput="checkMemberUnlock()">
                     </div>
                     
                     <div class="form-group" id="address-row" style="margin-top:15px;">
@@ -635,27 +638,34 @@
 
                 <div class="section-header">好酪會員專區</div>
                 <div class="member-section">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="join-member-checkbox" checked onchange="toggleMemberSection()">
-                        同意加入好酪官方會員
-                    </label>
-                    <div style="font-size: 0.85rem; color: #888; margin-top: 5px; margin-left: 30px;">
-                        每購買一杯奶酪贈一點，一點折抵壹元，線上實體皆通用。
+                    
+                    <div id="member-pre-query-msg" style="font-size: 0.9rem; color: var(--c-danger); margin-bottom: 5px; font-weight: bold; text-align: center;">
+                        請先填寫上方「姓名」、「手機」與「Email」解鎖會員功能
                     </div>
                     
-                    <div id="points-query-box" class="points-box">
-                        <div class="form-label" style="font-size: 0.9rem; color: var(--c-primary);">查詢與折抵點數</div>
-                        <div style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">請先於上方填寫「訂購人姓名」與「手機號碼」後點擊查詢。</div>
-                        <div class="points-check-group">
-                            <button type="button" class="btn-check-points" id="btn-query-points" onclick="queryPoints()">查詢點數</button>
+                    <div id="points-query-box" class="points-box" style="display: none; margin-top: 0;">
+                        <div class="form-label" style="font-size: 0.9rem; color: var(--c-primary);">查詢會員狀態與點數</div>
+                        <div class="points-check-group" style="display: flex; gap: 10px; align-items: center;">
+                            <button type="button" class="btn-check-points" id="btn-query-points" onclick="queryPoints()" style="height: 35px;">查詢會員</button>
                             <div id="points-display" style="padding: 8px; font-weight: bold; color: var(--c-danger); display: flex; align-items: center;">尚未查詢</div>
                         </div>
                         
-                        <div id="points-use-group" style="display: none; margin-top: 10px;">
+                        <div id="join-member-container" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--c-line);">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="join-member-checkbox" checked>
+                                同意加入好酪官方會員
+                            </label>
+                            <div style="font-size: 0.85rem; color: #888; margin-top: 5px; margin-left: 30px;">
+                                每購買一杯奶酪贈一點，一點折抵壹元，下次購物可折抵，線上實體皆通用。
+                            </div>
+                        </div>
+
+                        <div id="points-use-group" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--c-line);">
                             <label class="form-label" style="font-size: 0.85rem;">欲折抵點數 (最多 <span id="max-usable-points">0</span> 點)</label>
-                            <input type="number" id="use-points-input" class="form-input" placeholder="請輸入點數" min="0" oninput="updatePointsDiscount()">
+                            <input type="number" id="use-points-input" class="form-input" placeholder="請輸入點數 (不折抵可留空)" min="0" oninput="updatePointsDiscount()">
                         </div>
                     </div>
+
                 </div>
 
                 <div class="section-header">關於好酪</div>
@@ -805,7 +815,7 @@
     <script>
         
         // ==========================================
-        // ★★★ 請替換為您最新的 Apps Script 部署網址 ★★★
+        // ★★★ 請確認為您最新的 Apps Script 部署網址 ★★★
         // ==========================================
         const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxA0W0j18bnavCRfiAkYgUrBTVperk3yOftQKzKCtoZTdGr4XbyJVwKus8xYvpK1SY/exec"; 
         
@@ -828,6 +838,7 @@
         let initiateCheckoutFired = false; 
         
         // 會員點數相關變數
+        let isExistingMember = false;
         let availableMemberPoints = 0; 
         let usedMemberPoints = 0;
 
@@ -851,6 +862,110 @@
                     initiateCheckoutFired = true;
                 }
             }
+        }
+
+        // === 會員解鎖邏輯 ===
+        function checkMemberUnlock() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const email = document.getElementById('cust-email').value.trim();
+            
+            const preMsg = document.getElementById('member-pre-query-msg');
+            const queryBox = document.getElementById('points-query-box');
+            
+            // 姓名不為空，電話滿10碼，Email包含@符號
+            if (name !== "" && phone.length === 10 && email.includes("@")) {
+                preMsg.style.display = "none";
+                queryBox.style.display = "block";
+            } else {
+                preMsg.style.display = "block";
+                queryBox.style.display = "none";
+                resetMemberUI();
+            }
+        }
+
+        function resetMemberUI() {
+            isExistingMember = false;
+            availableMemberPoints = 0;
+            usedMemberPoints = 0;
+            
+            document.getElementById('points-display').innerText = "尚未查詢";
+            document.getElementById('points-display').style.color = "var(--c-danger)";
+            document.getElementById('join-member-container').style.display = "none";
+            document.getElementById('points-use-group').style.display = "none";
+            document.getElementById('use-points-input').value = "";
+            document.getElementById('join-member-checkbox').checked = true;
+            
+            renderCart();
+        }
+
+        async function queryPoints() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim().replace(/-/g, '');
+            
+            const btn = document.getElementById('btn-query-points');
+            const display = document.getElementById('points-display');
+            const joinGroup = document.getElementById('join-member-container');
+            const useGroup = document.getElementById('points-use-group');
+            const maxPointsSpan = document.getElementById('max-usable-points');
+            
+            btn.innerText = "查詢中...";
+            btn.disabled = true;
+
+            try {
+                const url = TRAFFIC_SCRIPT_URL + `?action=checkPoints&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    isExistingMember = true;
+                    availableMemberPoints = data.points;
+                    display.innerText = `會員已確認！剩餘 ${availableMemberPoints} 點`;
+                    display.style.color = "var(--c-success)";
+                    joinGroup.style.display = "none";
+                    
+                    if (availableMemberPoints > 0) {
+                        maxPointsSpan.innerText = availableMemberPoints;
+                        useGroup.style.display = "block";
+                    } else {
+                        useGroup.style.display = "none";
+                    }
+                } else {
+                    isExistingMember = false;
+                    availableMemberPoints = 0;
+                    display.innerText = "尚未加入會員";
+                    display.style.color = "#888";
+                    joinGroup.style.display = "block";
+                    useGroup.style.display = "none";
+                }
+            } catch (error) {
+                display.innerText = "查詢失敗，請稍後再試";
+            }
+            
+            btn.innerText = "重新查詢";
+            btn.disabled = false;
+            renderCart();
+        }
+
+        function updatePointsDiscount() {
+            const input = document.getElementById('use-points-input');
+            let pts = parseInt(input.value, 10);
+            
+            if (isNaN(pts) || pts < 0) pts = 0;
+            
+            if (pts > availableMemberPoints) {
+                pts = availableMemberPoints;
+                input.value = pts;
+            }
+            
+            let rawTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            if (pts > rawTotal) {
+                pts = rawTotal;
+                input.value = pts;
+            }
+
+            usedMemberPoints = pts;
+            renderCart();
         }
 
         function renderMenu() {
@@ -1043,7 +1158,7 @@
                 cartContainer.innerHTML = '<div class="empty-cart-msg" style="text-align:center; padding:30px; color:#aaa;">購物車目前是空的</div>';
                 totalEl.innerText = '0'; discountBadge.style.display = 'none'; 
                 document.getElementById('total-cups-badge').innerText = '0'; 
-                document.getElementById('promo-hint-bar').style.display = 'block'; // 恢復顯示滿額提示
+                document.getElementById('promo-hint-bar').style.display = 'block'; 
                 return;
             }
             cart.forEach((item, index) => {
@@ -1076,16 +1191,14 @@
             let finalPrice = rawTotal;
             const promoHintBar = document.getElementById('promo-hint-bar');
 
-            // === 點數折抵與滿額折扣互斥邏輯 ===
+            // 點數折抵與滿額折扣互斥邏輯
             if (usedMemberPoints > 0) {
-                // 如果有使用點數折抵
                 finalPrice = Math.max(0, rawTotal - usedMemberPoints);
                 discountBadge.style.display = 'inline-block'; 
                 discountBadge.innerText = `點數折抵 $${usedMemberPoints}`; 
                 discountBadge.style.backgroundColor = 'var(--c-success)'; 
-                promoHintBar.style.display = 'none'; // 隱藏滿額提示
+                promoHintBar.style.display = 'none'; 
             } else {
-                // 沒有使用點數，檢查是否符合滿額折扣
                 discountBadge.style.backgroundColor = 'var(--c-danger)'; 
                 promoHintBar.style.display = 'block';
                 if (rawTotal >= 5000) {
@@ -1110,7 +1223,6 @@
             cart[index].quantity += delta;
             if (cart[index].quantity <= 0) cart.splice(index, 1);
             
-            // 如果數量改變導致總金額小於已使用的點數，自動調整使用的點數
             let rawTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             if (usedMemberPoints > rawTotal) {
                 usedMemberPoints = rawTotal;
@@ -1118,101 +1230,6 @@
             }
             
             renderMenu();
-            renderCart();
-        }
-
-        // === 會員點數相關功能 ===
-        function toggleMemberSection() {
-            const isChecked = document.getElementById('join-member-checkbox').checked;
-            const pointsBox = document.getElementById('points-query-box');
-            if (isChecked) {
-                pointsBox.style.opacity = "1";
-                pointsBox.style.pointerEvents = "auto";
-            } else {
-                pointsBox.style.opacity = "0.5";
-                pointsBox.style.pointerEvents = "none";
-                // 取消勾選時，重置使用的點數
-                usedMemberPoints = 0;
-                document.getElementById('use-points-input').value = "";
-                document.getElementById('points-use-group').style.display = "none";
-                document.getElementById('points-display').innerText = "尚未查詢";
-                renderCart();
-            }
-        }
-
-        async function queryPoints() {
-            const name = document.getElementById('cust-name').value.trim();
-            const phone = document.getElementById('cust-phone').value.trim().replace(/-/g, '');
-            
-            if (!name || !phone) {
-                alert("請先填寫上方的「訂購人姓名」與「手機號碼」才能查詢點數！");
-                return;
-            }
-            
-            if (!/^09\d{8}$/.test(phone)) {
-                alert("手機號碼格式不正確！");
-                return;
-            }
-
-            const btn = document.getElementById('btn-query-points');
-            const display = document.getElementById('points-display');
-            const useGroup = document.getElementById('points-use-group');
-            const maxPointsSpan = document.getElementById('max-usable-points');
-            
-            btn.innerText = "查詢中...";
-            btn.disabled = true;
-
-            try {
-                const url = TRAFFIC_SCRIPT_URL + `?action=checkPoints&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.success) {
-                    availableMemberPoints = data.points;
-                    if (availableMemberPoints > 0) {
-                        display.innerText = `擁有 ${availableMemberPoints} 點`;
-                        display.style.color = "var(--c-success)";
-                        maxPointsSpan.innerText = availableMemberPoints;
-                        useGroup.style.display = "block";
-                    } else {
-                        display.innerText = `目前 0 點`;
-                        display.style.color = "#888";
-                        useGroup.style.display = "none";
-                        usedMemberPoints = 0;
-                    }
-                } else {
-                    display.innerText = "查無此會員";
-                    display.style.color = "var(--c-danger)";
-                    useGroup.style.display = "none";
-                    usedMemberPoints = 0;
-                }
-            } catch (error) {
-                display.innerText = "查詢失敗，請稍後再試";
-            }
-            
-            btn.innerText = "重新查詢";
-            btn.disabled = false;
-            renderCart();
-        }
-
-        function updatePointsDiscount() {
-            const input = document.getElementById('use-points-input');
-            let pts = parseInt(input.value, 10);
-            
-            if (isNaN(pts) || pts < 0) pts = 0;
-            
-            if (pts > availableMemberPoints) {
-                pts = availableMemberPoints;
-                input.value = pts;
-            }
-            
-            let rawTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            if (pts > rawTotal) {
-                pts = rawTotal;
-                input.value = pts;
-            }
-
-            usedMemberPoints = pts;
             renderCart();
         }
 
@@ -1226,8 +1243,12 @@
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             const payment = document.querySelector('input[name="paymentMethod"]:checked').value;
             const remarks = document.getElementById('cust-remarks').value.trim(); 
-            const isJoinMember = document.getElementById('join-member-checkbox').checked;
             
+            // 判斷是否為會員或加入會員
+            const joinMemberContainerVisible = document.getElementById('join-member-container').style.display === 'block';
+            const isJoinMemberChecked = document.getElementById('join-member-checkbox').checked;
+            const isJoinMember = isExistingMember || (joinMemberContainerVisible && isJoinMemberChecked);
+
             const hasStrawberry = cart.some(item => item.id === 11);
             const hasDubai = cart.some(item => item.id === 12);
 
@@ -1253,7 +1274,6 @@
             }
 
             let rawTotal = 0; let totalCups = 0; 
-            // 轉換商品格式以符合 Apps Script 需求
             let orderItems = [];
 
             cart.forEach(p => {
@@ -1308,7 +1328,6 @@
             loadingOverlay.style.display = 'flex';
             document.getElementById('submit-btn').disabled = true;
 
-            // 準備傳送給 Apps Script 的資料物件
             const payload = {
                 action: "submitOnlineOrder",
                 orderData: {
@@ -1321,18 +1340,17 @@
                     paymentMethod: payment === 'linepay' ? 'LINEPAY' : 'CASH',
                     items: orderItems,
                     originalTotal: rawTotal,
-                    discountPoints: usedMemberPoints, // 傳送折抵點數
+                    discountPoints: usedMemberPoints, 
                     finalTotal: finalAllPrice,
                     shippingFee: shippingFee,
                     remarks: remarks,
                     totalCups: totalCups,
                     isJoinMember: isJoinMember,
-                    otherDiscount: (usedMemberPoints === 0 && discountAmount > 0) ? discountAmount : 0 // 如果是滿額折
+                    otherDiscount: (usedMemberPoints === 0 && discountAmount > 0) ? discountAmount : 0
                 }
             };
 
             try {
-                // 發送請求，要求隨 Google 自動重新導向
                 const response = await fetch(TRAFFIC_SCRIPT_URL, {
                     method: "POST",
                     body: JSON.stringify(payload),
