@@ -322,11 +322,13 @@
         .coupon-section { 
             background-color: #FCFBF9; border: 1px dashed var(--c-accent); 
             box-shadow: none;
+            margin-bottom: 15px;
         }
         .coupon-input-group { display: flex; gap: 10px; margin-top: 10px; }
         .coupon-btn { 
             background-color: var(--c-accent); color: white; border: none; 
             padding: 0 20px; border-radius: 8px; cursor: pointer;
+            white-space: nowrap;
         }
 
         /* 資訊框 */
@@ -439,7 +441,7 @@
 
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div id="loading-text" style="color: var(--c-text); font-family: var(--font-title); letter-spacing: 2px; margin-top: 20px;">訂單準備中...</div>
+        <div id="loading-text" style="color: var(--c-text); font-family: var(--font-title); letter-spacing: 2px; margin-top: 20px;">資料處理中...</div>
     </div>
 
     <div id="app-container">
@@ -612,6 +614,23 @@
                     </div>
                     
                     <div style="margin-top: 25px;">
+                        <div class="coupon-section" style="margin-bottom: 10px; border-color: #e67e22;">
+                            <label class="form-label" style="color:#e67e22; display: flex; justify-content: space-between; align-items: center;">
+                                <span>會員點數折抵</span>
+                                <span id="member-points-balance" style="font-size: 0.85rem; color: #888;"></span>
+                            </label>
+                            <div class="coupon-input-group" style="margin-top: 5px;">
+                                <button type="button" class="coupon-btn" style="background-color: #e67e22; width: 100%; padding: 10px 0;" onclick="checkMemberPoints()">查詢我的點數</button>
+                            </div>
+                            <div id="points-input-area" style="display: none; margin-top: 15px;">
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="number" id="use-points-input" class="form-input" placeholder="輸入欲折抵點數" min="0" oninput="validatePointsInput()">
+                                    <span style="white-space: nowrap; color: #666; font-size: 0.9rem;">點 (1點折抵1元)</span>
+                                </div>
+                                <div id="points-msg" style="font-size:0.85rem; margin-top:8px; color: var(--c-danger);"></div>
+                            </div>
+                        </div>
+
                         <div class="coupon-section" style="margin-bottom: 0;">
                             <label class="form-label" style="color:var(--c-primary);">使用折扣碼</label>
                             <div class="coupon-input-group">
@@ -732,9 +751,15 @@
                     <span style="font-weight:bold;">總計</span><span id="receipt-total" style="color:var(--c-danger); font-size:1.2rem; font-weight:bold;"></span>
                 </div>
 
-                <div class="receipt-row" id="receipt-points-row" style="display:none; padding: 12px; background: #E8F5E9; border-radius: 8px; margin-top: 15px; border-bottom: none;">
-                    <span style="color: #2E7D32; font-weight: bold;">🌟 本次獲得點數</span>
-                    <span id="receipt-points-val" style="color: #2E7D32; font-weight: bold; font-size: 1.1rem;"></span>
+                <div class="receipt-row" id="receipt-points-row" style="display:none; padding: 12px; background: #E8F5E9; border-radius: 8px; margin-top: 15px; border-bottom: none; flex-direction: column; align-items: flex-start; gap: 5px;">
+                    <div style="display:flex; justify-content:space-between; width:100%;">
+                        <span style="color: #2E7D32; font-weight: bold;">🌟 本次折抵點數</span>
+                        <span id="receipt-points-used" style="color: #c0392b; font-weight: bold; font-size: 1rem;"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; width:100%;">
+                        <span style="color: #2E7D32; font-weight: bold;">🌟 本次獲得點數</span>
+                        <span id="receipt-points-earned" style="color: #2E7D32; font-weight: bold; font-size: 1.1rem;"></span>
+                    </div>
                 </div>
             </div>
 
@@ -767,7 +792,7 @@
     </div>
 
     <script>
-        
+        // ★ 確保這裡填入的是您最新部署的 Apps Script 網址
         const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
         const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSenpCJdVZWJ4seiaz4GimXwasppPbnX3o1pLGyrnIMWaJ_sqw/formResponse";
         
@@ -806,86 +831,16 @@
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/uemRyQGLoTi6F3OUSEUgEtlr9QjZ1vTlUUVy930W3RPAgapaVWJM%252BrFuHzZRvpGA";
         
         const menuData = [
-            { 
-                id: 1, 
-                name: "經典原味", 
-                price: 45, 
-                image: "230242.jpg", 
-                desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁" 
-            },
-            { 
-                id: 2, 
-                name: "巧克力", 
-                price: 50, 
-                image: "230240_0.jpg", 
-                desc: "選用法芙娜可可，可可香濃郁，大人小孩都愛。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、法國法芙娜可可粉"
-            },
-            { 
-                id: 3, 
-                name: "芝麻", 
-                price: 50, 
-                image: "230239_0.jpg", 
-                desc: "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣薌園黑芝麻"
-            },
-            { 
-                id: 4, 
-                name: "抹茶", 
-                price: 50, 
-                image: "230234_0.jpg", 
-                desc: "抹茶香氣醇厚，微苦甜平衡，綿密不膩。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉"
-            },
-            { 
-                id: 5, 
-                name: "咖啡", 
-                price: 50, 
-                image: "230236_0.jpg", 
-                desc: "阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold"
-            },
-            { 
-                id: 6, 
-                name: "泰式奶茶", 
-                price: 50, 
-                image: "230235_0.jpg", 
-                desc: "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、泰國紅標紅茶"
-            },
-            { 
-                id: 7, 
-                name: "伯爵紅茶", 
-                price: 50, 
-                image: "230241_0.jpg", 
-                desc: "大人系口味，佛手柑清香，茶香與奶香圓潤融合。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶"
-            },
-            { 
-                id: 8, 
-                name: "芋香紫薯", 
-                price: 50, 
-                image: "230237_0.jpg", 
-                desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯"
-            },
-            { 
-                id: 9, 
-                name: "微醺蘭姆", 
-                price: 50, 
-                image: "230233_0.jpg", 
-                desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM"
-            },
-            { 
-                id: 10, 
-                name: "十薰茉綠 (限定)", 
-                price: 50, 
-                image: "230243.jpg", 
-                desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。",
-                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠" 
-            }
+            { id: 1, name: "經典原味", price: 45, image: "230242.jpg", desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁" },
+            { id: 2, name: "巧克力", price: 50, image: "230240_0.jpg", desc: "選用法芙娜可可，可可香濃郁，大人小孩都愛。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、法國法芙娜可可粉" },
+            { id: 3, name: "芝麻", price: 50, image: "230239_0.jpg", desc: "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣薌園黑芝麻" },
+            { id: 4, name: "抹茶", price: 50, image: "230234_0.jpg", desc: "抹茶香氣醇厚，微苦甜平衡，綿密不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉" },
+            { id: 5, name: "咖啡", price: 50, image: "230236_0.jpg", desc: "阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
+            { id: 6, name: "泰式奶茶", price: 50, image: "230235_0.jpg", desc: "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、泰國紅標紅茶" },
+            { id: 7, name: "伯爵紅茶", price: 50, image: "230241_0.jpg", desc: "大人系口味，佛手柑清香，茶香與奶香圓潤融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶" },
+            { id: 8, name: "芋香紫薯", price: 50, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯" },
+            { id: 9, name: "微醺蘭姆", price: 50, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
+            { id: 10, name: "十薰茉綠 (限定)", price: 50, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠" }
         ];
 
         const COUPONS = {
@@ -896,6 +851,9 @@
         let cart = []; 
         let appliedCoupon = null; 
         let initiateCheckoutFired = false; 
+        
+        let memberMaxPoints = 0;
+        let usedPoints = 0;
 
         const menuContainer = document.getElementById('menu-list');
         const cartContainer = document.getElementById('cart-list');
@@ -1136,6 +1094,100 @@
             renderCart();
         }
 
+        // ==========================
+        // 點數檢查與折抵邏輯
+        // ==========================
+        async function checkMemberPoints() {
+            const email = document.getElementById('cust-email').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const msgArea = document.getElementById('points-msg');
+            const balanceArea = document.getElementById('member-points-balance');
+            const inputArea = document.getElementById('points-input-area');
+            const useInput = document.getElementById('use-points-input');
+
+            if (!email || !phone) {
+                msgArea.innerText = "請先填寫上方手機號碼與 Email！";
+                return;
+            }
+            if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) {
+                msgArea.innerText = "手機號碼格式不正確！";
+                return;
+            }
+
+            const btn = document.querySelector('.coupon-btn[onclick="checkMemberPoints()"]');
+            const originalText = btn.innerText;
+            btn.innerText = "查詢中...";
+            btn.disabled = true;
+            msgArea.innerText = "";
+
+            try {
+                // 呼叫 GAS 後端的 checkPoints (只用 phone 和 email 驗證，name 可以留空)
+                const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkPoints&name=線上客&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email);
+                const response = await fetch(checkUrl);
+                const data = await response.json();
+
+                btn.innerText = originalText;
+                btn.disabled = false;
+
+                if (data.success) {
+                    memberMaxPoints = data.points;
+                    balanceArea.innerText = `餘額：${memberMaxPoints} 點`;
+                    
+                    if (memberMaxPoints > 0) {
+                        inputArea.style.display = "block";
+                        useInput.value = "";
+                        usedPoints = 0;
+                        msgArea.innerText = "查詢成功，可輸入欲折抵的點數。";
+                        msgArea.style.color = "var(--c-success)";
+                    } else {
+                        inputArea.style.display = "none";
+                        msgArea.innerText = "您的點數餘額為 0，繼續購買可累積點數！";
+                        msgArea.style.color = "#888";
+                    }
+                } else {
+                    inputArea.style.display = "none";
+                    balanceArea.innerText = "";
+                    msgArea.innerText = "查無此會員資料，結帳後將自動為您建立會員。";
+                    msgArea.style.color = "#888";
+                }
+            } catch (error) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                msgArea.innerText = "查詢失敗，請檢查網路。";
+            }
+            renderCart();
+        }
+
+        function validatePointsInput() {
+            const useInput = document.getElementById('use-points-input');
+            const msgArea = document.getElementById('points-msg');
+            let val = parseInt(useInput.value, 10);
+            
+            if (isNaN(val) || val < 0) {
+                val = 0;
+                useInput.value = "";
+            }
+            
+            // 計算當前購物車總金額
+            let rawTotal = 0;
+            cart.forEach(item => rawTotal += item.price * item.quantity);
+            
+            if (val > memberMaxPoints) {
+                val = memberMaxPoints;
+                useInput.value = val;
+                msgArea.innerText = `最多只能折抵 ${memberMaxPoints} 點`;
+            } else if (val > rawTotal) {
+                val = rawTotal;
+                useInput.value = val;
+                msgArea.innerText = `折抵點數不能大於商品總金額`;
+            } else {
+                msgArea.innerText = "";
+            }
+            
+            usedPoints = val;
+            renderCart();
+        }
+
         function applyCoupon() {
             const input = document.getElementById('coupon-code');
             const msg = document.getElementById('coupon-msg');
@@ -1190,27 +1242,45 @@
             
             document.getElementById('total-cups-badge').innerText = totalCups;
 
+            // 如果有點數折抵，確保折抵不會超過商品總額
+            if (usedPoints > rawTotal) {
+                usedPoints = rawTotal;
+                document.getElementById('use-points-input').value = usedPoints;
+            }
+
             let finalPrice = rawTotal;
+            let discountText = "";
+            
+            // 優先套用點數折抵
+            if (usedPoints > 0) {
+                finalPrice -= usedPoints;
+                discountText += `折抵${usedPoints}點 `;
+            }
+
+            // 套用優惠券或滿額折扣
             if (appliedCoupon) {
-                discountBadge.style.display = 'inline-block'; 
-                discountBadge.innerText = '優惠券使用中'; 
                 discountBadge.style.backgroundColor = 'var(--c-danger)'; 
-                
-                if (appliedCoupon.type === 'rate') finalPrice = Math.floor(rawTotal * appliedCoupon.value);
-                else if (appliedCoupon.type === 'minus') finalPrice = rawTotal - appliedCoupon.value;
+                if (appliedCoupon.type === 'rate') finalPrice = Math.floor(finalPrice * appliedCoupon.value);
+                else if (appliedCoupon.type === 'minus') finalPrice = finalPrice - appliedCoupon.value;
+                discountText += appliedCoupon.name;
             } else {
                 discountBadge.style.backgroundColor = 'var(--c-danger)'; 
-                
-                if (rawTotal >= 5000) {
-                    finalPrice = Math.floor(rawTotal * 0.9);
-                    discountBadge.style.display = 'inline-block'; discountBadge.innerText = '9折';
-                } else if (rawTotal >= 3000) {
-                    finalPrice = Math.floor(rawTotal * 0.95);
-                    discountBadge.style.display = 'inline-block'; discountBadge.innerText = '95折';
-                } else {
-                    discountBadge.style.display = 'none';
+                if (finalPrice >= 5000) {
+                    finalPrice = Math.floor(finalPrice * 0.9);
+                    discountText += '滿額9折';
+                } else if (finalPrice >= 3000) {
+                    finalPrice = Math.floor(finalPrice * 0.95);
+                    discountText += '滿額95折';
                 }
             }
+
+            if (discountText) {
+                discountBadge.style.display = 'inline-block';
+                discountBadge.innerText = discountText;
+            } else {
+                discountBadge.style.display = 'none';
+            }
+
             if (finalPrice < 0) finalPrice = 0;
             totalEl.innerText = finalPrice.toLocaleString();
             
@@ -1256,7 +1326,7 @@
 
             if(!name || !phone) { alert("請填寫姓名與電話"); return; }
             
-            if (!/^09\d{8}$/.test(phone)) {
+            if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) {
                 alert("手機號碼格式不正確！\n請輸入 09 開頭的 10 碼數字 (無需輸入 - 符號)");
                 return;
             }
@@ -1320,15 +1390,26 @@
                 return; 
             }
 
-            let productFinalPrice = rawTotal; let discountName = ""; let discountAmount = 0;
+            let productFinalPrice = rawTotal; 
+            let discountName = ""; 
+            let discountAmount = 0;
+
+            // 計算點數折抵
+            if (usedPoints > 0) {
+                productFinalPrice -= usedPoints;
+                discountAmount += usedPoints;
+                discountName += `點數折抵${usedPoints}元 `;
+            }
+
             if (appliedCoupon) {
-                let original = rawTotal;
-                if (appliedCoupon.type === 'rate') { productFinalPrice = Math.floor(rawTotal * appliedCoupon.value); discountName = appliedCoupon.name; } 
-                else if (appliedCoupon.type === 'minus') { productFinalPrice = rawTotal - appliedCoupon.value; discountName = appliedCoupon.name; }
-                discountAmount = original - productFinalPrice;
+                let originalForCoupon = productFinalPrice;
+                if (appliedCoupon.type === 'rate') { productFinalPrice = Math.floor(productFinalPrice * appliedCoupon.value); discountName += appliedCoupon.name; } 
+                else if (appliedCoupon.type === 'minus') { productFinalPrice = productFinalPrice - appliedCoupon.value; discountName += appliedCoupon.name; }
+                discountAmount += (originalForCoupon - productFinalPrice);
             } else {
-                if (rawTotal >= 5000) { productFinalPrice = Math.floor(rawTotal * 0.9); discountName = "滿額9折"; discountAmount = rawTotal - productFinalPrice; } 
-                else if (rawTotal >= 3000) { productFinalPrice = Math.floor(rawTotal * 0.95); discountName = "滿額95折"; discountAmount = rawTotal - productFinalPrice; }
+                let originalForPromo = productFinalPrice;
+                if (productFinalPrice >= 5000) { productFinalPrice = Math.floor(productFinalPrice * 0.9); discountName += "滿額9折"; discountAmount += (originalForPromo - productFinalPrice); } 
+                else if (productFinalPrice >= 3000) { productFinalPrice = Math.floor(productFinalPrice * 0.95); discountName += "滿額95折"; discountAmount += (originalForPromo - productFinalPrice); }
             }
 
             let shippingFee = 0;
@@ -1342,13 +1423,18 @@
             const now = new Date();
             const orderId = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
 
-            // 計算點數 (如果有填寫 email 才給點數)
+            // 計算獲得點數 (如果有填寫 email 且有購買奶酪才給點數)
             let earnedPoints = email ? totalCups : 0;
 
             let confirmMsg = `【訂單確認】\n---------------------\n[購買明細]\n${itemsDetailStr}總數量：${totalCups} 個\n---------------------\n商品原價：$${rawTotal}\n`;
-            if (discountAmount > 0) confirmMsg += `折扣優惠：-$${discountAmount} (${discountName})\n`;
+            if (discountAmount > 0) confirmMsg += `折扣優惠：-$${discountAmount} (${discountName.trim()})\n`;
             confirmMsg += `運費小計：$${shippingFee} (${delivery === '宅配' ? '低溫宅配' : delivery})\n---------------------\n應付總額：$${finalAllPrice}\n---------------------\n`;
-            if (earnedPoints > 0) confirmMsg += `🌟 本次消費可累積點數：${earnedPoints} 點\n---------------------\n`;
+            if (earnedPoints > 0 || usedPoints > 0) {
+                confirmMsg += `🌟 點數異動：\n`;
+                if (usedPoints > 0) confirmMsg += `   - 使用折抵：${usedPoints} 點\n`;
+                if (earnedPoints > 0) confirmMsg += `   + 本次可獲得：${earnedPoints} 點\n`;
+                confirmMsg += `---------------------\n`;
+            }
             confirmMsg += `取貨方式：${delivery}\n日期：${finalDateStr}\n姓名：${name}\n電話：${phone}\n`;
             if(delivery === '宅配') confirmMsg += `地址：${fullAddress}\n`;
             if(remarks) confirmMsg += `備註：${remarks}\n`;
@@ -1359,10 +1445,10 @@
             loadingOverlay.style.display = 'flex';
             document.getElementById('submit-btn').disabled = true;
 
-            // 將點數資訊直接加入 orderContent 送回 Google Form (讓通知信能自動包含點數說明)
             let fullOrderInfo = orderDetails + ` [共${totalCups}個]`;
             if(shippingFee > 0) fullOrderInfo += ` [運費$${shippingFee}]`;
-            if(earnedPoints > 0) fullOrderInfo += ` [本次獲得點數:${earnedPoints}點]`;
+            if(usedPoints > 0) fullOrderInfo += ` [使用折抵:${usedPoints}點]`;
+            if(earnedPoints > 0) fullOrderInfo += ` [本次獲得:${earnedPoints}點]`;
 
             let formData = new FormData();
             formData.append(FORM_FIELDS.orderContent, fullOrderInfo); 
@@ -1389,7 +1475,7 @@
             fetch(GOOGLE_FORM_URL, {
                 method: "POST", body: formData, mode: "no-cors"
             }).then(() => {
-                // 如果有 email，背景呼叫您的 Apps Script 傳送會員資料
+                // 如果有 email，背景呼叫您的 Apps Script 傳送會員資料與點數變化
                 if (email && TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     fetch(TRAFFIC_SCRIPT_URL, {
                         method: "POST",
@@ -1398,13 +1484,15 @@
                             action: "addMember", 
                             phone: phone, 
                             email: email, 
-                            points: totalCups, 
+                            name: name,
+                            points: earnedPoints, 
+                            usedPoints: usedPoints, // 傳送已使用點數給後端
                             orderId: orderId 
                         })
                     }).catch(e => console.log(e));
                 }
 
-                showReceipt(name, phone, email, finalDateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName);
+                showReceipt(name, phone, email, finalDateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPoints, earnedPoints);
                 loadingOverlay.style.display = 'none';
             }).catch(err => {
                 alert("訂單傳送失敗，請檢查網路或稍後再試。\n" + err);
@@ -1412,8 +1500,8 @@
             });
         }
 
-        // 新增了 email 參數，用來判斷是否要顯示點數
-        function showReceipt(name, phone, email, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName) {
+        // 更新收據顯示邏輯
+        function showReceipt(name, phone, email, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPts, earnedPts) {
             
             gtag('event', 'conversion', { 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 'value': finalAllPrice, 'currency': 'TWD', 'transaction_id': orderId });
             
@@ -1479,19 +1567,32 @@
 
             if (discountAmount > 0) {
                 document.getElementById('receipt-discount-row').style.display = 'flex';
-                document.getElementById('receipt-discount-name').innerText = discountName;
+                document.getElementById('receipt-discount-name').innerText = discountName.trim();
                 document.getElementById('receipt-discount-val').innerText = "-$" + discountAmount;
             } else {
                 document.getElementById('receipt-discount-row').style.display = 'none';
             }
 
-            // 判斷是否顯示點數
-            if (email && email.trim() !== "") {
-                document.getElementById('receipt-points-row').style.display = 'flex';
-                document.getElementById('receipt-points-row').style.justifyContent = 'space-between';
-                document.getElementById('receipt-points-val').innerText = "+" + totalCups + " 點";
+            // 顯示點數異動
+            const pointsRow = document.getElementById('receipt-points-row');
+            if ((email && email.trim() !== "") && (usedPts > 0 || earnedPts > 0)) {
+                pointsRow.style.display = 'flex';
+                
+                if (usedPts > 0) {
+                    document.getElementById('receipt-points-used').innerText = `-${usedPts} 點`;
+                    document.getElementById('receipt-points-used').parentElement.style.display = 'flex';
+                } else {
+                    document.getElementById('receipt-points-used').parentElement.style.display = 'none';
+                }
+
+                if (earnedPts > 0) {
+                    document.getElementById('receipt-points-earned').innerText = `+${earnedPts} 點`;
+                    document.getElementById('receipt-points-earned').parentElement.style.display = 'flex';
+                } else {
+                    document.getElementById('receipt-points-earned').parentElement.style.display = 'none';
+                }
             } else {
-                document.getElementById('receipt-points-row').style.display = 'none';
+                pointsRow.style.display = 'none';
             }
 
             document.getElementById('shop-view').style.display = 'none';
