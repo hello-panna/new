@@ -517,8 +517,8 @@
                     </div>
                     
                     <div class="form-group" style="margin-top:15px;">
-                        <label class="form-label">Email (選填，可收到訂購資訊)</label>
-                        <input type="email" id="cust-email" class="form-input" placeholder="example@email.com">
+                        <label class="form-label" style="color:var(--c-danger);">Email (選填，可收到訂購資訊、累積折扣點數)</label>
+                        <input type="email" id="cust-email" class="form-input" placeholder="填寫可累積會員點數 (1杯=1點)">
                     </div>
 
                     <div class="form-group" style="margin-top: 15px;">
@@ -731,6 +731,11 @@
                 <div class="receipt-row" style="margin-top:15px; padding-top:15px; border-top:1px solid #eee;">
                     <span style="font-weight:bold;">總計</span><span id="receipt-total" style="color:var(--c-danger); font-size:1.2rem; font-weight:bold;"></span>
                 </div>
+
+                <div class="receipt-row" id="receipt-points-row" style="display:none; padding: 12px; background: #E8F5E9; border-radius: 8px; margin-top: 15px; border-bottom: none;">
+                    <span style="color: #2E7D32; font-weight: bold;">🌟 本次獲得點數</span>
+                    <span id="receipt-points-val" style="color: #2E7D32; font-weight: bold; font-size: 1.1rem;"></span>
+                </div>
             </div>
 
             <div style="margin-top: 30px;">
@@ -770,7 +775,7 @@
             orderContent: "entry.1214769536", 
             name:         "entry.537178649",  
             phone:        "entry.1240845794", 
-            email:        "entry.586707224",  // 新增 email 欄位
+            email:        "entry.586707224",  
             payment:      "entry.36879241",   
             delivery:     "entry.2126181854", 
             address:      "entry.1346414492", 
@@ -800,8 +805,6 @@
 
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/uemRyQGLoTi6F3OUSEUgEtlr9QjZ1vTlUUVy930W3RPAgapaVWJM%252BrFuHzZRvpGA";
         
-        // --- 這裡將成分資料加入了 ---
-        // 說明：已自動移除「經典原味」中誤植的抹茶粉，並修正了「菲律賓」與「Gold」的錯字
         const menuData = [
             { 
                 id: 1, 
@@ -892,7 +895,7 @@
 
         let cart = []; 
         let appliedCoupon = null; 
-        let initiateCheckoutFired = false; // 避免重複發送結帳訊號
+        let initiateCheckoutFired = false; 
 
         const menuContainer = document.getElementById('menu-list');
         const cartContainer = document.getElementById('cart-list');
@@ -907,7 +910,6 @@
             renderCart();
         }
 
-        // 新增追蹤：當使用者開始填寫姓名，視為開始結帳
         function trackInitiateCheckout() {
             if (!initiateCheckoutFired && cart.length > 0) {
                 if(typeof fbq !== 'undefined') {
@@ -977,7 +979,6 @@
                 pickupInfoBox.style.display = 'none'; 
                 deliveryInfoBox.style.display = 'block'; 
 
-                // 檢查是否有杜拜巧克力 (ID 12)
                 const hasDubai = cart.some(item => item.id === 12);
                 if (hasDubai) {
                     hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間到貨。";
@@ -1009,7 +1010,6 @@
             const hasStrawberry = cart.some(item => item.id === 11);
             const hasDubai = cart.some(item => item.id === 12);
 
-            // 衝突檢測：草莓 (2/14前) 與 杜拜 (2/25後) 不能同時自取
             if (hasStrawberry && hasDubai) {
                 select.innerHTML = '<option value="" disabled selected>日期衝突：草莓與杜拜巧克力取貨日不同</option>';
                 hint.innerText = "❌ 錯誤：草莓限 2/14 前取貨，杜拜巧克力為 2/25-26，請分開兩筆訂單結帳。";
@@ -1018,8 +1018,6 @@
             }
 
             if (hasStrawberry) {
-                // 草莓口味限定日期邏輯 (修正：2/12 中午前限制僅能選 2/14)
-                // 原始 2/12, 2/13 日期已移除，只保留 2/14
                 const specificDates = [
                     { val: "2026/02/14 (六) 10:00~12:00", text: "02/14 (週六) 10:00~12:00" }
                 ];
@@ -1030,7 +1028,6 @@
                 });
                 hint.innerText = "提醒：訂單包含草莓限定口味，依製作排程僅開放 02/14 自取。";
             } else if (hasDubai) {
-                // 杜拜巧克力限定日期邏輯 (2026/02/25 ~ 2026/02/26)
                 const specificDates = [
                     { val: "2026/02/25 (三) 12:00~13:00", text: "02/25 (週三) 12:00~13:00" },
                     { val: "2026/02/25 (三) 17:00~18:00", text: "02/25 (週三) 17:00~18:00" },
@@ -1120,8 +1117,6 @@
             
             renderMenu();
             
-            // 這裡保留 AddToCart，但移除錯誤的 conversion
-            // conversion 只在真正結帳後觸發
             const product = menuData.find(p => p.id === id);
             if(typeof fbq !== 'undefined') {
                 fbq('track', 'AddToCart', { content_name: product.name, value: product.price, currency: 'TWD' });
@@ -1237,7 +1232,7 @@
 
             const name = document.getElementById('cust-name').value.trim();
             const phone = document.getElementById('cust-phone').value.trim();
-            const email = document.getElementById('cust-email').value.trim(); // 取得 Email 值
+            const email = document.getElementById('cust-email').value.trim();
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             const payment = document.querySelector('input[name="paymentMethod"]:checked').value;
             const remarks = document.getElementById('cust-remarks').value.trim(); 
@@ -1245,7 +1240,6 @@
             const hasStrawberry = cart.some(item => item.id === 11);
             const hasDubai = cart.some(item => item.id === 12);
 
-            // 再次檢查衝突
             if (hasStrawberry && hasDubai) {
                 alert("【系統提醒】\n草莓(限2/14前) 與 杜拜巧克力(限2/25後) 取貨時間不同，無法合併訂單。\n請移除其中一項商品分開結帳。");
                 return;
@@ -1262,13 +1256,11 @@
 
             if(!name || !phone) { alert("請填寫姓名與電話"); return; }
             
-            // 手機號碼格式驗證
             if (!/^09\d{8}$/.test(phone)) {
                 alert("手機號碼格式不正確！\n請輸入 09 開頭的 10 碼數字 (無需輸入 - 符號)");
                 return;
             }
 
-            // --- 驗證折扣碼 ---
             if (appliedCoupon) {
                 if (!TRAFFIC_SCRIPT_URL || TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     alert("系統錯誤：尚未設定後端檢查網址，請聯繫管理員。"); return;
@@ -1300,7 +1292,6 @@
                 submitBtn.innerText = originalBtnText; 
                 submitBtn.disabled = false;
             }
-            // ------------------------------------
 
             let finalDateStr = "";
             if(delivery === '自取') {
@@ -1351,9 +1342,13 @@
             const now = new Date();
             const orderId = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
 
+            // 計算點數 (如果有填寫 email 才給點數)
+            let earnedPoints = email ? totalCups : 0;
+
             let confirmMsg = `【訂單確認】\n---------------------\n[購買明細]\n${itemsDetailStr}總數量：${totalCups} 個\n---------------------\n商品原價：$${rawTotal}\n`;
             if (discountAmount > 0) confirmMsg += `折扣優惠：-$${discountAmount} (${discountName})\n`;
             confirmMsg += `運費小計：$${shippingFee} (${delivery === '宅配' ? '低溫宅配' : delivery})\n---------------------\n應付總額：$${finalAllPrice}\n---------------------\n`;
+            if (earnedPoints > 0) confirmMsg += `🌟 本次消費可累積點數：${earnedPoints} 點\n---------------------\n`;
             confirmMsg += `取貨方式：${delivery}\n日期：${finalDateStr}\n姓名：${name}\n電話：${phone}\n`;
             if(delivery === '宅配') confirmMsg += `地址：${fullAddress}\n`;
             if(remarks) confirmMsg += `備註：${remarks}\n`;
@@ -1364,14 +1359,16 @@
             loadingOverlay.style.display = 'flex';
             document.getElementById('submit-btn').disabled = true;
 
+            // 將點數資訊直接加入 orderContent 送回 Google Form (讓通知信能自動包含點數說明)
             let fullOrderInfo = orderDetails + ` [共${totalCups}個]`;
             if(shippingFee > 0) fullOrderInfo += ` [運費$${shippingFee}]`;
+            if(earnedPoints > 0) fullOrderInfo += ` [本次獲得點數:${earnedPoints}點]`;
 
             let formData = new FormData();
             formData.append(FORM_FIELDS.orderContent, fullOrderInfo); 
             formData.append(FORM_FIELDS.name, name);                    
             formData.append(FORM_FIELDS.phone, phone);                  
-            formData.append(FORM_FIELDS.email, email); // 加入 Email 到表單資料
+            formData.append(FORM_FIELDS.email, email);
             formData.append(FORM_FIELDS.payment, payment);                
             formData.append(FORM_FIELDS.delivery, delivery);              
             formData.append(FORM_FIELDS.address, fullAddress);            
@@ -1392,7 +1389,22 @@
             fetch(GOOGLE_FORM_URL, {
                 method: "POST", body: formData, mode: "no-cors"
             }).then(() => {
-                showReceipt(name, phone, finalDateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName);
+                // 如果有 email，背景呼叫您的 Apps Script 傳送會員資料
+                if (email && TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
+                    fetch(TRAFFIC_SCRIPT_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        body: JSON.stringify({ 
+                            action: "addMember", 
+                            phone: phone, 
+                            email: email, 
+                            points: totalCups, 
+                            orderId: orderId 
+                        })
+                    }).catch(e => console.log(e));
+                }
+
+                showReceipt(name, phone, email, finalDateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName);
                 loadingOverlay.style.display = 'none';
             }).catch(err => {
                 alert("訂單傳送失敗，請檢查網路或稍後再試。\n" + err);
@@ -1400,12 +1412,11 @@
             });
         }
 
-        function showReceipt(name, phone, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName) {
+        // 新增了 email 參數，用來判斷是否要顯示點數
+        function showReceipt(name, phone, email, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName) {
             
-            // 觸發 Google Ads 轉換 (只在這裡觸發才對)
             gtag('event', 'conversion', { 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 'value': finalAllPrice, 'currency': 'TWD', 'transaction_id': orderId });
             
-            // 觸發 FB Pixel 購買事件
             if(typeof fbq !== 'undefined') {
                 fbq('track', 'Purchase', { value: finalAllPrice, currency: 'TWD', content_name: '鮮奶酪訂單', num_items: totalCups, transaction_id: orderId });
             }
@@ -1472,6 +1483,15 @@
                 document.getElementById('receipt-discount-val').innerText = "-$" + discountAmount;
             } else {
                 document.getElementById('receipt-discount-row').style.display = 'none';
+            }
+
+            // 判斷是否顯示點數
+            if (email && email.trim() !== "") {
+                document.getElementById('receipt-points-row').style.display = 'flex';
+                document.getElementById('receipt-points-row').style.justifyContent = 'space-between';
+                document.getElementById('receipt-points-val').innerText = "+" + totalCups + " 點";
+            } else {
+                document.getElementById('receipt-points-row').style.display = 'none';
             }
 
             document.getElementById('shop-view').style.display = 'none';
