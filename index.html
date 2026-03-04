@@ -763,7 +763,11 @@
 
     <script>
         
-        const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
+        // ==========================================
+        // ★★★ 請將以下網址替換為「整合版 Apps Script」部署後的新網址 ★★★
+        // ==========================================
+        const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/YOUR_NEW_DEPLOYMENT_ID/exec"; 
+        
         const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSenpCJdVZWJ4seiaz4GimXwasppPbnX3o1pLGyrnIMWaJ_sqw/formResponse";
         
         const FORM_FIELDS = {
@@ -953,7 +957,7 @@
         }
 
         function logVisit() {
-            if(!TRAFFIC_SCRIPT_URL) return;
+            if(!TRAFFIC_SCRIPT_URL || TRAFFIC_SCRIPT_URL.includes("YOUR_NEW_DEPLOYMENT_ID")) return;
             fetch(TRAFFIC_SCRIPT_URL, {
                 method: "POST", mode: "no-cors", body: JSON.stringify({ action: "view" }) 
             }).catch(err => console.log("Tracking log error (safe to ignore)"));
@@ -1270,7 +1274,7 @@
 
             // --- 驗證折扣碼 ---
             if (appliedCoupon) {
-                if (!TRAFFIC_SCRIPT_URL || TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
+                if (!TRAFFIC_SCRIPT_URL || TRAFFIC_SCRIPT_URL.includes("YOUR_NEW_DEPLOYMENT_ID")) {
                     alert("系統錯誤：尚未設定後端檢查網址，請聯繫管理員。"); return;
                 }
                 const submitBtn = document.getElementById('submit-btn');
@@ -1372,9 +1376,9 @@
             formData.append(FORM_FIELDS.name, name);                    
             formData.append(FORM_FIELDS.phone, phone);                  
             formData.append(FORM_FIELDS.email, email); // 加入 Email 到表單資料
-            formData.append(FORM_FIELDS.payment, payment);               
+            formData.append(FORM_FIELDS.payment, payment);                
             formData.append(FORM_FIELDS.delivery, delivery);             
-            formData.append(FORM_FIELDS.address, fullAddress);           
+            formData.append(FORM_FIELDS.address, fullAddress);            
             formData.append(FORM_FIELDS.date, finalDateStr);             
             formData.append(FORM_FIELDS.cups, totalCups);                
             formData.append(FORM_FIELDS.subtotal, rawTotal); 
