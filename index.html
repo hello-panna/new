@@ -133,7 +133,7 @@
             margin-top: 5px;
         }
         
-        .package-box, .video-box, .brand-story, .info-box, .options-section, .cart-item, .coupon-section {
+        .package-box, .video-box, .brand-story, .info-box, .options-section, .cart-item, .coupon-section, .member-section {
             background: var(--c-surface);
             border-radius: var(--radius-box);
             padding: 24px;
@@ -663,7 +663,13 @@
             { id: 10, name: "十薰茉綠 (限定)", price: 50, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠" }
         ];
 
+        const COUPONS = {
+            "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" },
+            "LINE50": { type: "minus", value: 50, name: "好友現折50" }
+        };
+
         let cart = []; 
+        let appliedCoupon = null; 
         let initiateCheckoutFired = false; 
         
         let isExistingMember = false;
@@ -795,13 +801,14 @@
             renderCart();
         }
 
-        // ★ 修改：非同步的折扣碼驗證
+        // ★ 修正：非同步的折扣碼驗證 (與後端比對)
         async function applyCoupon() {
             const input = document.getElementById('coupon-code');
             const msg = document.getElementById('coupon-msg');
             const btn = document.querySelector('.coupon-btn');
             const code = input.value.trim().toUpperCase();
             
+            const name = document.getElementById('cust-name').value.trim();
             const phone = document.getElementById('cust-phone').value.trim().replace(/-/g, '');
 
             if (!code) { msg.innerText = "請輸入折扣碼"; msg.style.color = "var(--c-danger)"; return; }
@@ -811,8 +818,8 @@
                 return;
             }
 
-            if (!phone || phone.length < 10) {
-                msg.innerText = "請先於上方填寫完整「手機號碼」再兌換"; msg.style.color = "var(--c-danger)"; return;
+            if (!name || !phone || phone.length < 10) {
+                msg.innerText = "請先於上方填寫完整「姓名」與「手機號碼」再兌換"; msg.style.color = "var(--c-danger)"; return;
             }
 
             btn.disabled = true;
@@ -820,14 +827,14 @@
             msg.innerText = "";
 
             try {
-                // 呼叫後端 API 檢查此手機號碼是否使用過此折扣碼
-                const checkUrl = TRAFFIC_SCRIPT_URL + `?action=checkDiscount&phone=${encodeURIComponent(phone)}&code=${encodeURIComponent(code)}`;
+                // 呼叫後端 API 檢查此組合是否使用過此折扣碼
+                const checkUrl = TRAFFIC_SCRIPT_URL + `?action=checkDiscount&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&code=${encodeURIComponent(code)}`;
                 const response = await fetch(checkUrl);
                 const data = await response.json();
                 
                 if (data.used === true) {
                     appliedCoupon = null;
-                    msg.innerText = "❌ 此手機號碼已經使用過該優惠碼";
+                    msg.innerText = "❌ 此身分已經使用過該優惠碼";
                     msg.style.color = "var(--c-danger)";
                 } else {
                     appliedCoupon = { code: code, ...COUPONS[code] };
@@ -1063,7 +1070,7 @@
             let finalPrice = rawTotal;
             const promoHintBar = document.getElementById('promo-hint-bar');
 
-            // 點數折抵與滿額折扣互斥邏輯
+            // 點數折抵與折扣碼互斥，且優先判斷點數
             if (usedMemberPoints > 0) {
                 finalPrice = Math.max(0, rawTotal - usedMemberPoints);
                 discountBadge.style.display = 'inline-block'; 
@@ -1071,9 +1078,8 @@
                 discountBadge.style.backgroundColor = 'var(--c-success)'; 
                 promoHintBar.style.display = 'none'; 
             } else if (appliedCoupon) {
-                // 折扣碼邏輯
                 discountBadge.style.display = 'inline-block'; 
-                discountBadge.innerText = '優惠券使用中'; 
+                discountBadge.innerText = appliedCoupon.name; 
                 discountBadge.style.backgroundColor = 'var(--c-danger)'; 
                 promoHintBar.style.display = 'none';
                 
@@ -1114,7 +1120,6 @@
             renderCart();
         }
 
-        // === 結帳送出 ===
         async function processCheckout() {
             if (cart.length === 0) { alert("請先加入商品"); return; }
 
@@ -1182,8 +1187,8 @@
                 discountTypeStr = "點數折抵";
             } else if (appliedCoupon) {
                 let original = rawTotal;
-                if (appliedCoupon.type === 'rate') { productFinalPrice = Math.floor(rawTotal * appliedCoupon.value); discountName = appliedCoupon.name; } 
-                else if (appliedCoupon.type === 'minus') { productFinalPrice = rawTotal - appliedCoupon.value; discountName = appliedCoupon.name; }
+                if (appliedCoupon.type === 'rate') { productFinalPrice = Math.floor(rawTotal * appliedCoupon.value); } 
+                else if (appliedCoupon.type === 'minus') { productFinalPrice = rawTotal - appliedCoupon.value; }
                 discountAmount = original - productFinalPrice;
                 discountTypeStr = appliedCoupon.name;
             } else {
