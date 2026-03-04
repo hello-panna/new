@@ -33,7 +33,6 @@
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     
-    // 這裡換成了您的新 ID
     fbq('init', '907651728652331'); 
     fbq('track', 'PageView');
     </script>
@@ -44,32 +43,30 @@
         /* --- 日系質感風格設定 (Japanese Zakka Style) --- */
         
         :root {
-            /* 基礎色調 */
-            --c-bg: #FDFBF8;         /* 背景：溫暖的米白色 */
-            --c-surface: #FFFFFF;    /* 卡片：純白 */
-            --c-primary: #8C7B75;    /* 主色：焙茶棕 */
+            --c-bg: #FDFBF8;         
+            --c-surface: #FFFFFF;    
+            --c-primary: #8C7B75;    
             --c-primary-light: #BCAAA4; 
-            --c-accent: #AFA88B;     /* 點綴：抹茶灰綠 */
-            --c-text: #594A42;       /* 文字：深咖啡灰 */
+            --c-accent: #AFA88B;     
+            --c-text: #594A42;       
             --c-text-light: #9E9E9E;
-            --c-line: #EFEBE9;       /* 線條 */
-            --c-danger: #D87C7C;     /* 警告/強調：豆沙紅 */
-            --c-success: #78909C;    /* 成功：莫蘭迪藍灰 */
+            --c-line: #EFEBE9;       
+            --c-danger: #D87C7C;     
+            --c-success: #78909C;    
             
-            /* UI 變數 */
-            --radius-box: 12px;      /* 卡片圓角 */
-            --radius-pill: 50px;     /* 按鈕圓角 */
-            --shadow-float: 0 10px 30px rgba(140, 123, 117, 0.1); /* 懸浮陰影 */
-            --shadow-card: 0 4px 12px rgba(0,0,0,0.03);            /* 卡片微陰影 */
+            --radius-box: 12px;      
+            --radius-pill: 50px;     
+            --shadow-float: 0 10px 30px rgba(140, 123, 117, 0.1); 
+            --shadow-card: 0 4px 12px rgba(0,0,0,0.03);            
             --font-title: 'Noto Serif TC', serif;
             --font-body: 'Noto Sans TC', sans-serif;
-            --max-w: 520px;          /* 收窄寬度，增加精緻感 */
+            --max-w: 520px;          
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            background-color: #F2EFE9; /* 網頁背景色 */
+            background-color: #F2EFE9; 
             color: var(--c-text); 
             font-family: var(--font-body);
             min-height: 100vh;
@@ -78,18 +75,16 @@
             line-height: 1.6;
         }
 
-        /* APP 容器 */
         #app-container {
             width: 100%;
             max-width: var(--max-w);
             background-color: var(--c-bg);
             min-height: 100vh;
             position: relative;
-            padding-bottom: 160px; /* 底部留白給結帳欄 */
+            padding-bottom: 160px; 
             box-shadow: 0 0 50px rgba(0,0,0,0.05);
         }
 
-        /* 頂部導航 */
         header { 
             background: rgba(253, 251, 248, 0.85);
             backdrop-filter: blur(12px);
@@ -120,7 +115,6 @@
 
         .container { padding: 25px 20px; margin: 0 auto; }
 
-        /* 標題樣式 - 日系極簡 */
         .section-header { 
             font-family: var(--font-title);
             font-size: 1.25rem; 
@@ -140,17 +134,15 @@
             margin-top: 5px;
         }
         
-        /* 通用卡片 */
         .package-box, .video-box, .brand-story, .info-box, .options-section, .cart-item, .coupon-section, .member-section {
             background: var(--c-surface);
             border-radius: var(--radius-box);
             padding: 24px;
             box-shadow: var(--shadow-card);
             margin-bottom: 24px;
-            border: 1px solid var(--c-line); /* 細緻邊框 */
+            border: 1px solid var(--c-line); 
         }
 
-        /* 圖片與影片 */
         .package-img, .video-box video {
             width: 100%; border-radius: 8px; display: block; margin-bottom: 16px;
             filter: sepia(0.05);
@@ -164,9 +156,8 @@
         }
         .video-box { padding: 10px; margin-bottom: 0; }
 
-        /* 品牌故事 */
         .brand-story {
-            background-color: #FAF9F6; /* 蛋殼色 */
+            background-color: #FAF9F6; 
             border: none;
             position: relative;
             padding: 30px 25px;
@@ -181,7 +172,6 @@
             color: #6D6D6D; margin-bottom: 18px; text-align: justify; font-size: 0.95rem; line-height: 1.8;
         }
 
-        /* 菜單 Grid */
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         .menu-item { 
             padding: 15px; display: flex; flex-direction: column; 
@@ -201,7 +191,6 @@
             border-radius: 8px; margin-bottom: 15px; background-color: #f4f4f4; 
             overflow: hidden; 
         }
-
         .menu-img { 
             width: 100%; height: 100%; object-fit: cover;
             transition: transform 0.5s;
@@ -219,7 +208,6 @@
             -webkit-box-orient: vertical; overflow: hidden; 
         }
         
-        /* 成分說明區塊樣式 */
         .menu-ingredients {
             font-size: 0.75rem;
             color: #8D6E63;
@@ -239,14 +227,12 @@
             font-size: 0.7rem;
             display: inline-block;
         }
-
         .menu-price { 
             color: var(--c-primary); font-family: var(--font-title); 
             font-weight: 700; font-size: 1.15rem; margin-bottom: 15px; 
             margin-top: auto; 
         }
 
-        /* 按鈕樣式 */
         .add-btn { 
             background: transparent; border: 1px solid var(--c-primary); 
             color: var(--c-primary); 
@@ -254,34 +240,23 @@
             cursor: pointer; transition: all 0.3s; font-weight: 500; width: 100%;
             letter-spacing: 1px;
         }
-        .add-btn:active, .add-btn:hover { 
-            background: var(--c-primary); color: #fff; 
-        }
-        .add-btn:disabled {
-            background: #f0f0f0; border-color: #f0f0f0; color: #ccc;
-        }
+        .add-btn:active, .add-btn:hover { background: var(--c-primary); color: #fff; }
+        .add-btn:disabled { background: #f0f0f0; border-color: #f0f0f0; color: #ccc; }
 
-        /* 數量控制器 */
         .qty-control-card {
             display: flex; align-items: center; justify-content: space-between;
-            width: 100%; padding: 6px;
-            border: 1px solid var(--c-primary);
+            width: 100%; padding: 6px; border: 1px solid var(--c-primary);
             border-radius: 4px; background: #fff;
         }
         .qty-btn-card {
-            background: none; border: none; font-size: 1.2rem;
-            color: var(--c-primary); cursor: pointer;
-            width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;
+            background: none; border: none; font-size: 1.2rem; color: var(--c-primary); 
+            cursor: pointer; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;
         }
-        .qty-text-card {
-            font-family: var(--font-title); font-weight: 700; color: var(--c-text);
-        }
+        .qty-text-card { font-family: var(--font-title); font-weight: 700; color: var(--c-text); }
 
-        /* 購物車列表 */
         .cart-item { 
             padding: 20px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;
-            position: relative; border-left: none;
-            background: #fff;
+            position: relative; border-left: none; background: #fff;
         }
         .cart-info { flex: 1; }
         .cart-title { font-family: var(--font-title); font-weight: 700; font-size: 1rem; color: var(--c-text); }
@@ -296,14 +271,11 @@
             font-size: 1.1rem; color: #666; cursor: pointer;
         }
 
-        /* 表單元素 */
         .form-label { font-size: 0.95rem; font-weight: 500; color: var(--c-text); margin-bottom: 10px; display: block; }
         .form-input { 
             width: 100%; padding: 14px; font-size: 1rem; color: var(--c-text);
             border: 1px solid #E0E0E0; border-radius: 8px; background: #FCFCFC; outline: none; 
-            transition: all 0.3s;
-            font-family: var(--font-body);
-            box-sizing: border-box;
+            transition: all 0.3s; font-family: var(--font-body); box-sizing: border-box;
         }
         .form-input:focus { border-color: var(--c-accent); background: #fff; box-shadow: 0 0 0 3px rgba(175, 168, 139, 0.1); }
         
@@ -319,144 +291,64 @@
             border-color: var(--c-primary); background-color: rgba(140, 123, 117, 0.05);
         }
 
-        /* 會員與點數區塊 */
-        .member-section {
-            background-color: #FFFDF9; border: 1px solid #E0D8CF;
-        }
-        .checkbox-label {
-            display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; color: var(--c-primary);
-        }
-        .checkbox-label input[type="checkbox"] {
-            width: 20px; height: 20px; accent-color: var(--c-primary);
-        }
-        .points-box {
-            background: #F9F6F0; padding: 15px; border-radius: 8px; border: 1px dashed var(--c-accent);
-        }
-        .points-check-group {
-            display: flex; gap: 10px;
-        }
-        .btn-check-points {
-            background-color: var(--c-primary); color: white; border: none; padding: 0 15px; border-radius: 8px; cursor: pointer; white-space: nowrap; transition: 0.3s;
-        }
-        .btn-check-points:disabled {
-            background-color: #ccc; cursor: not-allowed;
-        }
-
-        /* 優惠券區塊 */
-        .coupon-section { 
-            background-color: #FCFBF9; border: 1px dashed var(--c-accent); 
-            box-shadow: none;
-        }
+        .coupon-section { background-color: #FCFBF9; border: 1px dashed var(--c-accent); box-shadow: none; }
         .coupon-input-group { display: flex; gap: 10px; margin-top: 10px; }
-        .coupon-btn { 
-            background-color: var(--c-accent); color: white; border: none; 
-            padding: 0 20px; border-radius: 8px; cursor: pointer; white-space: nowrap;
-        }
+        .coupon-btn { background-color: var(--c-accent); color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
 
-        /* 資訊框 */
         #pickup-info-box { background-color: #F4F2EE; color: var(--c-text); border: none; }
         #delivery-info-box { background-color: #FFF8E1; color: #8D6E63; border: none; }
         .info-box div { margin-bottom: 6px; font-size: 0.95rem; }
 
-        /* 底部懸浮結帳欄 */
         .bottom-bar { 
             position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-            width: 92%; max-width: 480px;
-            background: rgba(255, 255, 255, 0.9);
+            width: 92%; max-width: 480px; background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            padding: 12px 20px; 
-            box-shadow: var(--shadow-float);
+            padding: 12px 20px; box-shadow: var(--shadow-float);
             display: flex; justify-content: space-between; align-items: center; 
-            z-index: 999; 
-            border-radius: 60px; 
-            border: 1px solid rgba(255,255,255,0.8);
+            z-index: 999; border-radius: 60px; border: 1px solid rgba(255,255,255,0.8);
         }
         .price-area { display: flex; flex-direction: column; justify-content: center; }
         .total-price { font-family: var(--font-title); font-size: 1.35rem; font-weight: 700; color: var(--c-text); }
         
         .checkout-btn { 
-            background: var(--c-primary);
-            color: #fff; border: none; padding: 14px 32px; border-radius: 50px; 
+            background: var(--c-primary); color: #fff; border: none; padding: 14px 32px; border-radius: 50px; 
             font-size: 1rem; font-weight: 500; letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(140, 123, 117, 0.25);
-            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(140, 123, 117, 0.25); transition: transform 0.2s;
         }
         .checkout-btn:active { transform: scale(0.96); }
         .checkout-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
 
-        .promo-hint { 
-            position: absolute; top: -40px; left: 0; right: 0; text-align: center;
-        }
-        .promo-hint span {
-            background: rgba(93, 64, 55, 0.8); color: #fff; padding: 6px 16px; 
-            border-radius: 20px; font-size: 0.8rem; letter-spacing: 1px;
-        }
+        .promo-hint { position: absolute; top: -40px; left: 0; right: 0; text-align: center; }
+        .promo-hint span { background: rgba(93, 64, 55, 0.8); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; letter-spacing: 1px; }
 
-        .discount-tag { 
-            font-size: 0.7rem; background: var(--c-danger); color: white; 
-            padding: 2px 8px; border-radius: 4px; margin-left: 5px; 
-            display: none; vertical-align: middle; 
-        }
+        .discount-tag { font-size: 0.7rem; background: var(--c-danger); color: white; padding: 2px 8px; border-radius: 4px; margin-left: 5px; display: none; vertical-align: middle; }
 
-        /* LINE 按鈕 */
         .bookmark-line-btn {
-            position: fixed; top: 50%; right: 0; 
-            transform: translateY(-50%);
-            background-color: var(--c-text); 
-            color: white;
-            border-radius: 8px 0 0 8px;
-            box-shadow: -2px 2px 10px rgba(0,0,0,0.1);
-            padding: 12px 5px; width: 38px;
-            z-index: 998; cursor: pointer; text-decoration: none;
-            display: flex; flex-direction: column; align-items: center;
-            transition: right 0.3s;
+            position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+            background-color: var(--c-text); color: white; border-radius: 8px 0 0 8px;
+            box-shadow: -2px 2px 10px rgba(0,0,0,0.1); padding: 12px 5px; width: 38px;
+            z-index: 998; cursor: pointer; text-decoration: none; display: flex; flex-direction: column; align-items: center; transition: right 0.3s;
         }
         .bookmark-line-btn:hover { background-color: var(--c-primary); }
         .bookmark-line-btn img { width: 24px; height: 24px; margin-bottom: 6px; }
         .bookmark-line-btn span { font-size: 12px; font-weight: 500; writing-mode: vertical-rl; letter-spacing: 2px; }
 
-        /* 收據卡片樣式 (圓角) */
-        .receipt-card { 
-            border: 1px solid #e0e0e0; 
-            background: #fff; 
-            border-radius: 12px; 
-            padding: 25px 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .receipt-row { 
-            display: flex; justify-content: space-between; padding: 10px 0; 
-            border-bottom: 1px dashed #eee; font-size: 0.95rem; 
-        }
+        .receipt-card { border: 1px solid #e0e0e0; background: #fff; border-radius: 12px; padding: 25px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; position: relative; }
+        .receipt-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #eee; font-size: 0.95rem; }
         .receipt-row:last-child { border-bottom: none; }
-        
         .receipt-row span:first-child { color: var(--c-text-light); }
         .receipt-row span:last-child { color: var(--c-text); font-weight: 500; text-align: right; }
-
         .receipt-row.highlight { background-color: #F9F9F9; padding: 12px; border-radius: 4px; border-bottom: none; margin-bottom: 8px; }
         
-        .action-btn {
-            display: flex; align-items: center; justify-content: center;
-            padding: 16px; border-radius: 50px; font-size: 1rem; font-weight: 700;
-            text-decoration: none; transition: all 0.3s; cursor: pointer; border: none; width: 100%;
-        }
+        .action-btn { display: flex; align-items: center; justify-content: center; padding: 16px; border-radius: 50px; font-size: 1rem; font-weight: 700; text-decoration: none; transition: all 0.3s; cursor: pointer; border: none; width: 100%; }
         .linepay-btn { background: #00C300; color: white; box-shadow: 0 4px 15px rgba(0, 195, 0, 0.2); }
         .home-btn { background: white; color: var(--c-text); border: 1px solid #ddd; margin-top: 15px; }
 
-        /* Loading */
         #loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(253, 251, 248, 0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
-        .spinner { 
-            border: 3px solid #eee; border-top: 3px solid var(--c-primary); 
-            border-radius: 50%; width: 50px; height: 50px; 
-            animation: spin 0.8s ease-in-out infinite; 
-        }
+        .spinner { border: 3px solid #eee; border-top: 3px solid var(--c-primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s ease-in-out infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        @media (min-width: 620px) {
-            .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; }
-        }
+        @media (min-width: 620px) { .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; } }
     </style>
 </head>
 <body>
@@ -487,9 +379,7 @@
                     <video class="package-img" controls autoplay loop muted playsinline style="margin-bottom:0; border-radius: 6px;">
                         <source src="420037fb-8f72-4541-9442-65f63c08cf93.mp4" type="video/mp4">
                     </video>
-                    <div class="package-text" style="padding: 15px 5px 5px;">
-                        每一口，都是最純粹的溫柔。
-                    </div>
+                    <div class="package-text" style="padding: 15px 5px 5px;">每一口，都是最純粹的溫柔。</div>
                 </div>
 
                 <div class="section-header">市集日常</div>
@@ -510,8 +400,7 @@
                 <div class="package-box">
                     <img src="117903.jpg" alt="禮盒包裝" class="package-img">
                     <div class="package-text">
-                        <strong>質感保冷袋禮盒 (6入)</strong><br>
-                        傳遞手作的溫度，送禮自用兩相宜。
+                        <strong>質感保冷袋禮盒 (6入)</strong><br>傳遞手作的溫度，送禮自用兩相宜。
                     </div>
                 </div>
 
@@ -529,7 +418,7 @@
                 </div>
 
                 <div class="section-header">配送資訊</div>
-                <div class="options-section">
+                <div class="options-section" style="margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: none;">
                     
                     <div class="form-label">取貨方式</div>
                     <div class="radio-group" style="margin-bottom:20px;">
@@ -561,13 +450,10 @@
 
                     <div class="form-group" style="margin-top:20px;">
                         <label class="form-label" id="date-label">預計取貨/到貨日</label>
-                        
                         <select id="pickup-slot-select" class="form-input" style="display:none;">
                             <option value="" disabled selected>選擇時段...</option>
                         </select>
-                        
                         <input type="text" id="delivery-date-text" class="form-input" value="宅配不指定日期 (需指定請洽客服)" disabled style="display:none; background:#eee;">
-                        
                         <div style="font-size:0.85rem; color:var(--c-danger); margin-top:8px;" id="date-hint"></div>
                     </div>
 
@@ -595,8 +481,41 @@
                         <label class="form-label">Email (必填，以解鎖會員功能)</label>
                         <input type="email" id="cust-email" class="form-input" placeholder="example@email.com" oninput="checkMemberUnlock()">
                     </div>
+                </div>
+
+                <div class="member-section" style="margin-bottom: 24px; padding: 24px; background: #FFFDF9; border: 1px solid var(--c-line); border-top: 1px dashed var(--c-line); border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div style="font-size: 1.1rem; font-weight: bold; color: var(--c-primary); margin-bottom: 15px; text-align: center;">👑 好酪會員專區</div>
                     
-                    <div class="form-group" id="address-row" style="margin-top:15px;">
+                    <div id="member-pre-query-msg" style="font-size: 0.9rem; color: var(--c-danger); margin-bottom: 5px; font-weight: bold; text-align: center;">
+                        請先填寫上方「姓名」、「手機」與「Email」解鎖會員功能
+                    </div>
+                    
+                    <div id="points-query-box" class="points-box" style="display: none; margin-top: 0; padding: 15px; background: #F9F6F0; border-radius: 8px; border: 1px dashed var(--c-accent);">
+                        <div class="form-label" style="font-size: 0.9rem; color: var(--c-primary); margin-bottom: 8px;">查詢會員狀態與點數</div>
+                        <div class="points-check-group" style="display: flex; gap: 10px; align-items: center;">
+                            <button type="button" class="btn-check-points" id="btn-query-points" onclick="queryPoints()" style="height: 38px; background-color: var(--c-primary); color: white; border: none; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold;">查詢會員</button>
+                            <div id="points-display" style="padding: 8px 0; font-weight: bold; color: var(--c-danger); display: flex; align-items: center;">尚未查詢</div>
+                        </div>
+                        
+                        <div id="join-member-container" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--c-line);">
+                            <label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: bold; color: var(--c-primary);">
+                                <input type="checkbox" id="join-member-checkbox" checked style="width: 18px; height: 18px; accent-color: var(--c-primary);">
+                                同意加入好酪官方會員
+                            </label>
+                            <div style="font-size: 0.8rem; color: #888; margin-top: 5px; margin-left: 26px;">
+                                每購買一杯奶酪贈一點，一點折抵壹元，下次購物可折抵，線上實體皆通用。
+                            </div>
+                        </div>
+
+                        <div id="points-use-group" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--c-line);">
+                            <label class="form-label" style="font-size: 0.85rem; margin-bottom: 5px;">欲折抵點數 (最多 <span id="max-usable-points">0</span> 點)</label>
+                            <input type="number" id="use-points-input" class="form-input" placeholder="請輸入點數 (不折抵可留空)" min="0" oninput="updatePointsDiscount()" style="padding: 10px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="options-section">
+                    <div class="form-group" id="address-row" style="display: none;">
                         <label class="form-label">宅配地址</label>
                         <div style="display: flex; flex-direction: column; gap: 10px;">
                             <select id="cust-city" class="form-input">
@@ -629,43 +548,21 @@
                         </div>
                     </div>
 
-                    <div class="form-group" style="margin-top: 15px;">
+                    <div class="form-group" style="margin-top: 5px;">
                         <label class="form-label">備註 (需分裝請填寫)</label>
                         <textarea id="cust-remarks" class="form-input" rows="2" placeholder="例：原味x2 巧克力x2 抹茶x2 裝一盒"></textarea>
                     </div>
-
-                </div>
-
-                <div class="section-header">好酪會員專區</div>
-                <div class="member-section">
                     
-                    <div id="member-pre-query-msg" style="font-size: 0.9rem; color: var(--c-danger); margin-bottom: 5px; font-weight: bold; text-align: center;">
-                        請先填寫上方「姓名」、「手機」與「Email」解鎖會員功能
-                    </div>
-                    
-                    <div id="points-query-box" class="points-box" style="display: none; margin-top: 0;">
-                        <div class="form-label" style="font-size: 0.9rem; color: var(--c-primary);">查詢會員狀態與點數</div>
-                        <div class="points-check-group" style="display: flex; gap: 10px; align-items: center;">
-                            <button type="button" class="btn-check-points" id="btn-query-points" onclick="queryPoints()" style="height: 35px;">查詢會員</button>
-                            <div id="points-display" style="padding: 8px; font-weight: bold; color: var(--c-danger); display: flex; align-items: center;">尚未查詢</div>
-                        </div>
-                        
-                        <div id="join-member-container" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--c-line);">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="join-member-checkbox" checked>
-                                同意加入好酪官方會員
-                            </label>
-                            <div style="font-size: 0.85rem; color: #888; margin-top: 5px; margin-left: 30px;">
-                                每購買一杯奶酪贈一點，一點折抵壹元，下次購物可折抵，線上實體皆通用。
+                    <div style="margin-top: 25px;">
+                        <div class="coupon-section" style="margin-bottom: 0;">
+                            <label class="form-label" style="color:var(--c-primary);">使用折扣碼</label>
+                            <div class="coupon-input-group">
+                                <input type="text" id="coupon-code" class="form-input" placeholder="輸入折扣碼">
+                                <button type="button" class="coupon-btn" onclick="applyCoupon()">兌換</button>
                             </div>
-                        </div>
-
-                        <div id="points-use-group" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--c-line);">
-                            <label class="form-label" style="font-size: 0.85rem;">欲折抵點數 (最多 <span id="max-usable-points">0</span> 點)</label>
-                            <input type="number" id="use-points-input" class="form-input" placeholder="請輸入點數 (不折抵可留空)" min="0" oninput="updatePointsDiscount()">
+                            <div id="coupon-msg" style="font-size:0.9rem; margin-top:8px;"></div>
                         </div>
                     </div>
-
                 </div>
 
                 <div class="section-header">關於好酪</div>
@@ -1259,7 +1156,7 @@
             const city = document.getElementById('cust-city').value;
             const detailAddr = document.getElementById('cust-addr-detail').value.trim();
 
-            if(!name || !phone) { alert("請填寫姓名與電話"); return; }
+            if(!name || !phone || !email) { alert("請填寫姓名、電話與 Email"); return; }
             if (!/^09\d{8}$/.test(phone)) { alert("手機號碼格式不正確！"); return; }
 
             let finalDateStr = "";
@@ -1280,7 +1177,6 @@
                 let qty = parseInt(p.quantity, 10) || 0;
                 rawTotal += p.price * qty; totalCups += qty;
                 
-                // ★ 修正「十薰茉綠」無法匯入數量的問題：濾除 (限定) 字眼
                 let cleanName = p.name.replace(' (限定)', '').replace('(限定)', '');
                 let fullName = cleanName;
                 if (!fullName.includes('鮮奶酪')) fullName += '鮮奶酪';
@@ -1444,7 +1340,6 @@
                 document.getElementById('receipt-discount-val').innerText = "-$" + discountAmount;
             } else { document.getElementById('receipt-discount-row').style.display = 'none'; }
 
-            // ★ 新增：收據點數明細
             if (pointsData && pointsData.isMember) {
                 document.getElementById('receipt-points-section').style.display = 'block';
                 document.getElementById('receipt-earned-pts').innerText = `+${pointsData.earnedPoints} 點`;
