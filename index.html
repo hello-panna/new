@@ -1121,7 +1121,7 @@
             msgArea.innerText = "";
 
             try {
-                // 呼叫 GAS 後端的 checkPoints (只用 phone 和 email 驗證，name 可以留空)
+                // 呼叫 GAS 後端的 checkPoints
                 const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkPoints&name=線上客&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email);
                 const response = await fetch(checkUrl);
                 const data = await response.json();
@@ -1475,8 +1475,29 @@
             fetch(GOOGLE_FORM_URL, {
                 method: "POST", body: formData, mode: "no-cors"
             }).then(() => {
-                // 如果有 email，背景呼叫您的 Apps Script 傳送會員資料與點數變化
+                // 如果有 email，背景呼叫您的 Apps Script 傳送會員資料、點數變化，並觸發信件寄送
                 if (email && TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
+                    
+                    const backendOrderData = {
+                        items: cart,
+                        originalTotal: rawTotal,
+                        discountPoints: usedPoints,
+                        otherDiscount: discountAmount - usedPoints, 
+                        paymentMethod: payment,
+                        receivedAmount: finalAllPrice,
+                        changeAmount: 0,
+                        phone: phone,
+                        email: email,
+                        name: name,
+                        delivery: delivery,
+                        address: fullAddress,
+                        date: finalDateStr,
+                        shippingFee: shippingFee,
+                        finalTotal: finalAllPrice,
+                        remarks: remarks,
+                        totalCups: totalCups
+                    };
+
                     fetch(TRAFFIC_SCRIPT_URL, {
                         method: "POST",
                         mode: "no-cors",
@@ -1486,8 +1507,9 @@
                             email: email, 
                             name: name,
                             points: earnedPoints, 
-                            usedPoints: usedPoints, // 傳送已使用點數給後端
-                            orderId: orderId 
+                            usedPoints: usedPoints, 
+                            orderId: orderId,
+                            orderData: backendOrderData // 把完整訂單資料傳給後端去發送確認信
                         })
                     }).catch(e => console.log(e));
                 }
