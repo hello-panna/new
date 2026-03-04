@@ -1272,7 +1272,7 @@
                 return;
             }
 
-            // --- 驗證折扣碼 ---
+            // --- 驗證折扣碼 (加入姓名) ---
             if (appliedCoupon) {
                 if (!TRAFFIC_SCRIPT_URL || TRAFFIC_SCRIPT_URL.includes("YOUR_NEW_DEPLOYMENT_ID")) {
                     alert("系統錯誤：尚未設定後端檢查網址，請聯繫管理員。"); return;
@@ -1283,12 +1283,13 @@
                 submitBtn.disabled = true;
 
                 try {
-                    const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkDiscount&phone=" + encodeURIComponent(phone) + "&code=" + encodeURIComponent(appliedCoupon.code);
+                    // ★ 修改：URL 參數加入 name
+                    const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkDiscount&name=" + encodeURIComponent(name) + "&phone=" + encodeURIComponent(phone) + "&code=" + encodeURIComponent(appliedCoupon.code);
                     const response = await fetch(checkUrl);
                     const data = await response.json();
                     
                     if (data.used === true) {
-                        alert("【系統提醒】\n此電話號碼已經使用過此折扣碼，無法再次使用。\n\n系統將自動移除折扣碼，請重新確認金額後再結帳。");
+                        alert("【系統提醒】\n此「姓名+電話號碼」的組合已經使用過此折扣碼，無法再次使用。\n\n系統將自動移除折扣碼，請重新確認金額後再結帳。");
                         appliedCoupon = null; 
                         document.getElementById('coupon-code').value = ""; 
                         document.getElementById('coupon-msg').innerText = "";
