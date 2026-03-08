@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>會員卡 - 好酪</title>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <style>
+    body { font-family: 'Microsoft JhengHei', sans-serif; background: #FDFBF8; color: #5D4037; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    .card { background: white; width: 100%; max-width: 350px; border-radius: 16px; box-shadow: 0 10px 30px rgba(93,64,55,0.1); padding: 30px 20px; text-align: center; border-top: 6px solid #8D6E63; }
+    .logo { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; border: 2px solid #EFEBE9; }
+    .title { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+    .points { font-size: 36px; color: #e67e22; font-weight: bold; margin: 15px 0; }
+    #qr-container { margin: 20px auto; padding: 10px; background: #fff; border: 1px solid #eee; border-radius: 10px; display: inline-block; }
+    .input-box { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; text-align: center; letter-spacing: 2px;}
+    .btn { background: #8D6E63; color: white; border: none; padding: 12px 20px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; box-sizing: border-box; }
+    .btn:disabled { background: #ccc; }
+    #loading { color: #888; font-size: 16px; margin-top: 50px; padding: 0 20px; text-align: center; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+  <div id="loading">讀取中，請稍候...<br><span style="font-size:12px; color:#ccc;">(請稍候 3~5 秒)</span></div>
+
+  <div id="bind-view" class="card" style="display:none;">
+    <img src="https://www.hello-panna.com/logo.jpg" class="logo">
+    <div class="title">歡迎加入好酪會員</div>
+    <p style="color:#888; font-size:14px; margin-bottom:20px;">請輸入您的手機號碼以領取會員卡，若您曾於門市或線上留過資料，將自動為您同步點數。</p>
+    <input type="tel" id="phone-input" class="input-box" placeholder="請輸入 09 開頭的手機號碼" maxlength="10">
+    <button id="bind-btn" class="btn" onclick="bindPhone()">綁定並產生會員卡</button>
+  </div>
+
+  <div id="member-view" class="card" style="display:none;">
+    <img src="https://www.hello-panna.com/logo.jpg" class="logo">
+    <div class="title" id="display-name">好酪會員</div>
+    <div style="font-size:14px; color:#888;" id="display-phone"></div>
+    <div class="points"><span style="font-size:16px; color:#888;">累積點數 </span><span id="display-points">0</span><span style="font-size:16px; color:#888;"> 點</span></div>
+    
+    <div id="qr-container">
+      <canvas id="qrcode"></canvas>
+    </div>
+    <p style="font-size:13px; color:#c0392b; font-weight:bold;">請於結帳時向店員出示此條碼</p>
+  </div>
+
+  <script>
+    // 使用你提供的精準 ID！大寫 O 沒錯！
+    const LIFF_ID = "2009367017-OrmdaFQu"; 
+    let currentUid = "";
+
+    window.onload = function() {
+      liff.init({ liffId: LIFF_ID }).then(() => {
+        if (!liff.isLoggedIn()) {
+          liff.login();
+        } else {
+          liff.getProfile().then(profile => {
+            currentUid = profile.userId;
+            checkMemberExists(currentUid);
+          });
+        }
+      }).catch(err => {
+        document.getElementById('loading').innerHTML = "LIFF 初始化失敗: " + err;
+      });
+    };
+
+    function checkMemberExists(uid) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          document.getElementById('loading').style.display = 'none';
+          if (res.exists) {
+            showMemberCard(res.phone, res.points, res.name);
+          } else {
+            document.getElementById('bind-view').style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('loading').innerHTML = "⚠️ 系統連線異常！<br>錯誤訊息：" + err.message;
+        })
+        .getLineMemberByUid(uid);
+    }
+
+    function bindPhone() {
+      const phone = document.getElementById('phone-input').value.trim();
+      if (!/^09\d{8}$/.test(phone)) {
+        alert("請輸入正確的手機號碼格式");
+        return;
+      }
+      
+      const btn = document.getElementById('bind-btn');
+      btn.innerText = "綁定中..."; btn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if(res.success) {
+            document.getElementById('bind-view').style.display = 'none';
+            showMemberCard(res.phone, res.points, res.name);
+          } else {
+            alert("綁定失敗：" + res.msg);
+            btn.innerText = "綁定並產生會員卡"; btn.disabled = false;
+          }
+        })
+        .withFailureHandler(function(err) {
+            alert("後端連線失敗：" + err.message);
+            btn.innerText = "綁定並產生會員卡"; btn.disabled = false;
+        })
+        .bindLineUidToPhone(currentUid, phone);
+    }
+
+    function showMemberCard(phone, points, name) {
+      document.getElementById('member-view').style.display = 'block';
+      document.getElementById('display-phone').innerText = phone;
+      document.getElementById('display-points').innerText = points;
+      if(name && name !== "LINE會員") document.getElementById('display-name').innerText = name;
+      
+      new QRious({
+        element: document.getElementById('qrcode'),
+        value: phone,
+        size: 180,
+        level: 'H'
+      });
+    }
+  </script>
+</body>
+</html>
