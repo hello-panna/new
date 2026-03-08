@@ -387,3 +387,309 @@
                 <div class="price-area">
                     <div style="font-size:0.8rem; color:var(--c-text-light);">
                         共 <span id="total-cups-badge" style="font-weight:bold; color:var(--c-text);">0</span> 杯
+                        <span id="discount-badge" class="discount-tag"></span>
+                    </div>
+                    <div class="total-price">NT$ <span id="final-total">0</span></div>
+                </div>
+                <button class="checkout-btn" id="submit-btn" onclick="processCheckout()">去買單</button>
+            </div>
+        </div>
+
+        <div id="receipt-view" style="display:none; padding:40px 20px;">
+            <div style="text-align:center;">
+                <div style="width:60px; height:60px; background:var(--c-primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 20px;">✓</div>
+                <div style="font-family:var(--font-title); font-size:1.5rem; font-weight:700; color:var(--c-text); margin-bottom:5px;">訂單已成立</div>
+                
+                <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:20px;">
+                    <div style="color:var(--c-danger); font-size:0.95rem;">(請複製訂單編號傳給客服)</div>
+                    <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" style="width:24px; height:24px; vertical-align:middle;">
+                    </a>
+                </div>
+
+                <div class="receipt-time" id="receipt-time" style="color:#aaa; font-size:0.85rem; margin-bottom:30px;"></div>
+            </div>
+
+            <div class="receipt-card">
+                <div class="receipt-row highlight" style="align-items: center;">
+                    <span>訂單編號</span>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <span id="receipt-order-id" style="font-family:monospace; font-size:1.1rem; color:var(--c-text);"></span>
+                        <button onclick="copyOrderId()" style="font-size:0.8rem; padding:2px 8px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer; color:#666;">複製</button>
+                    </div>
+                </div>
+                
+                <div class="receipt-row highlight">
+                    <span>應付金額</span>
+                    <span id="receipt-total-highlight" style="font-size:1.2rem; color:var(--c-danger);"></span>
+                </div>
+                
+                <div class="receipt-row" style="margin-top:10px;">
+                    <span>付款方式</span>
+                    <span id="receipt-payment-method" style="font-weight:bold;"></span>
+                </div>
+
+                <div id="dynamic-payment-info" style="margin-top: 15px; margin-bottom: 15px;"></div>
+
+                <hr style="border:0; border-top:1px dashed #eee; margin:20px 0;">
+                
+                <div class="receipt-row"><span>訂購人</span><span id="receipt-name"></span></div>
+                <div class="receipt-row"><span>電話</span><span id="receipt-phone"></span></div>
+                <div class="receipt-row"><span>取貨方式</span><span id="receipt-delivery"></span></div>
+                <div class="receipt-row"><span>日期</span><span id="receipt-date"></span></div>
+                <div class="receipt-row" id="receipt-address-row" style="display:none;">
+                    <span>地址</span><span id="receipt-address" style="text-align:right; max-width:60%;"></span>
+                </div>
+                <div class="receipt-row" id="receipt-remarks-row" style="display:none; flex-direction:column; align-items:flex-start;">
+                    <span style="color:#999; font-size:0.85rem; margin-bottom: 5px;">備註</span>
+                    <span id="receipt-remarks" style="color:var(--c-text); font-weight:bold;"></span>
+                </div>
+            </div>
+
+            <div class="receipt-card" style="margin-top:20px;">
+                <h4 style="text-align:center; color:#999; margin-bottom:15px; font-weight:normal; font-size:0.9rem;">— 購買清單 —</h4>
+                <div id="receipt-items"></div>
+                
+                <hr style="border:0; border-top:1px dashed #eee; margin:15px 0;">
+                
+                <div class="receipt-row"><span>商品小計</span><span id="receipt-subtotal-text"></span></div>
+                <div id="receipt-discount-row" class="receipt-row" style="color:var(--c-danger); display:none;">
+                    <span id="receipt-discount-name"></span><span id="receipt-discount-val"></span>
+                </div>
+                <div class="receipt-row"><span>運費</span><span id="receipt-shipping-val"></span></div>
+                <div class="receipt-row" style="margin-top:15px; padding-top:15px; border-top:1px solid #eee;">
+                    <span style="font-weight:bold;">總計</span><span id="receipt-total" style="color:var(--c-danger); font-size:1.2rem; font-weight:bold;"></span>
+                </div>
+
+                <div class="receipt-row" id="receipt-points-row" style="display:none; padding: 12px; background: #E8F5E9; border-radius: 8px; margin-top: 15px; border-bottom: none; flex-direction: column; align-items: flex-start; gap: 5px;">
+                    <div style="display:flex; justify-content:space-between; width:100%;">
+                        <span style="color: #2E7D32; font-weight: bold;">🌟 本次折抵點數</span>
+                        <span id="receipt-points-used" style="color: #c0392b; font-weight: bold; font-size: 1rem;"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; width:100%;">
+                        <span style="color: #2E7D32; font-weight: bold;">🌟 本次獲得點數</span>
+                        <span id="receipt-points-earned" style="color: #2E7D32; font-weight: bold; font-size: 1.1rem;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <a href="https://lin.ee/UHEkfgW" target="_blank" class="action-btn" style="background:#06C755; color:white; box-shadow:0 4px 15px rgba(6, 199, 85, 0.2);">
+                    💬 傳送訂單給客服
+                </a>
+                <button onclick="window.location.reload()" class="action-btn home-btn">
+                    🏠 返回首頁
+                </button>
+            </div>
+        </div>
+    </div> 
+
+    <div id="refund-policy-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: #fff; width: 90%; max-width: 500px; padding: 30px; border-radius: 12px; position: relative; max-height: 80vh; overflow-y: auto;">
+            <span onclick="closeRefundPolicy()" style="position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #ccc;">&times;</span>
+            <h3 style="text-align: center; margin-bottom: 20px; color: var(--c-primary); font-family:var(--font-title);">退貨與退款政策</h3>
+            <div style="line-height: 1.8; color: #555; font-size: 0.95rem;">
+                <p><strong>退貨期限：</strong><br>不接受退貨，但產品瑕疵可以退款。</p>
+                <div style="height: 10px;"></div>
+                <p><strong>退貨方式：</strong><br>請撥打電話 0972-005-078 聯繫。</p>
+                <div style="height: 10px;"></div>
+                <p><strong>退貨費用：</strong><br>若為產品瑕疵，由我方退款。</p>
+                <div style="height: 10px;"></div>
+                <p><strong>詳細說明：</strong><br>本產品屬於生鮮食品，不適用於 7 天鑑賞期。除商品本身有瑕疵或運送過程造成損壞外，一經拆封或食用，恕不接受退貨。</p>
+            </div>
+            <button onclick="closeRefundPolicy()" style="display: block; width: 100%; margin-top: 25px; padding: 12px; background: var(--c-primary); color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer;">關閉</button>
+        </div>
+    </div>
+
+    <script>
+        // ★ 確保這裡填入的是您最新部署的 Apps Script 網址
+        const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
+        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSenpCJdVZWJ4seiaz4GimXwasppPbnX3o1pLGyrnIMWaJ_sqw/formResponse";
+        
+        const FORM_FIELDS = {
+            orderContent: "entry.1214769536", name: "entry.537178649", phone: "entry.1240845794", email: "entry.586707224", 
+            payment: "entry.36879241", delivery: "entry.2126181854", address: "entry.1346414492", date: "entry.1111858266", 
+            cups: "entry.1482122773", subtotal: "entry.1558685102", shipping: "entry.1750953999", totalPrice: "entry.816848611",
+            remarks: "entry.370850133", orderId: "entry.846286532", discountAmount: "entry.1977990591", couponCode: "entry.562394796"
+        };
+
+        const FLAVOR_MAPPING = {
+            1: "entry.1878923092", 2: "entry.1221947009", 3: "entry.513696828", 4: "entry.629066213", 5: "entry.56980633", 
+            6: "entry.2021049410", 7: "entry.1968820040", 8: "entry.73334113", 9: "entry.93299315", 10: "entry.799869452"
+        };
+
+        const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/uemRyQGLoTi6F3OUSEUgEtlr9QjZ1vTlUUVy930W3RPAgapaVWJM%252BrFuHzZRvpGA";
+        
+        const menuData = [
+            { id: 1, name: "經典原味", price: 45, image: "230242.jpg", desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁" },
+            { id: 2, name: "巧克力", price: 50, image: "230240_0.jpg", desc: "選用法芙娜可可，可可香濃郁，大人小孩都愛。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、法國法芙娜可可粉" },
+            { id: 3, name: "芝麻", price: 50, image: "230239_0.jpg", desc: "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣薌園黑芝麻" },
+            { id: 4, name: "抹茶", price: 50, image: "230234_0.jpg", desc: "抹茶香氣醇厚，微苦甜平衡，綿密不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉" },
+            { id: 5, name: "咖啡", price: 50, image: "230236_0.jpg", desc: "阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
+            { id: 6, name: "泰式奶茶", price: 50, image: "230235_0.jpg", desc: "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、泰國紅標紅茶" },
+            { id: 7, name: "伯爵紅茶", price: 50, image: "230241_0.jpg", desc: "大人系口味，佛手柑清香，茶香與奶香圓潤融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶" },
+            { id: 8, name: "芋香紫薯", price: 50, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯" },
+            { id: 9, name: "微醺蘭姆", price: 50, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
+            { id: 10, name: "十薰茉綠 (限定)", price: 50, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠" }
+        ];
+
+        const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" }, "LINE50": { type: "minus", value: 50, name: "好友現折50" } };
+
+        let cart = []; 
+        let appliedCoupon = null; 
+        let initiateCheckoutFired = false; 
+        
+        let memberMaxPoints = 0;
+        let usedPoints = 0;
+
+        const menuContainer = document.getElementById('menu-list');
+        const cartContainer = document.getElementById('cart-list');
+        const totalEl = document.getElementById('final-total');
+        const discountBadge = document.getElementById('discount-badge');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        function init() {
+            logVisit();
+            renderMenu(); 
+            updateDateSettings('pickup');
+            renderCart();
+
+            // === 新增：自動取得 LINE 會員資料 ===
+            const SHOP_LIFF_ID = "2009367017-aRaw72e8"; // ★注意這裡
+            
+            if(SHOP_LIFF_ID !== "2009367017-aRaw72e8") {
+                liff.init({ liffId: SHOP_LIFF_ID }).then(() => {
+                    if (liff.isLoggedIn()) {
+                        liff.getProfile().then(profile => {
+                            const uid = profile.userId;
+                            google.script.run.withSuccessHandler(function(res){
+                                if(res.exists) {
+                                    document.getElementById('cust-phone').value = res.phone;
+                                    if(res.name && res.name !== "LINE會員") document.getElementById('cust-name').value = res.name;
+                                    checkMemberPoints();
+                                }
+                            }).getLineMemberByUid(uid);
+                        });
+                    }
+                });
+            }
+        }
+
+        function trackInitiateCheckout() {
+            if (!initiateCheckoutFired && cart.length > 0) {
+                if(typeof fbq !== 'undefined') { fbq('track', 'InitiateCheckout'); console.log('Pixel: InitiateCheckout'); initiateCheckoutFired = true; }
+            }
+        }
+
+        function renderMenu() {
+            menuContainer.innerHTML = '';
+            menuData.forEach(item => {
+                const cartItem = cart.find(c => c.id === item.id);
+                let btnHtml = '';
+                
+                if (cartItem) {
+                    btnHtml = `
+                        <div class="qty-control-card">
+                            <button class="qty-btn-card" onclick="updateItemQty(${item.id}, -1)">-</button>
+                            <span class="qty-text-card">${cartItem.quantity}</span>
+                            <button class="qty-btn-card" onclick="updateItemQty(${item.id}, 1)">+</button>
+                        </div>
+                    `;
+                } else {
+                    btnHtml = `<button class="add-btn" onclick="addToCart(${item.id})">加入購物車</button>`;
+                }
+
+                const div = document.createElement('div');
+                div.className = 'menu-item';
+                div.innerHTML = `
+                    <div class="menu-img-container">
+                        <img src="${item.image}" alt="${item.name}" class="menu-img">
+                    </div>
+                    <div class="menu-name">${item.name}</div>
+                    <div class="menu-desc">${item.desc}</div>
+                    <div class="menu-ingredients"><span class="ing-label">成份 | </span>${item.ingredients}</div>
+                    <div class="menu-price">$${item.price}</div>
+                    ${btnHtml}
+                `;
+                menuContainer.appendChild(div);
+            });
+        }
+
+        function logVisit() {
+            if(!TRAFFIC_SCRIPT_URL) return;
+            fetch(TRAFFIC_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "view" }) }).catch(err => console.log("Tracking log error (safe to ignore)"));
+        }
+
+        function updateDateSettings(mode) {
+            const selectEl = document.getElementById('pickup-slot-select'); const deliveryText = document.getElementById('delivery-date-text');
+            const hint = document.getElementById('date-hint'); const addressRow = document.getElementById('address-row');
+            const pickupInfoBox = document.getElementById('pickup-info-box'); const deliveryInfoBox = document.getElementById('delivery-info-box');
+            const now = new Date(); const currentHour = now.getHours();
+
+            if (mode === 'delivery') {
+                selectEl.style.display = 'none'; deliveryText.style.display = 'block'; addressRow.style.display = 'block'; pickupInfoBox.style.display = 'none'; deliveryInfoBox.style.display = 'block'; 
+                const hasDubai = cart.some(item => item.id === 12);
+                if (hasDubai) { hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間到貨。"; } else { hint.innerText = "提醒：宅配默認不指定日期出貨，若需指定日期請先與店家詢問。"; }
+            } else {
+                selectEl.style.display = 'block'; deliveryText.style.display = 'none'; addressRow.style.display = 'none'; pickupInfoBox.style.display = 'block'; deliveryInfoBox.style.display = 'none';
+                let daysToAdd = (currentHour < 12) ? 2 : 3; 
+                hint.innerText = (currentHour < 12) ? "提醒：中午 12:00 前下單，最快可選後天自取時段" : "提醒：已過中午 12:00，需預留備料，最快大後天自取時段";
+                generatePickupOptions(daysToAdd);
+            }
+        }
+
+        function generatePickupOptions(startDays) {
+            const select = document.getElementById('pickup-slot-select'); const hint = document.getElementById('date-hint');
+            select.innerHTML = '<option value="" disabled selected>請選擇自取時段...</option>';
+            
+            const hasStrawberry = cart.some(item => item.id === 11); const hasDubai = cart.some(item => item.id === 12);
+
+            if (hasStrawberry && hasDubai) {
+                select.innerHTML = '<option value="" disabled selected>日期衝突：草莓與杜拜巧克力取貨日不同</option>'; hint.innerText = "❌ 錯誤：草莓限 2/14 前取貨，杜拜巧克力為 2/25-26，請分開兩筆訂單結帳。"; hint.style.color = "var(--c-danger)"; return;
+            }
+
+            if (hasStrawberry) {
+                const specificDates = [ { val: "2026/02/14 (六) 10:00~12:00", text: "02/14 (週六) 10:00~12:00" } ];
+                specificDates.forEach(opt => { let el = document.createElement('option'); el.value = opt.val; el.innerText = opt.text; select.appendChild(el); });
+                hint.innerText = "提醒：訂單包含草莓限定口味，依製作排程僅開放 02/14 自取。";
+            } else if (hasDubai) {
+                const specificDates = [ { val: "2026/02/25 (三) 12:00~13:00", text: "02/25 (週三) 12:00~13:00" }, { val: "2026/02/25 (三) 17:00~18:00", text: "02/25 (週三) 17:00~18:00" }, { val: "2026/02/26 (四) 12:00~13:00", text: "02/26 (週四) 12:00~13:00" }, { val: "2026/02/26 (四) 17:00~18:00", text: "02/26 (週四) 17:00~18:00" } ];
+                specificDates.forEach(opt => { let el = document.createElement('option'); el.value = opt.val; el.innerText = opt.text; select.appendChild(el); });
+                hint.innerText = "提醒：訂單包含杜拜巧克力，統一於 02/25、02/26 自取。";
+            } else {
+                const now = new Date(); let startDate = new Date(now); startDate.setDate(startDate.getDate() + startDays);
+                
+                for(let i=0; i<30; i++) {
+                    let current = new Date(startDate); current.setDate(startDate.getDate() + i);
+                    let cYear = current.getFullYear(); let cMonth = current.getMonth(); let cDate = current.getDate();
+
+                    if (cYear === 2026 && cMonth === 1 && cDate >= 15 && cDate <= 23) continue; 
+                    
+                    let day = current.getDay(); let month = current.getMonth() + 1; let date = current.getDate();
+                    let dayStr = ['日','一','二','三','四','五','六'][day]; let dateStr = `${month}/${date} (週${dayStr})`; let fullDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (${dayStr})`;
+
+                    if (day >= 2 && day <= 5) {
+                        let opt1 = document.createElement('option'); opt1.value = `${fullDateStr} 12:00~13:00`; opt1.innerText = `${dateStr} 12:00~13:00`; select.appendChild(opt1);
+                        let opt2 = document.createElement('option'); opt2.value = `${fullDateStr} 17:00~18:00`; opt2.innerText = `${dateStr} 17:00~18:00`; select.appendChild(opt2);
+                    } else if (day === 6) {
+                        let opt3 = document.createElement('option'); opt3.value = `${fullDateStr} 10:00~12:00`; opt3.innerText = `${dateStr} 10:00~12:00`; select.appendChild(opt3);
+                    }
+                }
+            }
+        }
+
+        function copyBankAccount() {
+            const accNum = document.getElementById('bank-acc-num-display').innerText;
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(accNum).then(() => { alert("帳號已複製！"); }).catch(err => { alert("複製失敗，請手動複製"); }); } else {
+                const textArea = document.createElement("textarea"); textArea.value = accNum; document.body.appendChild(textArea); textArea.select();
+                try { document.execCommand('copy'); alert("帳號已複製！"); } catch (err) { alert("複製失敗，請手動複製"); } document.body.removeChild(textArea);
+            }
+        }
+
+        function copyOrderId() {
+            const orderId = document.getElementById('receipt-order-id').innerText;
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(orderId).then(() => { alert("訂單編號已複製！"); }).catch(err => { alert("複製失敗，請手動複製"); }); } else {
+                const textArea = document.createElement("textarea"); textArea.value = orderId; document.body.appendChild(textArea); textArea.select();
+                try { document.execCommand('copy'); alert("訂單編號已複製！"); } catch (err) { alert("複製失敗"); } document.body.removeChild(textArea);
+            }
+        }
