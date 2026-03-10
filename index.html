@@ -1482,7 +1482,7 @@
             fetch(GOOGLE_FORM_URL, {
                 method: "POST", body: formData, mode: "no-cors"
             }).then(() => {
-                // 如果有 email，背景呼叫 Apps Script 進行會員點數變動紀錄與新會員新增
+                // 如果有 email，背景呼叫 Apps Script 進行會員點數變動紀錄與新會員新增，並寄送確認信
                 if (email && TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     
                     const backendOrderData = {
@@ -1516,7 +1516,7 @@
                             points: earnedPoints, 
                             usedPoints: usedPoints, 
                             orderId: orderId,
-                            orderData: backendOrderData // 把完整訂單資料傳給後端備用
+                            orderData: backendOrderData // 把完整訂單資料傳給後端去發送確認信
                         })
                     }).catch(e => console.log(e));
                 }
