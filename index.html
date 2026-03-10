@@ -519,7 +519,7 @@
                     
                     <div class="form-group" style="margin-top:15px;">
                         <label class="form-label" style="color:var(--c-danger);">Email (填寫可收到訂購資訊、累積/折抵點數)</label>
-                        <input type="email" id="cust-email" class="form-input" placeholder="會員將以 Email 驗證 (1杯=1點)">
+                        <input type="email" id="cust-email" class="form-input" placeholder="填寫 Email (1杯=1點)">
                     </div>
 
                     <div class="form-group" style="margin-top: 15px;">
@@ -621,7 +621,7 @@
                             <div class="coupon-input-group" style="margin-top: 5px;">
                                 <button type="button" class="coupon-btn" style="background-color: #e67e22; width: 100%; padding: 10px 0;" onclick="checkMemberPoints()">查詢我的點數</button>
                             </div>
-                            <div style="font-size: 0.8rem; color: #888; margin-top: 8px; text-align: center; line-height: 1.4;">(會員以上方填寫之 E-MAIL 進行驗證查詢)</div>
+                            <div style="font-size: 0.8rem; color: #888; margin-top: 8px; text-align: center; line-height: 1.4;">(請先填寫上方的手機號碼與 Email，以進行雙重驗證查詢)</div>
                             <div id="points-input-area" style="display: none; margin-top: 15px;">
                                 <div style="display: flex; gap: 10px; align-items: center;">
                                     <input type="number" id="use-points-input" class="form-input" placeholder="輸入欲折抵點數" min="0" oninput="validatePointsInput()">
@@ -1095,18 +1095,24 @@
         }
 
         // ==========================================
-        // 點數檢查與折抵邏輯
+        // 點數檢查與折抵邏輯 (手機+Email雙重驗證)
         // ==========================================
         async function checkMemberPoints() {
             const email = document.getElementById('cust-email').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
             const msgArea = document.getElementById('points-msg');
             const balanceArea = document.getElementById('member-points-balance');
             const inputArea = document.getElementById('points-input-area');
             const useInput = document.getElementById('use-points-input');
 
-            // 調整邏輯：以 Email 驗證會員身分
-            if (!email) {
-                msgArea.innerText = "請先填寫上方的 Email 以查詢點數！";
+            // 調整邏輯：需要手機與 Email 都填寫
+            if (!phone || !email) {
+                msgArea.innerText = "請先填寫上方的手機號碼與 Email 以查詢點數！";
+                return;
+            }
+
+            if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) {
+                msgArea.innerText = "手機號碼格式不正確！";
                 return;
             }
 
@@ -1117,8 +1123,8 @@
             msgArea.innerText = "";
 
             try {
-                // 呼叫 GAS 後端的 checkPoints (我們在後端也改為使用 email 驗證)
-                const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkPoints&email=" + encodeURIComponent(email);
+                // 將 phone 及 email 傳送至後端驗證
+                const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkPoints&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email);
                 const response = await fetch(checkUrl);
                 const data = await response.json();
 
@@ -1143,8 +1149,12 @@
                 } else {
                     inputArea.style.display = "none";
                     balanceArea.innerText = "";
-                    msgArea.innerText = "查無此會員資料，結帳後將自動為您建立會員。";
+                    msgArea.innerText = data.msg || "查無此會員資料，結帳後將自動為您建立會員。";
                     msgArea.style.color = "#888";
+                    
+                    if (data.msg && data.msg.includes("綁定其他")) {
+                        msgArea.style.color = "var(--c-danger)";
+                    }
                 }
             } catch (error) {
                 btn.innerText = originalText;
