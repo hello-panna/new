@@ -621,7 +621,7 @@
                             <div class="coupon-input-group" style="margin-top: 5px;">
                                 <button type="button" class="coupon-btn" style="background-color: #e67e22; width: 100%; padding: 10px 0;" onclick="checkMemberPoints()">查詢我的點數</button>
                             </div>
-                            <div style="font-size: 0.8rem; color: #888; margin-top: 8px; text-align: center; line-height: 1.4;">(請先填寫上方的手機號碼與 Email，以進行雙重驗證查詢)</div>
+                            <div style="font-size: 0.8rem; color: #888; margin-top: 8px; text-align: center; line-height: 1.4;">(請先填寫上方的姓名、手機號碼與 Email，以進行驗證查詢)</div>
                             <div id="points-input-area" style="display: none; margin-top: 15px;">
                                 <div style="display: flex; gap: 10px; align-items: center;">
                                     <input type="number" id="use-points-input" class="form-input" placeholder="輸入欲折抵點數" min="0" oninput="validatePointsInput()">
@@ -1095,9 +1095,10 @@
         }
 
         // ==========================================
-        // 點數檢查與折抵邏輯 (手機+Email雙重驗證)
+        // 點數檢查與折抵邏輯 (手機+Email雙重驗證, 並連動姓名)
         // ==========================================
         async function checkMemberPoints() {
+            const name = document.getElementById('cust-name').value.trim();
             const email = document.getElementById('cust-email').value.trim();
             const phone = document.getElementById('cust-phone').value.trim();
             const msgArea = document.getElementById('points-msg');
@@ -1105,9 +1106,9 @@
             const inputArea = document.getElementById('points-input-area');
             const useInput = document.getElementById('use-points-input');
 
-            // 調整邏輯：需要手機與 Email 都填寫
-            if (!phone || !email) {
-                msgArea.innerText = "請先填寫上方的手機號碼與 Email 以查詢點數！";
+            // 調整邏輯：需要姓名、手機與 Email 都填寫
+            if (!name || !phone || !email) {
+                msgArea.innerText = "請先填寫上方的姓名、手機號碼與 Email 以查詢點數！";
                 return;
             }
 
@@ -1123,8 +1124,8 @@
             msgArea.innerText = "";
 
             try {
-                // 將 phone 及 email 傳送至後端驗證
-                const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkPoints&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email);
+                // 將 phone, email, name 傳送至後端驗證與綁定
+                const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkPoints&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(name);
                 const response = await fetch(checkUrl);
                 const data = await response.json();
 
