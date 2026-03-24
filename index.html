@@ -540,9 +540,12 @@
                     </div>
 
                     <div id="pickup-info-box" class="info-box">
-                        <div style="font-weight:bold; color:var(--c-primary);">📍 門市自取</div>
-                        <div>彰化市中正路一段 403 號</div>
-                        <div style="margin-top:10px; font-weight:bold; color:var(--c-primary);">⏰ 開放時段</div>
+                        <div style="font-weight:bold; color:var(--c-primary); margin-bottom: 5px;">📍 門市自取</div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                            <span>彰化市中正路一段 403 號</span>
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=彰化市中正路一段403號" target="_blank" style="background:var(--c-accent); color:white; padding:4px 12px; border-radius:20px; text-decoration:none; font-size:0.85rem; display:inline-flex; align-items:center; gap:4px; margin-left:10px;">🗺️ Google 導航</a>
+                        </div>
+                        <div style="margin-top:15px; font-weight:bold; color:var(--c-primary);">⏰ 開放時段</div>
                         <div>週一~週五：12:30~18:00</div>
                         <div>週六：11:00~18:00</div>
                     </div>
@@ -1012,6 +1015,11 @@
                     let cDate = current.getDate();
 
                     if (cYear === 2026 && cMonth === 1 && cDate >= 15 && cDate <= 23) {
+                        continue; 
+                    }
+                    
+                    // --- 排除 2026/03/24 ~ 03/25 的時段 ---
+                    if (cYear === 2026 && cMonth === 2 && (cDate === 24 || cDate === 25)) {
                         continue; 
                     }
                     
