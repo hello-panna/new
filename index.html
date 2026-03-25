@@ -779,7 +779,7 @@
 
     <div id="refund-policy-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
         <div style="background: #fff; width: 90%; max-width: 500px; padding: 30px; border-radius: 12px; position: relative; max-height: 80vh; overflow-y: auto;">
-            <span onclick="closeRefundPolicy()" style="position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #ccc;">&times;</span>
+            <span onclick="closeRefundPolicy()" style="position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #ccc;">×</span>
             <h3 style="text-align: center; margin-bottom: 20px; color: var(--c-primary); font-family:var(--font-title);">退貨與退款政策</h3>
             <div style="line-height: 1.8; color: #555; font-size: 0.95rem;">
                 <p><strong>退貨期限：</strong><br>不接受退貨，但產品瑕疵可以退款。</p>
@@ -1018,8 +1018,8 @@
                         continue; 
                     }
                     
-                    // --- 排除 2026/03/24 ~ 03/25 的時段 ---
-                    if (cYear === 2026 && cMonth === 2 && (cDate === 24 || cDate === 25)) {
+                    // --- 排除 2026/03/24 ~ 03/27 的時段 ---
+                    if (cYear === 2026 && cMonth === 2 && cDate >= 24 && cDate <= 27) {
                         continue; 
                     }
                     
