@@ -1117,7 +1117,6 @@
             const inputArea = document.getElementById('points-input-area');
             const useInput = document.getElementById('use-points-input');
 
-            // 調整邏輯：需要姓名、手機與 Email 都填寫
             if (!name || !phone || !email) {
                 msgArea.innerText = "請先填寫上方的姓名、手機號碼與 Email 以查詢點數！";
                 return;
@@ -1135,7 +1134,6 @@
             msgArea.innerText = "";
 
             try {
-                // 將 phone, email, name 傳送至後端驗證與綁定
                 const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkPoints&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(name);
                 const response = await fetch(checkUrl);
                 const data = await response.json();
@@ -1186,7 +1184,6 @@
                 useInput.value = "";
             }
             
-            // 計算當前購物車總金額
             let rawTotal = 0;
             cart.forEach(item => rawTotal += item.price * item.quantity);
             
@@ -1260,7 +1257,6 @@
             
             document.getElementById('total-cups-badge').innerText = totalCups;
 
-            // 如果有點數折抵，確保折抵不會超過商品總額
             if (usedPoints > rawTotal) {
                 usedPoints = rawTotal;
                 document.getElementById('use-points-input').value = usedPoints;
@@ -1269,13 +1265,11 @@
             let finalPrice = rawTotal;
             let discountText = "";
             
-            // 優先套用點數折抵
             if (usedPoints > 0) {
                 finalPrice -= usedPoints;
                 discountText += `折抵${usedPoints}點 `;
             }
 
-            // 套用優惠券或滿額折扣
             if (appliedCoupon) {
                 discountBadge.style.backgroundColor = 'var(--c-danger)'; 
                 if (appliedCoupon.type === 'rate') finalPrice = Math.floor(finalPrice * appliedCoupon.value);
@@ -1359,12 +1353,13 @@
                 submitBtn.disabled = true;
 
                 try {
-                    const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkDiscount&phone=" + encodeURIComponent(phone) + "&code=" + encodeURIComponent(appliedCoupon.code);
+                    // ✅ 修改點：將 Email 一併打包送去後端做交叉比對
+                    const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkDiscount&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email) + "&code=" + encodeURIComponent(appliedCoupon.code);
                     const response = await fetch(checkUrl);
                     const data = await response.json();
                     
                     if (data.used === true) {
-                        alert("【系統提醒】\n此電話號碼已經使用過此折扣碼，無法再次使用。\n\n系統將自動移除折扣碼，請重新確認金額後再結帳。");
+                        alert("【系統提醒】\n此電話號碼或 Email 已經使用過此折扣碼，無法再次使用。\n\n系統將自動移除折扣碼，請重新確認金額後再結帳。");
                         appliedCoupon = null; 
                         document.getElementById('coupon-code').value = ""; 
                         document.getElementById('coupon-msg').innerText = "";
@@ -1412,7 +1407,6 @@
             let discountName = ""; 
             let discountAmount = 0;
 
-            // 計算點數折抵
             if (usedPoints > 0) {
                 productFinalPrice -= usedPoints;
                 discountAmount += usedPoints;
@@ -1441,7 +1435,6 @@
             const now = new Date();
             const orderId = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
 
-            // 計算獲得點數 (如果有填寫 email 且有購買奶酪才給點數)
             let earnedPoints = email ? totalCups : 0;
 
             let confirmMsg = `【訂單確認】\n---------------------\n[購買明細]\n${itemsDetailStr}總數量：${totalCups} 個\n---------------------\n商品原價：$${rawTotal}\n`;
@@ -1493,7 +1486,6 @@
             fetch(GOOGLE_FORM_URL, {
                 method: "POST", body: formData, mode: "no-cors"
             }).then(() => {
-                // 如果有 email，背景呼叫 Apps Script 進行會員點數變動紀錄與新會員新增，並寄送確認信
                 if (email && TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     
                     const backendOrderData = {
@@ -1518,7 +1510,6 @@
 
                     fetch(TRAFFIC_SCRIPT_URL, {
                         method: "POST",
-                        // 使用 json stringify 時，因為跨域原因可能送出 text/plain，這可以被 Apps Script 接收解析
                         body: JSON.stringify({ 
                             action: "addMember", 
                             phone: phone, 
@@ -1527,7 +1518,7 @@
                             points: earnedPoints, 
                             usedPoints: usedPoints, 
                             orderId: orderId,
-                            orderData: backendOrderData // 把完整訂單資料傳給後端去發送確認信
+                            orderData: backendOrderData 
                         })
                     }).catch(e => console.log(e));
                 }
@@ -1540,7 +1531,6 @@
             });
         }
 
-        // 更新收據顯示邏輯
         function showReceipt(name, phone, email, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPts, earnedPts) {
             
             gtag('event', 'conversion', { 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 'value': finalAllPrice, 'currency': 'TWD', 'transaction_id': orderId });
@@ -1613,7 +1603,6 @@
                 document.getElementById('receipt-discount-row').style.display = 'none';
             }
 
-            // 顯示點數異動
             const pointsRow = document.getElementById('receipt-points-row');
             if ((email && email.trim() !== "") && (usedPts > 0 || earnedPts > 0)) {
                 pointsRow.style.display = 'flex';
