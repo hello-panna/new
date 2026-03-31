@@ -1014,6 +1014,11 @@
                     let cMonth = current.getMonth();
                     let cDate = current.getDate();
 
+                    // --- 新增：關閉至 2026/04/05 (包含 04/05都不能選) ---
+                    if (cYear < 2026 || (cYear === 2026 && cMonth < 3) || (cYear === 2026 && cMonth === 3 && cDate <= 5)) {
+                        continue; 
+                    }
+
                     if (cYear === 2026 && cMonth === 1 && cDate >= 15 && cDate <= 23) {
                         continue; 
                     }
