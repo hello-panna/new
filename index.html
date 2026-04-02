@@ -919,7 +919,7 @@
                     <div class="menu-ingredients"><span class="ing-label">${item.id === 13 ? '材質' : '成份'} | </span>${item.ingredients}</div>
                     <div class="menu-price">
                         $${item.price}
-                        <span class="store-price">門市價 $${item.price + 5}</span>
+                        ${item.id !== 13 ? `<span class="store-price">門市價 $${item.price + 5}</span>` : ''}
                     </div>
                     ${btnHtml}
                 `;
