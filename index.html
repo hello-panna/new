@@ -244,6 +244,14 @@
             font-weight: 700; font-size: 1.15rem; margin-bottom: 15px; 
             margin-top: auto; /* 將價格推到底部 */
         }
+        .store-price {
+            font-size: 0.85rem;
+            color: #999;
+            font-weight: 400;
+            margin-left: 6px;
+            text-decoration: line-through;
+            font-family: var(--font-body);
+        }
 
         /* 按鈕樣式 */
         .add-btn { 
@@ -909,7 +917,10 @@
                     <div class="menu-name">${item.name}</div>
                     <div class="menu-desc">${item.desc}</div>
                     <div class="menu-ingredients"><span class="ing-label">${item.id === 13 ? '材質' : '成份'} | </span>${item.ingredients}</div>
-                    <div class="menu-price">$${item.price}</div>
+                    <div class="menu-price">
+                        $${item.price}
+                        <span class="store-price">門市價 $${item.price + 5}</span>
+                    </div>
                     ${btnHtml}
                 `;
                 menuContainer.appendChild(div);
