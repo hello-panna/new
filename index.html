@@ -261,11 +261,11 @@
             cursor: pointer; transition: all 0.3s; font-weight: 500; width: 100%;
             letter-spacing: 1px;
         }
-        .add-btn:active, .add-btn:hover { 
+        .add-btn:active, .add-btn:hover:not(:disabled) { 
             background: var(--c-primary); color: #fff; 
         }
         .add-btn:disabled {
-            background: #f0f0f0; border-color: #f0f0f0; color: #ccc;
+            background: #f0f0f0; border-color: #f0f0f0; color: #ccc; cursor: not-allowed;
         }
 
         /* 數量控制器 */
@@ -498,11 +498,6 @@
                         <strong>質感紙盒包裝 訂購滿六杯奶酪 (免費)</strong><br>
                         為響應環保，我們提供免費的質感紙盒。<br>若有長途保鮮需求，歡迎於下方加購「魔鬼氈保冷袋」，讓手作的心意完美傳遞。
                     </div>
-                </div>
-
-                <div class="section-header">行事曆</div>
-                <div class="package-box">
-                    <img src="119356.jpg" alt="行事曆" class="package-img" style="margin-bottom:0;">
                 </div>
 
                 <div class="section-header">選擇口味</div>
@@ -852,7 +847,7 @@
             { id: 8, name: "芋香紫薯", price: 50, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯" },
             { id: 9, name: "微醺蘭姆", price: 50, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
             { id: 10, name: "十薰茉綠 (限定)", price: 50, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠" },
-            { id: 13, name: "質感保冷袋 (加購)", price: 15, image: "155911.png", desc: "魔鬼氈設計可重複使用，一只約可裝 2 盒 (共 12 入奶酪)。", ingredients: "環保鋁箔保溫層、不織布提把" }
+            { id: 13, name: "質感保冷袋 (加購)", price: 15, image: "155911.png", desc: "缺貨中，建議選擇自取，可自備保冷袋。", ingredients: "環保鋁箔保溫層、不織布提把" }
         ];
 
         const COUPONS = {
@@ -896,7 +891,9 @@
                 const cartItem = cart.find(c => c.id === item.id);
                 let btnHtml = '';
                 
-                if (cartItem) {
+                if (item.id === 13) {
+                    btnHtml = `<button class="add-btn" disabled style="background:#f0f0f0; color:#aaa; border-color:#e0e0e0; cursor:not-allowed;">缺貨中</button>`;
+                } else if (cartItem) {
                     btnHtml = `
                         <div class="qty-control-card">
                             <button class="qty-btn-card" onclick="updateItemQty(${item.id}, -1)">-</button>
