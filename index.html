@@ -595,7 +595,7 @@
                     </div>
 
                     <div class="form-group" style="margin-top:20px;">
-                        <label class="form-label" id="date-label">預計取貨/到貨日</label>
+                        <label class="form-label" id="date-label">預計到店取貨日</label>
                         
                         <select id="pickup-slot-select" class="form-input" style="display:none;">
                             <option value="" disabled selected>選擇時段...</option>
@@ -963,10 +963,10 @@
                 pickupInfoBox.style.display = 'block'; 
                 deliveryInfoBox.style.display = 'none';
 
-                let daysToAdd = (currentHour < 12) ? 2 : 3; 
+                let daysToAdd = (currentHour < 12) ? 3 : 4; 
                 hint.innerText = (currentHour < 12) 
-                    ? "提醒：中午 12:00 前下單，最快可選後天自取時段" 
-                    : "提醒：已過中午 12:00，需預留備料，最快大後天自取時段";
+                    ? "提醒：中午 12:00 前下單，需預留備料，最快大後天自取時段" 
+                    : "提醒：已過中午 12:00，需預留備料，最快四天後自取時段";
 
                 generatePickupOptions(daysToAdd);
             }
