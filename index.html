@@ -119,6 +119,33 @@
 
         .container { padding: 25px 20px; margin: 0 auto; }
 
+        /* 公告版面 */
+        .announcement-banner {
+            background-color: #FAF8F5;
+            border: 1px dashed var(--c-primary-light);
+            border-radius: var(--radius-box);
+            padding: 16px 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: var(--c-text);
+            font-size: 0.9rem;
+            line-height: 1.8;
+            box-shadow: 0 2px 8px rgba(140, 123, 117, 0.05);
+        }
+        .announcement-banner strong {
+            color: var(--c-primary);
+            font-size: 1.05rem;
+            font-family: var(--font-title);
+            display: block;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .announcement-banner .highlight-date {
+            color: var(--c-danger);
+            font-weight: 600;
+            padding: 0 2px;
+        }
+
         /* 標題樣式 - 日系極簡 */
         .section-header { 
             font-family: var(--font-title);
@@ -470,6 +497,14 @@
 
             <div class="container">
                 
+                <div class="announcement-banner">
+                    <strong>🌿 包裝微調小公告</strong>
+                    親愛的顧客您好，因專屬印刷杯短暫缺貨，<br>
+                    於 <span class="highlight-date">2026/04/10 ~ 04/11</span> 期間自取與宅配之訂單，<br>
+                    將暫時以「品牌質感貼紙」杯身盛裝出貨。<br>
+                    純粹的溫柔美味依舊不變，感謝您的體諒與支持！🤍
+                </div>
+
                 <div class="section-header">綿密口感</div>
                 <div class="package-box" style="padding: 10px;">
                     <video class="package-img" controls autoplay loop muted playsinline style="margin-bottom:0; border-radius: 6px;">
