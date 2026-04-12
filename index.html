@@ -271,14 +271,6 @@
             font-weight: 700; font-size: 1.15rem; margin-bottom: 15px; 
             margin-top: auto; /* 將價格推到底部 */
         }
-        .store-price {
-            font-size: 0.85rem;
-            color: #999;
-            font-weight: 400;
-            margin-left: 6px;
-            text-decoration: line-through;
-            font-family: var(--font-body);
-        }
 
         /* 按鈕樣式 */
         .add-btn { 
@@ -540,13 +532,6 @@
 
                 <div class="section-header">選擇口味</div>
                 
-                <div style="background-color: #FFF9F2; border: 1px dashed #FFB74D; border-radius: var(--radius-box); padding: 12px 16px; margin: -10px 0 20px 0; text-align: center; font-size: 0.9rem; color: #E65100; box-shadow: 0 2px 8px rgba(230, 81, 0, 0.05);">
-                    <strong style="display: block; font-size: 1rem; margin-bottom: 4px; font-family: var(--font-title);">📢 官網售價同步預告</strong>
-                    自 <span style="font-weight: 700; color: var(--c-danger);">2026/04/13 起</span>，官網將與門市售價同步<br>
-                    (經典原味 $50 / 其餘口味 $55)<br>
-                    <span style="color: var(--c-text); font-weight: 500; font-size: 0.85rem; margin-top: 4px; display: inline-block;">把握調漲前最後倒數，立即享有現行專屬優惠價！</span>
-                </div>
-
                 <div class="menu-grid" id="menu-list"></div>
 
                 <div class="section-header">您的選購</div>
@@ -595,7 +580,7 @@
                         <img src="101842.jpg" alt="門市照片" style="width: 100%; border-radius: 8px; margin-top: 15px; margin-bottom: 5px; display: block;">
                         
                         <div style="margin-top:15px; font-weight:bold; color:var(--c-primary);">⏰ 開放時段</div>
-                        <div>週一~週五：12:30~18:00</div>
+                        <div>週二~週五：12:30~18:00</div>
                         <div>週六：11:00~18:00</div>
                     </div>
 
@@ -884,22 +869,23 @@
             7: "entry.1968820040", 
             8: "entry.73334113",   
             9: "entry.93299315",   
-            10: "entry.799869452"
+            10: "entry.799869452",
+            13: "entry.849234818" // ★ 新增保冷袋，請記得換成您 Google 表單中的真實代碼
         };
 
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/uemRyQGLoTi6F3OUSEUgEtlr9QjZ1vTlUUVy930W3RPAgapaVWJM%252BrFuHzZRvpGA";
         
         const menuData = [
-            { id: 1, name: "經典原味", price: 45, image: "230242.jpg", desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁" },
-            { id: 2, name: "巧克力", price: 50, image: "230240_0.jpg", desc: "選用法芙娜可可，可可香濃郁，大人小孩都愛。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、法國法芙娜可可粉" },
-            { id: 3, name: "芝麻", price: 50, image: "230239_0.jpg", desc: "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣薌園黑芝麻" },
-            { id: 4, name: "抹茶", price: 50, image: "230234_0.jpg", desc: "抹茶香氣醇厚，微苦甜平衡，綿密不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉" },
-            { id: 5, name: "咖啡", price: 50, image: "230236_0.jpg", desc: "阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
-            { id: 6, name: "泰式奶茶", price: 50, image: "230235_0.jpg", desc: "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、泰國紅標紅茶" },
-            { id: 7, name: "伯爵紅茶", price: 50, image: "230241_0.jpg", desc: "大人系口味，佛手柑清香，茶香與奶香圓潤融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶" },
-            { id: 8, name: "芋香紫薯", price: 50, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯" },
-            { id: 9, name: "微醺蘭姆", price: 50, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
-            { id: 10, name: "十薰茉綠 (限定)", price: 50, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠" },
+            { id: 1, name: "經典原味", price: 50, image: "230242.jpg", desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁" },
+            { id: 2, name: "巧克力", price: 55, image: "230240_0.jpg", desc: "選用法芙娜可可，可可香濃郁，大人小孩都愛。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、法國法芙娜可可粉" },
+            { id: 3, name: "芝麻", price: 55, image: "230239_0.jpg", desc: "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣薌園黑芝麻" },
+            { id: 4, name: "抹茶", price: 55, image: "230234_0.jpg", desc: "抹茶香氣醇厚，微苦甜平衡，綿密不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉" },
+            { id: 5, name: "咖啡", price: 55, image: "230236_0.jpg", desc: "阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
+            { id: 6, name: "泰式奶茶", price: 55, image: "230235_0.jpg", desc: "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、泰國紅標紅茶" },
+            { id: 7, name: "伯爵紅茶", price: 55, image: "230241_0.jpg", desc: "大人系口味，佛手柑清香，茶香與奶香圓潤融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶" },
+            { id: 8, name: "芋香紫薯", price: 55, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯" },
+            { id: 9, name: "微醺蘭姆", price: 55, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
+            { id: 10, name: "十薰茉綠 (限定)", price: 55, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠" },
             { id: 13, name: "質感保冷袋 (加購)", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" }
         ];
 
@@ -967,7 +953,6 @@
                     <div class="menu-ingredients"><span class="ing-label">${item.id === 13 ? '材質' : '成份'} | </span>${item.ingredients}</div>
                     <div class="menu-price">
                         $${item.price}
-                        ${item.id !== 13 ? `<span class="store-price">門市價 $${item.price + 5}</span>` : ''}
                     </div>
                     ${btnHtml}
                 `;
@@ -1017,10 +1002,10 @@
                 pickupInfoBox.style.display = 'block'; 
                 deliveryInfoBox.style.display = 'none';
 
-                let daysToAdd = (currentHour < 12) ? 3 : 4; 
+                let daysToAdd = (currentHour < 12) ? 1 : 2; 
                 hint.innerText = (currentHour < 12) 
-                    ? "提醒：中午 12:00 前下單，需預留備料，最快大後天自取時段" 
-                    : "提醒：已過中午 12:00，需預留備料，最快四天後自取時段";
+                    ? "提醒：中午 12:00 前結單，最快可選擇隔天門市自取 (週日、週一公休)" 
+                    : "提醒：已過中午 12:00，最快可選擇後天門市自取 (週日、週一公休)";
 
                 generatePickupOptions(daysToAdd);
             }
@@ -1077,7 +1062,6 @@
                     let cMonth = current.getMonth();
                     let cDate = current.getDate();
 
-                    // --- 新增：關閉至 2026/04/05 (包含 04/05都不能選) ---
                     if (cYear < 2026 || (cYear === 2026 && cMonth < 3) || (cYear === 2026 && cMonth === 3 && cDate <= 5)) {
                         continue; 
                     }
@@ -1086,7 +1070,6 @@
                         continue; 
                     }
                     
-                    // --- 排除 2026/03/24 ~ 03/27 的時段 ---
                     if (cYear === 2026 && cMonth === 2 && cDate >= 24 && cDate <= 27) {
                         continue; 
                     }
@@ -1098,7 +1081,7 @@
                     let dateStr = `${month}/${date} (週${dayStr})`;
                     let fullDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (${dayStr})`;
 
-                    if (day >= 1 && day <= 5) { // 週一至週五
+                    if (day >= 2 && day <= 5) { // 週二至週五
                         const weekdaySlots = ['12:30~13:30', '13:30~14:30', '14:30~15:30', '15:30~16:30', '16:30~17:30', '17:30~18:00'];
                         weekdaySlots.forEach(slotTime => {
                             let opt = document.createElement('option');
@@ -1116,7 +1099,7 @@
                             select.appendChild(opt);
                         });
                     }
-                    // 週日 (day === 0) 不做任何處理，即自動排除
+                    // 週日 (day === 0) 和 週一 (day === 1) 不做處理，自動排除
                 }
             }
         }
@@ -1173,9 +1156,6 @@
             renderCart();
         }
 
-        // ==========================================
-        // 點數檢查與折抵邏輯 (手機+Email雙重驗證, 並連動姓名)
-        // ==========================================
         async function checkMemberPoints() {
             const name = document.getElementById('cust-name').value.trim();
             const email = document.getElementById('cust-email').value.trim();
@@ -1298,7 +1278,7 @@
             }
             cart.forEach((item, index) => {
                 rawTotal += item.price * item.quantity; 
-                if (item.id !== 13) totalCups += item.quantity; // ★修正：保冷袋不列入杯數計算
+                if (item.id !== 13) totalCups += item.quantity; 
                 
                 let warningHtml = '';
                 if (item.id === 9) warningHtml = '<div style="font-size:0.75rem; color:#888;">(未滿18歲請勿購買)</div>';
@@ -1461,7 +1441,7 @@
             cart.forEach(p => {
                 let qty = parseInt(p.quantity, 10) || 0;
                 rawTotal += p.price * qty; 
-                if (p.id !== 13) totalCups += qty; // ★修正：保冷袋不列入杯數計算
+                if (p.id !== 13) totalCups += qty; 
                 orderDetails += `${p.name}x${qty}, `; 
                 itemsDetailStr += `• ${p.name} x ${qty}\n`;
                 if (flavorCounts.hasOwnProperty(p.id)) flavorCounts[p.id] += qty;
@@ -1504,7 +1484,7 @@
             const now = new Date();
             const orderId = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
 
-            let earnedPoints = email ? totalCups : 0; // ★這裡已使用修正後的 totalCups (不含保冷袋)
+            let earnedPoints = email ? totalCups : 0; 
 
             let confirmMsg = `【訂單確認】\n---------------------\n[購買明細]\n${itemsDetailStr}奶酪數量：${totalCups} 杯\n---------------------\n商品原價：$${rawTotal}\n`;
             if (discountAmount > 0) confirmMsg += `折扣優惠：-$${discountAmount} (${discountName.trim()})\n`;
