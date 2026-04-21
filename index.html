@@ -572,8 +572,9 @@
                         <img src="101842.jpg" alt="門市照片" style="width: 100%; border-radius: 8px; margin-top: 15px; margin-bottom: 5px; display: block;">
                         
                         <div style="margin-top:15px; font-weight:bold; color:var(--c-primary);">⏰ 開放時段</div>
-                        <div>週二~週五：12:30~18:00</div>
-                        <div>週六：11:00~18:00</div>
+                        <div>週二~週五：12:00~18:00</div>
+                        <div>週六：10:00~18:00</div>
+                        <div>(週日、週一固定公休)</div>
                     </div>
 
                     <div id="delivery-info-box" class="info-box">
@@ -621,7 +622,7 @@
                         <label class="form-label" id="date-label">預計到店取貨日 <span class="req-star">*</span></label>
                         
                         <select id="pickup-slot-select" class="form-input" style="display:none;">
-                            <option value="" disabled selected>選擇時段...</option>
+                            <option value="" disabled selected>請選擇...</option>
                         </select>
                         
                         <input type="text" id="delivery-date-text" class="form-input" value="宅配不指定日期 (需指定請洽客服)" disabled style="display:none; background:#eee;">
@@ -828,7 +829,6 @@
     </div>
 
     <script>
-        // ★ 確保這裡填入的是您最新部署的 Apps Script 網址
         const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
         const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSenpCJdVZWJ4seiaz4GimXwasppPbnX3o1pLGyrnIMWaJ_sqw/formResponse";
         
@@ -862,22 +862,22 @@
             8: "entry.73334113",   
             9: "entry.93299315",   
             10: "entry.799869452",
-            13: "entry.849234818" // ★ 新增保冷袋，請記得換成您 Google 表單中的真實代碼
+            13: "entry.849234818"
         };
 
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/uemRyQGLoTi6F3OUSEUgEtlr9QjZ1vTlUUVy930W3RPAgapaVWJM%252BrFuHzZRvpGA";
         
         const menuData = [
-            { id: 1, name: "經典原味", price: 50, image: "230242.jpg", desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁" },
-            { id: 2, name: "巧克力", price: 55, image: "230240_0.jpg", desc: "選用法芙娜可可，可可香濃郁，大人小孩都愛。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、法國法芙娜可可粉" },
-            { id: 3, name: "芝麻", price: 55, image: "230239_0.jpg", desc: "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣薌園黑芝麻" },
-            { id: 4, name: "抹茶", price: 55, image: "230234_0.jpg", desc: "抹茶香氣醇厚，微苦甜平衡，綿密不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉" },
-            { id: 5, name: "咖啡", price: 55, image: "230236_0.jpg", desc: "阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
-            { id: 6, name: "泰式奶茶", price: 55, image: "230235_0.jpg", desc: "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、泰國紅標紅茶" },
-            { id: 7, name: "伯爵紅茶", price: 55, image: "230241_0.jpg", desc: "大人系口味，佛手柑清香，茶香與奶香圓潤融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶" },
-            { id: 8, name: "芋香紫薯", price: 55, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯" },
-            { id: 9, name: "微醺蘭姆", price: 55, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
-            { id: 10, name: "十薰茉綠 (限定)", price: 55, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠" },
+            { id: 1, name: "經典原味鮮奶酪", price: 50, image: "230242.jpg", desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁", badge: "銷售第一", badgeColor: "#D84315" },
+            { id: 2, name: "巧克力鮮奶酪", price: 55, image: "230240_0.jpg", desc: "選用法芙娜可可，可可香濃郁，大人小孩都愛。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、法國法芙娜可可粉", badge: "銷售第二", badgeColor: "#E65100" },
+            { id: 7, name: "伯爵紅茶鮮奶酪", price: 55, image: "230241_0.jpg", desc: "大人系口味，佛手柑清香，茶香與奶香圓潤融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶", badge: "銷售第三", badgeColor: "#EF6C00" },
+            { id: 10, name: "十薰茉綠鮮奶酪", price: 55, image: "230243.jpg", desc: "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠" },
+            { id: 3, name: "芝麻鮮奶酪", price: 55, image: "230239_0.jpg", desc: "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣薌園黑芝麻" },
+            { id: 4, name: "抹茶鮮奶酪", price: 55, image: "230234_0.jpg", desc: "抹茶香氣醇厚，微苦甜平衡，綿密不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉" },
+            { id: 6, name: "泰式奶茶鮮奶酪", price: 55, image: "230235_0.jpg", desc: "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、泰國紅標紅茶" },
+            { id: 8, name: "芋香紫薯鮮奶酪", price: 55, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯" },
+            { id: 9, name: "微醺蘭姆鮮奶酪", price: 55, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
+            { id: 5, name: "咖啡鮮奶酪", price: 55, image: "230236_0.jpg", desc: "阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
             { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" }
         ];
 
@@ -934,12 +934,15 @@
                     btnHtml = `<button class="add-btn" onclick="addToCart(${item.id})">加入購物車</button>`;
                 }
 
+                let badgeHtml = item.badge ? `<div style="background:${item.badgeColor || '#D84315'}; color:#fff; font-size:0.75rem; padding:3px 8px; border-radius:15px; margin-bottom:8px; font-weight:bold; display:inline-block; letter-spacing:1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">👑 ${item.badge}</div>` : '';
+
                 const div = document.createElement('div');
                 div.className = 'menu-item';
                 div.innerHTML = `
                     <div class="menu-img-container">
                         <img src="${item.image}" alt="${item.name}" class="menu-img">
                     </div>
+                    ${badgeHtml}
                     <div class="menu-name">${item.name}</div>
                     <div class="menu-desc">${item.desc}</div>
                     <div class="menu-ingredients"><span class="ing-label">${item.id === 13 ? '材質' : '成份'} | </span>${item.ingredients}</div>
@@ -970,22 +973,28 @@
             
             const now = new Date();
             const currentHour = now.getHours();
+            
+            // 早上 08:00 前結單最快後天，08:00 後最快大後天
+            let startDays = (currentHour < 8) ? 2 : 3;
 
             if (mode === 'delivery') {
-                dateLabel.innerHTML = '預計到貨日 <span class="req-star">*</span>';
-                selectEl.style.display = 'none';
-                deliveryText.style.display = 'block';
+                dateLabel.innerHTML = '預計出貨日 <span class="req-star">*</span>';
+                selectEl.style.display = 'block';
+                deliveryText.style.display = 'none';
                 addressRow.style.display = 'block';
                 pickupInfoBox.style.display = 'none'; 
                 deliveryInfoBox.style.display = 'block'; 
 
                 const hasDubai = cart.some(item => item.id === 12);
                 if (hasDubai) {
-                    hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間到貨。";
+                    hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間出貨。";
                 } else {
-                    hint.innerText = "提醒：宅配默認不指定日期出貨，若需指定日期請先與店家詢問。";
+                    hint.innerText = (currentHour < 8) 
+                        ? "提醒：早上 08:00 前結單，最快可選擇後天出貨 (宅配出貨日為週二~週五)" 
+                        : "提醒：已過早上 08:00，最快可選擇大後天出貨 (宅配出貨日為週二~週五)";
                 }
 
+                generateOptions('delivery', startDays);
             } else {
                 dateLabel.innerHTML = '預計到店取貨日 <span class="req-star">*</span>';
                 selectEl.style.display = 'block';
@@ -994,19 +1003,18 @@
                 pickupInfoBox.style.display = 'block'; 
                 deliveryInfoBox.style.display = 'none';
 
-                let daysToAdd = (currentHour < 12) ? 1 : 2; 
-                hint.innerText = (currentHour < 12) 
-                    ? "提醒：中午 12:00 前結單，最快可選擇隔天門市自取 (週日、週一公休)" 
-                    : "提醒：已過中午 12:00，最快可選擇後天門市自取 (週日、週一公休)";
+                hint.innerText = (currentHour < 8) 
+                    ? "提醒：早上 08:00 前結單，最快可選擇後天門市自取 (週日、週一公休)" 
+                    : "提醒：已過早上 08:00，最快可選擇大後天門市自取 (週日、週一公休)";
 
-                generatePickupOptions(daysToAdd);
+                generateOptions('pickup', startDays);
             }
         }
 
-        function generatePickupOptions(startDays) {
+        function generateOptions(mode, startDays) {
             const select = document.getElementById('pickup-slot-select');
             const hint = document.getElementById('date-hint');
-            select.innerHTML = '<option value="" disabled selected>請選擇自取時段...</option>';
+            select.innerHTML = `<option value="" disabled selected>請選擇${mode === 'delivery' ? '出貨日期' : '自取時段'}...</option>`;
             
             const hasStrawberry = cart.some(item => item.id === 11);
             const hasDubai = cart.some(item => item.id === 12);
@@ -1019,6 +1027,10 @@
             }
 
             if (hasStrawberry) {
+                if (mode === 'delivery') {
+                    select.innerHTML = '<option value="" disabled selected>草莓限定限自取</option>';
+                    return;
+                }
                 const specificDates = [
                     { val: "2026/02/14 (六) 10:00~12:00", text: "02/14 (週六) 10:00~12:00" }
                 ];
@@ -1028,53 +1040,79 @@
                     select.appendChild(el);
                 });
                 hint.innerText = "提醒：訂單包含草莓限定口味，依製作排程僅開放 02/14 自取。";
+                return;
             } else if (hasDubai) {
-                const specificDates = [
-                    { val: "2026/02/25 (三) 12:00~13:00", text: "02/25 (週三) 12:00~13:00" },
-                    { val: "2026/02/25 (三) 17:00~18:00", text: "02/25 (週三) 17:00~18:00" },
-                    { val: "2026/02/26 (四) 12:00~13:00", text: "02/26 (週四) 12:00~13:00" },
-                    { val: "2026/02/26 (四) 17:00~18:00", text: "02/26 (週四) 17:00~18:00" }
-                ];
-                specificDates.forEach(opt => {
-                    let el = document.createElement('option');
-                    el.value = opt.val; el.innerText = opt.text;
-                    select.appendChild(el);
-                });
-                hint.innerText = "提醒：訂單包含杜拜巧克力，統一於 02/25、02/26 自取。";
-            } else {
-                const now = new Date();
-                let startDate = new Date(now);
-                startDate.setDate(startDate.getDate() + startDays);
+                if (mode === 'delivery') {
+                    const specificDates = [
+                        { val: "2026/02/25 (三) 宅配出貨", text: "02/25 (週三) 宅配出貨" },
+                        { val: "2026/02/26 (四) 宅配出貨", text: "02/26 (週四) 宅配出貨" }
+                    ];
+                    specificDates.forEach(opt => {
+                        let el = document.createElement('option');
+                        el.value = opt.val; el.innerText = opt.text;
+                        select.appendChild(el);
+                    });
+                    hint.innerText = "提醒：訂單包含杜拜巧克力，統一於 02/25、02/26 出貨。";
+                } else {
+                    const specificDates = [
+                        { val: "2026/02/25 (三) 12:00~13:00", text: "02/25 (週三) 12:00~13:00" },
+                        { val: "2026/02/25 (三) 17:00~18:00", text: "02/25 (週三) 17:00~18:00" },
+                        { val: "2026/02/26 (四) 12:00~13:00", text: "02/26 (週四) 12:00~13:00" },
+                        { val: "2026/02/26 (四) 17:00~18:00", text: "02/26 (週四) 17:00~18:00" }
+                    ];
+                    specificDates.forEach(opt => {
+                        let el = document.createElement('option');
+                        el.value = opt.val; el.innerText = opt.text;
+                        select.appendChild(el);
+                    });
+                    hint.innerText = "提醒：訂單包含杜拜巧克力，統一於 02/25、02/26 自取。";
+                }
+                return;
+            }
+
+            const now = new Date();
+            let startDate = new Date(now);
+            startDate.setDate(startDate.getDate() + startDays);
+            
+            for(let i=0; i<30; i++) {
+                let current = new Date(startDate);
+                current.setDate(startDate.getDate() + i);
+
+                let cYear = current.getFullYear();
+                let cMonth = current.getMonth();
+                let cDate = current.getDate();
+
+                if (cYear < 2026 || (cYear === 2026 && cMonth < 3) || (cYear === 2026 && cMonth === 3 && cDate <= 5)) {
+                    continue; 
+                }
+
+                if (cYear === 2026 && cMonth === 1 && cDate >= 15 && cDate <= 23) {
+                    continue; 
+                }
                 
-                for(let i=0; i<30; i++) {
-                    let current = new Date(startDate);
-                    current.setDate(startDate.getDate() + i);
+                if (cYear === 2026 && cMonth === 2 && cDate >= 24 && cDate <= 27) {
+                    continue; 
+                }
+                
+                let day = current.getDay(); 
+                let month = current.getMonth() + 1;
+                let date = current.getDate();
+                let dayStr = ['日','一','二','三','四','五','六'][day];
+                let dateStr = `${month}/${date} (週${dayStr})`;
+                let fullDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (${dayStr})`;
 
-                    let cYear = current.getFullYear();
-                    let cMonth = current.getMonth();
-                    let cDate = current.getDate();
-
-                    if (cYear < 2026 || (cYear === 2026 && cMonth < 3) || (cYear === 2026 && cMonth === 3 && cDate <= 5)) {
-                        continue; 
+                if (mode === 'delivery') {
+                    // 宅配僅開放 週二 到 週五
+                    if (day >= 2 && day <= 5) {
+                        let opt = document.createElement('option');
+                        opt.value = `${fullDateStr} 宅配出貨`;
+                        opt.innerText = `${dateStr} 宅配出貨`;
+                        select.appendChild(opt);
                     }
-
-                    if (cYear === 2026 && cMonth === 1 && cDate >= 15 && cDate <= 23) {
-                        continue; 
-                    }
-                    
-                    if (cYear === 2026 && cMonth === 2 && cDate >= 24 && cDate <= 27) {
-                        continue; 
-                    }
-                    
-                    let day = current.getDay(); 
-                    let month = current.getMonth() + 1;
-                    let date = current.getDate();
-                    let dayStr = ['日','一','二','三','四','五','六'][day];
-                    let dateStr = `${month}/${date} (週${dayStr})`;
-                    let fullDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (${dayStr})`;
-
-                    if (day >= 2 && day <= 5) { // 週二至週五
-                        const weekdaySlots = ['12:30~13:30', '13:30~14:30', '14:30~15:30', '15:30~16:30', '16:30~17:30', '17:30~18:00'];
+                } else {
+                    // 自取開放 週二 到 週六
+                    if (day >= 2 && day <= 5) { // 週二至週五 (中午12:00~18:00)
+                        const weekdaySlots = ['12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'];
                         weekdaySlots.forEach(slotTime => {
                             let opt = document.createElement('option');
                             opt.value = `${fullDateStr} ${slotTime}`;
@@ -1082,8 +1120,8 @@
                             select.appendChild(opt);
                         });
                     }
-                    else if (day === 6) { // 週六
-                        const weekendSlots = ['11:00~12:00', '12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'];
+                    else if (day === 6) { // 週六 (早上10:00~18:00)
+                        const weekendSlots = ['10:00~11:00', '11:00~12:00', '12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'];
                         weekendSlots.forEach(slotTime => {
                             let opt = document.createElement('option');
                             opt.value = `${fullDateStr} ${slotTime}`;
@@ -1091,8 +1129,8 @@
                             select.appendChild(opt);
                         });
                     }
-                    // 週日 (day === 0) 和 週一 (day === 1) 不做處理，自動排除
                 }
+                // 週日 (day === 0) 和 週一 (day === 1) 皆不處理，自動排除
             }
         }
 
@@ -1417,14 +1455,16 @@
             }
 
             let finalDateStr = "";
+            const slot = document.getElementById('pickup-slot-select').value;
+            
             if(delivery === '自取') {
-                const slot = document.getElementById('pickup-slot-select').value;
                 if(!slot) { alert("請選擇自取時段"); return; }
                 finalDateStr = slot;
             } else {
                 if(!city || !detailAddr) { alert("宅配請務必選擇縣市並填寫詳細地址"); return; }
                 fullAddress = city + detailAddr;
-                finalDateStr = "宅配不指定日期 (需指定請洽客服)";
+                if(!slot) { alert("請選擇預計出貨日期"); return; }
+                finalDateStr = slot;
             }
 
             let flavorCounts = {}; for (let id in FLAVOR_MAPPING) flavorCounts[id] = 0;
