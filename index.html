@@ -465,8 +465,8 @@
             .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; }
         }
     </style>
-</head>
-<body>
+</head>    
+    <body>
 
     <div id="loading-overlay">
         <div class="spinner"></div>
@@ -1569,6 +1569,7 @@
             }).then(() => {
                 if (email && TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     
+                    // 👉 這裡就是關鍵修正：將 couponCode 一併包裝進送給後端的資料物件中
                     const backendOrderData = {
                         items: cart,
                         originalTotal: rawTotal,
@@ -1586,7 +1587,8 @@
                         shippingFee: shippingFee,
                         finalTotal: finalAllPrice,
                         remarks: remarks,
-                        totalCups: totalCups
+                        totalCups: totalCups,
+                        couponCode: appliedCoupon ? appliedCoupon.code : "" 
                     };
 
                     fetch(TRAFFIC_SCRIPT_URL, {
