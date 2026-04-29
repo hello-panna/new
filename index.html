@@ -465,7 +465,7 @@
             .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; }
         }
     </style>
-</head>    
+</head>   
     <body>
 
     <div id="loading-overlay">
@@ -801,6 +801,9 @@
             </div>
 
             <div style="margin-top: 30px;">
+                <button onclick="copyOrderInfo()" class="action-btn" style="background:#5c4e46; color:white; margin-bottom: 15px; box-shadow:0 4px 15px rgba(92, 78, 70, 0.2);">
+                    📋 一鍵複製訂單資訊
+                </button>
                 <a href="https://lin.ee/UHEkfgW" target="_blank" class="action-btn" style="background:#06C755; color:white; box-shadow:0 4px 15px rgba(6, 199, 85, 0.2);">
                     💬 傳送訂單給客服
                 </a>
@@ -1158,6 +1161,59 @@
                 try { document.execCommand('copy'); alert("訂單編號已複製！"); } catch (err) { alert("複製失敗"); }
                 document.body.removeChild(textArea);
             }
+        }
+
+        // 新增：一鍵複製訂單資訊
+        function copyOrderInfo() {
+            const orderId = document.getElementById('receipt-order-id').innerText;
+            const name = document.getElementById('receipt-name').innerText;
+            const phone = document.getElementById('receipt-phone').innerText;
+            const delivery = document.getElementById('receipt-delivery').innerText;
+            const date = document.getElementById('receipt-date').innerText;
+            
+            let remarksText = "";
+            const remarksRow = document.getElementById('receipt-remarks-row');
+            if (remarksRow.style.display !== 'none') {
+                remarksText = document.getElementById('receipt-remarks').innerText;
+            }
+
+            let itemsStr = "";
+            cart.forEach(p => {
+                itemsStr += `• ${p.name} x ${p.quantity}\n`;
+            });
+
+            let copyText = `【好酪訂單資訊】\n`;
+            copyText += `訂單編號：${orderId}\n`;
+            copyText += `訂購人姓名：${name}\n`;
+            copyText += `手機號碼：${phone}\n`;
+            copyText += `取貨方式：${delivery}\n`;
+            copyText += `日期：${date}\n`;
+            if (remarksText) {
+                copyText += `備註：${remarksText}\n`;
+            }
+            copyText += `\n[購買清單]\n${itemsStr}`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(copyText).then(() => { 
+                    alert("訂單資訊已完整複製！您可以直接貼上給客服。"); 
+                }).catch(err => { 
+                    fallbackCopyOrder(copyText);
+                });
+            } else {
+                fallbackCopyOrder(copyText);
+            }
+        }
+
+        function fallbackCopyOrder(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text; document.body.appendChild(textArea); textArea.select();
+            try { 
+                document.execCommand('copy'); 
+                alert("訂單資訊已完整複製！您可以直接貼上給客服。"); 
+            } catch (err) { 
+                alert("複製失敗，請手動複製"); 
+            }
+            document.body.removeChild(textArea);
         }
 
         function addToCart(id) {
