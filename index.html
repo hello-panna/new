@@ -245,7 +245,7 @@
             -webkit-box-orient: vertical; overflow: hidden; 
         }
         
-        /* 新增：成分說明區塊樣式 */
+        /* 成分說明區塊樣式 */
         .menu-ingredients {
             font-size: 0.75rem;
             color: #8D6E63;
@@ -727,12 +727,16 @@
                 <div style="width:60px; height:60px; background:var(--c-primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 20px;">✓</div>
                 <div style="font-family:var(--font-title); font-size:1.5rem; font-weight:700; color:var(--c-text); margin-bottom:5px;">訂單已成立</div>
                 
-                <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:20px;">
-                    <div style="color:var(--c-danger); font-size:0.95rem;">(請複製訂單編號傳給客服)</div>
+                <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:15px;">
+                    <div style="color:var(--c-danger); font-size:0.95rem;">(請複製訂單資訊傳給客服避免漏單了)</div>
                     <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none;">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" style="width:24px; height:24px; vertical-align:middle;">
                     </a>
                 </div>
+
+                <button onclick="copyOrderInfo()" class="action-btn" style="display:inline-flex; width:auto; padding:12px 24px; background:#5c4e46; color:white; margin:0 auto 20px; box-shadow:0 4px 15px rgba(92, 78, 70, 0.2); font-size:0.95rem;">
+                    📋 一鍵複製訂單資訊
+                </button>
 
                 <div class="receipt-time" id="receipt-time" style="color:#aaa; font-size:0.85rem; margin-bottom:30px;"></div>
             </div>
@@ -742,7 +746,6 @@
                     <span>訂單編號</span>
                     <div style="display:flex; align-items:center; gap:5px;">
                         <span id="receipt-order-id" style="font-family:monospace; font-size:1.1rem; color:var(--c-text);"></span>
-                        <button onclick="copyOrderId()" style="font-size:0.8rem; padding:2px 8px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer; color:#666;">複製</button>
                     </div>
                 </div>
                 
@@ -801,9 +804,6 @@
             </div>
 
             <div style="margin-top: 30px;">
-                <button onclick="copyOrderInfo()" class="action-btn" style="background:#5c4e46; color:white; margin-bottom: 15px; box-shadow:0 4px 15px rgba(92, 78, 70, 0.2);">
-                    📋 一鍵複製訂單資訊
-                </button>
                 <a href="https://lin.ee/UHEkfgW" target="_blank" class="action-btn" style="background:#06C755; color:white; box-shadow:0 4px 15px rgba(6, 199, 85, 0.2);">
                     💬 傳送訂單給客服
                 </a>
@@ -1150,20 +1150,7 @@
             }
         }
 
-        function copyOrderId() {
-            const orderId = document.getElementById('receipt-order-id').innerText;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(orderId).then(() => { alert("訂單編號已複製！"); })
-                .catch(err => { alert("複製失敗，請手動複製"); });
-            } else {
-                const textArea = document.createElement("textarea");
-                textArea.value = orderId; document.body.appendChild(textArea); textArea.select();
-                try { document.execCommand('copy'); alert("訂單編號已複製！"); } catch (err) { alert("複製失敗"); }
-                document.body.removeChild(textArea);
-            }
-        }
-
-        // 新增：一鍵複製訂單資訊
+        // 一鍵複製訂單資訊
         function copyOrderInfo() {
             const orderId = document.getElementById('receipt-order-id').innerText;
             const name = document.getElementById('receipt-name').innerText;
@@ -1625,7 +1612,6 @@
             }).then(() => {
                 if (email && TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     
-                    // 👉 這裡就是關鍵修正：將 couponCode 一併包裝進送給後端的資料物件中
                     const backendOrderData = {
                         items: cart,
                         originalTotal: rawTotal,
