@@ -585,36 +585,56 @@
                         <div style="font-size:0.85rem; color:#D84315; margin-top:8px;">* 為確保運送安全，宅配請以「6的倍數」下單 (整盒出貨)。</div>
                     </div>
 
-                    <div class="form-group" id="address-row" style="margin-top:15px;">
-                        <label class="form-label">宅配地址 <span class="req-star">*</span></label>
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <select id="cust-city" class="form-input">
-                                <option value="" disabled selected>選擇縣市</option>
-                                <option value="基隆市">基隆市</option>
-                                <option value="台北市">台北市</option>
-                                <option value="新北市">新北市</option>
-                                <option value="桃園市">桃園市</option>
-                                <option value="新竹市">新竹市</option>
-                                <option value="新竹縣">新竹縣</option>
-                                <option value="苗栗縣">苗栗縣</option>
-                                <option value="台中市">台中市</option>
-                                <option value="彰化市">彰化市</option>
-                                <option value="彰化縣">彰化縣</option>
-                                <option value="南投縣">南投縣</option>
-                                <option value="雲林縣">雲林縣</option>
-                                <option value="嘉義市">嘉義市</option>
-                                <option value="嘉義縣">嘉義縣</option>
-                                <option value="台南市">台南市</option>
-                                <option value="高雄市">高雄市</option>
-                                <option value="屏東縣">屏東縣</option>
-                                <option value="宜蘭縣">宜蘭縣</option>
-                                <option value="花蓮縣">花蓮縣</option>
-                                <option value="台東縣">台東縣</option>
-                                <option value="澎湖縣">澎湖縣</option>
-                                <option value="金門縣">金門縣</option>
-                                <option value="連江縣">連江縣</option>
-                            </select>
-                            <input type="text" id="cust-addr-detail" class="form-input" placeholder="鄉鎮市區 / 街道 / 門號">
+                    <!-- 新增的收件人區塊 -->
+                    <div id="recipient-section" style="display:none; margin-top:20px; padding:20px 15px; background:#FDFBF8; border:1px solid #EFEBE9; border-radius:8px;">
+                        <div style="font-weight:bold; color:var(--c-primary); margin-bottom:12px; font-size: 1.05rem;">📦 收件人資訊</div>
+                        
+                        <label style="display:flex; align-items:center; gap:8px; margin-bottom:18px; cursor:pointer; font-size:0.95rem; color: #666;">
+                            <input type="checkbox" id="same-as-cust" onchange="toggleRecipientSame()" style="width:18px; height:18px; accent-color:var(--c-primary);">
+                            <span>同訂購人資料</span>
+                        </label>
+
+                        <div class="form-group" style="margin-bottom:15px;">
+                            <label class="form-label">收件人姓名 <span class="req-star">*</span></label>
+                            <input type="text" id="rcpt-name" class="form-input" placeholder="收件人稱呼">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom:20px;">
+                            <label class="form-label">收件人手機 <span class="req-star">*</span></label>
+                            <input type="tel" id="rcpt-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric">
+                        </div>
+
+                        <div class="form-group" id="address-row" style="margin-top:0;">
+                            <label class="form-label">宅配地址 <span class="req-star">*</span></label>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <select id="cust-city" class="form-input">
+                                    <option value="" disabled selected>選擇縣市</option>
+                                    <option value="基隆市">基隆市</option>
+                                    <option value="台北市">台北市</option>
+                                    <option value="新北市">新北市</option>
+                                    <option value="桃園市">桃園市</option>
+                                    <option value="新竹市">新竹市</option>
+                                    <option value="新竹縣">新竹縣</option>
+                                    <option value="苗栗縣">苗栗縣</option>
+                                    <option value="台中市">台中市</option>
+                                    <option value="彰化市">彰化市</option>
+                                    <option value="彰化縣">彰化縣</option>
+                                    <option value="南投縣">南投縣</option>
+                                    <option value="雲林縣">雲林縣</option>
+                                    <option value="嘉義市">嘉義市</option>
+                                    <option value="嘉義縣">嘉義縣</option>
+                                    <option value="台南市">台南市</option>
+                                    <option value="高雄市">高雄市</option>
+                                    <option value="屏東縣">屏東縣</option>
+                                    <option value="宜蘭縣">宜蘭縣</option>
+                                    <option value="花蓮縣">花蓮縣</option>
+                                    <option value="台東縣">台東縣</option>
+                                    <option value="澎湖縣">澎湖縣</option>
+                                    <option value="金門縣">金門縣</option>
+                                    <option value="連江縣">連江縣</option>
+                                </select>
+                                <input type="text" id="cust-addr-detail" class="form-input" placeholder="鄉鎮市區 / 街道 / 門號">
+                            </div>
                         </div>
                     </div>
 
@@ -765,7 +785,16 @@
                 
                 <div class="receipt-row"><span>訂購人</span><span id="receipt-name"></span></div>
                 <div class="receipt-row"><span>電話</span><span id="receipt-phone"></span></div>
-                <div class="receipt-row"><span>取貨方式</span><span id="receipt-delivery"></span></div>
+                
+                <!-- 新增收據中的收件人顯示 -->
+                <div class="receipt-row" id="receipt-rcpt-name-row" style="display:none; background:#FFF8E1; padding:8px 12px; border-radius:4px; margin-top:5px; border-bottom: none;">
+                    <span style="color:#D84315;">📦 收件人</span><span id="receipt-rcpt-name" style="font-weight:bold;"></span>
+                </div>
+                <div class="receipt-row" id="receipt-rcpt-phone-row" style="display:none; background:#FFF8E1; padding:8px 12px; border-radius:4px; margin-bottom:5px; border-bottom: none;">
+                    <span style="color:#D84315;">收件人電話</span><span id="receipt-rcpt-phone" style="font-weight:bold;"></span>
+                </div>
+
+                <div class="receipt-row" style="margin-top: 5px;"><span>取貨方式</span><span id="receipt-delivery"></span></div>
                 <div class="receipt-row"><span>日期</span><span id="receipt-date"></span></div>
                 <div class="receipt-row" id="receipt-address-row" style="display:none;">
                     <span>地址</span><span id="receipt-address" style="text-align:right; max-width:60%;"></span>
@@ -830,7 +859,6 @@
             <button onclick="closeRefundPolicy()" style="display: block; width: 100%; margin-top: 25px; padding: 12px; background: var(--c-primary); color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer;">關閉</button>
         </div>
     </div>
-
     <script>
         const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
         const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSenpCJdVZWJ4seiaz4GimXwasppPbnX3o1pLGyrnIMWaJ_sqw/formResponse";
@@ -901,6 +929,31 @@
         const totalEl = document.getElementById('final-total');
         const discountBadge = document.getElementById('discount-badge');
         const loadingOverlay = document.getElementById('loading-overlay');
+
+        // 同訂購人資料的雙向綁定邏輯
+        function toggleRecipientSame() {
+            const isSame = document.getElementById('same-as-cust').checked;
+            const rName = document.getElementById('rcpt-name');
+            const rPhone = document.getElementById('rcpt-phone');
+            const cName = document.getElementById('cust-name');
+            const cPhone = document.getElementById('cust-phone');
+            
+            if (isSame) {
+                rName.value = cName.value;
+                rPhone.value = cPhone.value;
+            } else {
+                rName.value = '';
+                rPhone.value = '';
+            }
+        }
+
+        // 監聽訂購人輸入框，如果「同訂購人」有打勾，就即時同步到收件人
+        document.getElementById('cust-name').addEventListener('input', function() {
+            if(document.getElementById('same-as-cust').checked) document.getElementById('rcpt-name').value = this.value;
+        });
+        document.getElementById('cust-phone').addEventListener('input', function() {
+            if(document.getElementById('same-as-cust').checked) document.getElementById('rcpt-phone').value = this.value;
+        });
 
         function init() {
             logVisit();
@@ -973,6 +1026,7 @@
             const pickupInfoBox = document.getElementById('pickup-info-box');
             const deliveryInfoBox = document.getElementById('delivery-info-box');
             const dateLabel = document.getElementById('date-label');
+            const recipientSection = document.getElementById('recipient-section');
             
             const now = new Date();
             const currentHour = now.getHours();
@@ -987,6 +1041,7 @@
                 addressRow.style.display = 'block';
                 pickupInfoBox.style.display = 'none'; 
                 deliveryInfoBox.style.display = 'block'; 
+                recipientSection.style.display = 'block'; // 顯示收件人資訊
 
                 const hasDubai = cart.some(item => item.id === 12);
                 if (hasDubai) {
@@ -1005,6 +1060,7 @@
                 addressRow.style.display = 'none';
                 pickupInfoBox.style.display = 'block'; 
                 deliveryInfoBox.style.display = 'none';
+                recipientSection.style.display = 'none'; // 隱藏收件人資訊
 
                 hint.innerText = (currentHour < 8) 
                     ? "提醒：早上 08:00 前結單，最快可選擇後天門市自取 (週日、週一公休)" 
@@ -1133,7 +1189,6 @@
                         });
                     }
                 }
-                // 週日 (day === 0) 和 週一 (day === 1) 皆不處理，自動排除
             }
         }
 
@@ -1174,6 +1229,17 @@
             copyText += `訂購人姓名：${name}\n`;
             copyText += `手機號碼：${phone}\n`;
             copyText += `取貨方式：${delivery}\n`;
+            
+            // 宅配特別顯示收件人
+            if (delivery === '宅配') {
+                const rName = document.getElementById('receipt-rcpt-name').innerText;
+                const rPhone = document.getElementById('receipt-rcpt-phone').innerText;
+                const addr = document.getElementById('receipt-address').innerText;
+                copyText += `收件人姓名：${rName}\n`;
+                copyText += `收件電話：${rPhone}\n`;
+                copyText += `宅配地址：${addr}\n`;
+            }
+
             copyText += `日期：${date}\n`;
             if (remarksText) {
                 copyText += `備註：${remarksText}\n`;
@@ -1454,15 +1520,41 @@
                 return;
             }
 
-            let fullAddress = "";
-            const city = document.getElementById('cust-city').value;
-            const detailAddr = document.getElementById('cust-addr-detail').value.trim();
-
-            if(!name || !phone) { alert("請填寫姓名與電話"); return; }
+            if(!name || !phone) { alert("請填寫訂購人姓名與電話"); return; }
             
             if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) {
-                alert("手機號碼格式不正確！\n請輸入 09 開頭的 10 碼數字 (無需輸入 - 符號)");
+                alert("訂購人手機號碼格式不正確！\n請輸入 09 開頭的 10 碼數字 (無需輸入 - 符號)");
                 return;
+            }
+
+            // --- 新增收件人檢查與整合地址邏輯 ---
+            let uiAddress = "";
+            let backendAddress = "";
+            let rcptName = "";
+            let rcptPhone = "";
+
+            if (delivery === '宅配') {
+                rcptName = document.getElementById('rcpt-name').value.trim();
+                rcptPhone = document.getElementById('rcpt-phone').value.trim();
+                const city = document.getElementById('cust-city').value;
+                const detailAddr = document.getElementById('cust-addr-detail').value.trim();
+                
+                if (!rcptName || !rcptPhone) { 
+                    alert("宅配訂單請填寫【收件人姓名】與【收件人手機】"); 
+                    return; 
+                }
+                if (!/^09\d{8}$/.test(rcptPhone.replace(/-/g, ''))) {
+                    alert("【收件人】手機號碼格式不正確！\n請輸入 09 開頭的 10 碼數字"); 
+                    return;
+                }
+                if (!city || !detailAddr) { 
+                    alert("宅配請務必選擇縣市並填寫詳細地址"); 
+                    return; 
+                }
+
+                uiAddress = city + detailAddr;
+                // 將收件人資訊封裝進 Google Form 接收的單一地址欄位字串中
+                backendAddress = `收件人：${rcptName} (${rcptPhone}) / 地址：${uiAddress}`;
             }
 
             if (appliedCoupon) {
@@ -1504,8 +1596,6 @@
                 if(!slot) { alert("請選擇自取時段"); return; }
                 finalDateStr = slot;
             } else {
-                if(!city || !detailAddr) { alert("宅配請務必選擇縣市並填寫詳細地址"); return; }
-                fullAddress = city + detailAddr;
                 if(!slot) { alert("請選擇預計出貨日期"); return; }
                 finalDateStr = slot;
             }
@@ -1570,8 +1660,13 @@
                 if (earnedPoints > 0) confirmMsg += `   + 本次可獲得：${earnedPoints} 點\n`;
                 confirmMsg += `---------------------\n`;
             }
-            confirmMsg += `取貨方式：${delivery}\n日期：${finalDateStr}\n姓名：${name}\n電話：${phone}\n`;
-            if(delivery === '宅配') confirmMsg += `地址：${fullAddress}\n`;
+            confirmMsg += `取貨方式：${delivery}\n日期：${finalDateStr}\n訂購人：${name}\n電話：${phone}\n`;
+            
+            // 宅配特別顯示收件人與地址
+            if(delivery === '宅配') {
+                confirmMsg += `收件人：${rcptName}\n收件電話：${rcptPhone}\n地址：${uiAddress}\n`;
+            }
+            
             if(remarks) confirmMsg += `備註：${remarks}\n`;
             confirmMsg += `付款方式：${payment === 'linepay' ? 'LINE Pay' : '銀行匯款'}\n\n請確認以上資訊無誤，點擊「確定」送出訂單。`;
 
@@ -1592,7 +1687,7 @@
             formData.append(FORM_FIELDS.email, email);
             formData.append(FORM_FIELDS.payment, payment);                
             formData.append(FORM_FIELDS.delivery, delivery);              
-            formData.append(FORM_FIELDS.address, fullAddress);            
+            formData.append(FORM_FIELDS.address, backendAddress); // 寫入合併過的新地址字串       
             formData.append(FORM_FIELDS.date, finalDateStr);              
             formData.append(FORM_FIELDS.cups, totalCups);                 
             formData.append(FORM_FIELDS.subtotal, rawTotal); 
@@ -1624,7 +1719,7 @@
                         email: email,
                         name: name,
                         delivery: delivery,
-                        address: fullAddress,
+                        address: backendAddress, // 這裡也同步寫入合併過的地址
                         date: finalDateStr,
                         shippingFee: shippingFee,
                         finalTotal: finalAllPrice,
@@ -1648,7 +1743,7 @@
                     }).catch(e => console.log(e));
                 }
 
-                showReceipt(name, phone, email, finalDateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPoints, earnedPoints);
+                showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPoints, earnedPoints, rcptName, rcptPhone);
                 loadingOverlay.style.display = 'none';
             }).catch(err => {
                 alert("訂單傳送失敗，請檢查網路或稍後再試。\n" + err);
@@ -1656,7 +1751,8 @@
             });
         }
 
-        function showReceipt(name, phone, email, dateStr, delivery, payment, fullAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPts, earnedPts) {
+        // 修改後的收據函式增加 rcptName 與 rcptPhone 參數
+        function showReceipt(name, phone, email, dateStr, delivery, payment, uiAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPts, earnedPts, rcptName, rcptPhone) {
             
             gtag('event', 'conversion', { 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 'value': finalAllPrice, 'currency': 'TWD', 'transaction_id': orderId });
             
@@ -1697,9 +1793,17 @@
             document.getElementById('receipt-date').innerText = dateStr;
             
             if(delivery === '宅配') {
+                // 顯示專屬收件人資訊列
+                document.getElementById('receipt-rcpt-name-row').style.display = 'flex';
+                document.getElementById('receipt-rcpt-name').innerText = rcptName;
+                document.getElementById('receipt-rcpt-phone-row').style.display = 'flex';
+                document.getElementById('receipt-rcpt-phone').innerText = rcptPhone;
+                
                 document.getElementById('receipt-address-row').style.display = 'flex';
-                document.getElementById('receipt-address').innerText = fullAddress;
+                document.getElementById('receipt-address').innerText = uiAddress;
             } else {
+                document.getElementById('receipt-rcpt-name-row').style.display = 'none';
+                document.getElementById('receipt-rcpt-phone-row').style.display = 'none';
                 document.getElementById('receipt-address-row').style.display = 'none';
             }
 
