@@ -59,7 +59,7 @@
             --radius-box: 12px;      /* 卡片圓角 */
             --radius-pill: 50px;     /* 按鈕圓角 */
             --shadow-float: 0 10px 30px rgba(140, 123, 117, 0.1); /* 懸浮陰影 */
-            --shadow-card: 0 4px 12px rgba(0,0,0,0.03);             /* 卡片微陰影 */
+            --shadow-card: 0 4px 12px rgba(0,0,0,0.03);              /* 卡片微陰影 */
             --font-title: 'Noto Serif TC', serif;
             --font-body: 'Noto Sans TC', sans-serif;
             --max-w: 520px;          /* 收窄寬度，增加精緻感 */
@@ -486,9 +486,15 @@
                 <img src="logo.jpg" alt="Logo" class="header-logo">
                 <span>hello好酪</span>
             </header>
-
             <div class="container">
                 
+                <div class="announcement-banner">
+                    <strong>📢 滿單公告</strong>
+                    目前訂單熱烈，門市自取滿單至 <span class="highlight-date">05/15</span><br>
+                    宅配出貨滿單至 <span class="highlight-date">05/18</span><br>
+                    感謝您的耐心等候與支持！
+                </div>
+
                 <div class="section-header">綿密口感</div>
                 <div class="package-box" style="padding: 10px;">
                     <video class="package-img" controls autoplay loop muted playsinline style="margin-bottom:0; border-radius: 6px;">
@@ -585,7 +591,6 @@
                         <div style="font-size:0.85rem; color:#D84315; margin-top:8px;">* 為確保運送安全，宅配請以「6的倍數」下單 (整盒出貨)。</div>
                     </div>
 
-                    <!-- 新增的收件人區塊 -->
                     <div id="recipient-section" style="display:none; margin-top:20px; padding:20px 15px; background:#FDFBF8; border:1px solid #EFEBE9; border-radius:8px;">
                         <div style="font-weight:bold; color:var(--c-primary); margin-bottom:12px; font-size: 1.05rem;">📦 收件人資訊</div>
                         
@@ -647,7 +652,7 @@
                         
                         <input type="text" id="delivery-date-text" class="form-input" value="宅配不指定日期 (需指定請洽客服)" disabled style="display:none; background:#eee;">
                         
-                        <div style="font-size:0.85rem; color:var(--c-danger); margin-top:8px;" id="date-hint"></div>
+                        <div style="font-size:0.85rem; color:var(--c-danger); margin-top:8px; line-height:1.4;" id="date-hint"></div>
                     </div>
                 </div>
 
@@ -786,7 +791,6 @@
                 <div class="receipt-row"><span>訂購人</span><span id="receipt-name"></span></div>
                 <div class="receipt-row"><span>電話</span><span id="receipt-phone"></span></div>
                 
-                <!-- 新增收據中的收件人顯示 -->
                 <div class="receipt-row" id="receipt-rcpt-name-row" style="display:none; background:#FFF8E1; padding:8px 12px; border-radius:4px; margin-top:5px; border-bottom: none;">
                     <span style="color:#D84315;">📦 收件人</span><span id="receipt-rcpt-name" style="font-weight:bold;"></span>
                 </div>
@@ -1028,12 +1032,6 @@
             const dateLabel = document.getElementById('date-label');
             const recipientSection = document.getElementById('recipient-section');
             
-            const now = new Date();
-            const currentHour = now.getHours();
-            
-            // 早上 08:00 前結單最快後天，08:00 後最快大後天
-            let startDays = (currentHour < 8) ? 2 : 3;
-
             if (mode === 'delivery') {
                 dateLabel.innerHTML = '預計出貨日 <span class="req-star">*</span>';
                 selectEl.style.display = 'block';
@@ -1041,18 +1039,16 @@
                 addressRow.style.display = 'block';
                 pickupInfoBox.style.display = 'none'; 
                 deliveryInfoBox.style.display = 'block'; 
-                recipientSection.style.display = 'block'; // 顯示收件人資訊
+                recipientSection.style.display = 'block'; 
 
                 const hasDubai = cart.some(item => item.id === 12);
                 if (hasDubai) {
                     hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間出貨。";
                 } else {
-                    hint.innerText = (currentHour < 8) 
-                        ? "提醒：早上 08:00 前結單，最快可選擇後天出貨 (宅配出貨日為週二~週五)" 
-                        : "提醒：已過早上 08:00，最快可選擇大後天出貨 (宅配出貨日為週二~週五)";
+                    hint.innerText = "提醒：訂單熱烈，宅配出貨滿單至 05/18，最快可選擇 05/19 出貨 (宅配出貨日為週二~週五)";
                 }
 
-                generateOptions('delivery', startDays);
+                generateOptions('delivery', 0);
             } else {
                 dateLabel.innerHTML = '預計到店取貨日 <span class="req-star">*</span>';
                 selectEl.style.display = 'block';
@@ -1060,13 +1056,11 @@
                 addressRow.style.display = 'none';
                 pickupInfoBox.style.display = 'block'; 
                 deliveryInfoBox.style.display = 'none';
-                recipientSection.style.display = 'none'; // 隱藏收件人資訊
+                recipientSection.style.display = 'none'; 
 
-                hint.innerText = (currentHour < 8) 
-                    ? "提醒：早上 08:00 前結單，最快可選擇後天門市自取 (週日、週一公休)" 
-                    : "提醒：已過早上 08:00，最快可選擇大後天門市自取 (週日、週一公休)";
+                hint.innerText = "提醒：訂單熱烈，門市自取滿單至 05/15，最快可選擇 05/16 門市自取 (週日、週一公休)";
 
-                generateOptions('pickup', startDays);
+                generateOptions('pickup', 0);
             }
         }
 
@@ -1133,7 +1127,7 @@
             let startDate = new Date(now);
             startDate.setDate(startDate.getDate() + startDays);
             
-            for(let i=0; i<30; i++) {
+            for(let i=0; i<60; i++) {
                 let current = new Date(startDate);
                 current.setDate(startDate.getDate() + i);
 
@@ -1141,16 +1135,17 @@
                 let cMonth = current.getMonth();
                 let cDate = current.getDate();
 
-                if (cYear < 2026 || (cYear === 2026 && cMonth < 3) || (cYear === 2026 && cMonth === 3 && cDate <= 5)) {
-                    continue; 
-                }
-
-                if (cYear === 2026 && cMonth === 1 && cDate >= 15 && cDate <= 23) {
-                    continue; 
-                }
-                
-                if (cYear === 2026 && cMonth === 2 && cDate >= 24 && cDate <= 27) {
-                    continue; 
+                // 🎯 滿單限制邏輯
+                if (mode === 'delivery') {
+                    // 宅配關閉至 2026/05/18，2026/05/19 起開放
+                    if (cYear < 2026 || (cYear === 2026 && cMonth < 4) || (cYear === 2026 && cMonth === 4 && cDate <= 18)) {
+                        continue;
+                    }
+                } else {
+                    // 自取關閉至 2026/05/15，2026/05/16 起開放
+                    if (cYear < 2026 || (cYear === 2026 && cMonth < 4) || (cYear === 2026 && cMonth === 4 && cDate <= 15)) {
+                        continue;
+                    }
                 }
                 
                 let day = current.getDay(); 
