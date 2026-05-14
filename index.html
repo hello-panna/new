@@ -1698,11 +1698,12 @@
             }
 
             fetch(GOOGLE_FORM_URL, {
-                method: "POST", body: formData, mode: "no-cors"
-            }).then(() => {
-                if (email && TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
-                    
-                    const backendOrderData = {
+    method: "POST", body: formData, mode: "no-cors"
+}).then(() => {
+    // 移除 email 的條件限制，讓訂單資料無論如何都會傳送到 Google Sheets
+    if (TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
+        
+        const backendOrderData = {
                         items: cart,
                         originalTotal: rawTotal,
                         discountPoints: usedPoints,
