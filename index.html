@@ -1065,7 +1065,16 @@ if (now < cutoff) {
                 deliveryInfoBox.style.display = 'none';
                 recipientSection.style.display = 'none'; 
 
-                hint.innerText = "提醒：訂單熱烈，門市自取滿單至 05/15，最快可選擇 05/16 門市自取 (週日、週一公休)";
+                // --- 加入自動判斷時間替換文字的邏輯 ---
+                const now = new Date();
+                const cutoff = new Date('2026-05-16T06:00:00');
+
+                if (now < cutoff) {
+                    hint.innerText = "提醒：訂單熱烈，門市自取滿單至 05/15，最快可選擇 05/16 門市自取 (週日、週一公休)";
+                } else {
+                    hint.innerText = "提醒：訂單熱烈，門市自取滿單至 05/18，最快可選擇 05/19 門市自取 (週日、週一公休)";
+                }
+                // ------------------------------------
 
                 generateOptions('pickup', 0);
             }
