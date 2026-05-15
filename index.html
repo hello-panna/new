@@ -488,12 +488,12 @@
             </header>
             <div class="container">
                 
-                <div class="announcement-banner">
-                    <strong>📢 滿單公告</strong>
-                    目前訂單熱烈，門市自取滿單至 <span class="highlight-date">05/15</span><br>
-                    宅配出貨滿單至 <span class="highlight-date">05/18</span><br>
-                    感謝您的耐心等候與支持！
-                </div>
+               <div class="announcement-banner">
+    <strong>📢 包裝微調公告</strong>
+    因近期訂單踴躍，品牌專屬「印刷杯」暫時缺貨中。<br>
+    過渡期間將採用同材質的「貼紙杯」為您裝填美味奶酪。<br>
+    風味不變，心意依舊！造成不便，敬請見諒 😊
+</div>
 
                 <div class="section-header">綿密口感</div>
                 <div class="package-box" style="padding: 10px;">
@@ -1045,7 +1045,14 @@
                 if (hasDubai) {
                     hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間出貨。";
                 } else {
-                    hint.innerText = "提醒：訂單熱烈，宅配出貨滿單至 05/18，最快可選擇 05/19 出貨 (宅配出貨日為週二~週五)";
+                    const now = new Date();
+const cutoff = new Date('2026-05-16T06:00:00'); // 設定分水嶺時間
+
+if (now < cutoff) {
+    hint.innerText = "提醒：最快可選擇 05/16 門市自取 (週日、週一固定公休)";
+} else {
+    hint.innerText = "提醒：最快可選擇 05/19 門市自取 (週日、週一固定公休)";
+}
                 }
 
                 generateOptions('delivery', 0);
@@ -1142,11 +1149,22 @@
                         continue;
                     }
                 } else {
-                    // 自取關閉至 2026/05/15，2026/05/16 起開放
-                    if (cYear < 2026 || (cYear === 2026 && cMonth < 4) || (cYear === 2026 && cMonth === 4 && cDate <= 15)) {
-                        continue;
-                    }
-                }
+    // 自取動態開放邏輯：判斷當下是否超過 05/16 06:00
+    const now = new Date();
+    const cutoff = new Date('2026-05-16T06:00:00');
+    
+    if (now < cutoff) {
+        // 05/16 06:00 前：關閉至 05/15 (05/16 起開放)
+        if (cYear < 2026 || (cYear === 2026 && cMonth < 4) || (cYear === 2026 && cMonth === 4 && cDate <= 15)) {
+            continue;
+        }
+    } else {
+        // 05/16 06:00 後：關閉至 05/18 (05/19 起開放)
+        if (cYear < 2026 || (cYear === 2026 && cMonth < 4) || (cYear === 2026 && cMonth === 4 && cDate <= 18)) {
+            continue;
+        }
+    }
+}
                 
                 let day = current.getDay(); 
                 let month = current.getMonth() + 1;
