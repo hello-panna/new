@@ -1045,10 +1045,10 @@
                 if (hasDubai) {
                     hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間出貨。";
                 } else {
-                    hint.innerText = "提醒：最快可選擇兩天後出貨 (週六、日、一公休不出貨)";
+                    hint.innerText = "提醒：最快可選擇一天後出貨 (週六、日、一公休不出貨)";
                 }
 
-                generateOptions('delivery', 2);
+                generateOptions('delivery', 1);
             } else {
                 dateLabel.innerHTML = '預計到店取貨日 <span class="req-star">*</span>';
                 selectEl.style.display = 'block';
@@ -1062,10 +1062,10 @@
                 if (hasDubai) {
                     hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間自取。";
                 } else {
-                    hint.innerText = "提醒：最快可選擇兩天後門市自取 (週日、週一固定公休)";
+                    hint.innerText = "提醒：最快可選擇一天後門市自取 (週日、週一固定公休)";
                 }
 
-                generateOptions('pickup', 2);
+                generateOptions('pickup', 1);
             }
         }
 
