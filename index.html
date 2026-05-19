@@ -1045,17 +1045,10 @@
                 if (hasDubai) {
                     hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間出貨。";
                 } else {
-                    const now = new Date();
-const cutoff = new Date('2026-05-16T06:00:00'); // 設定分水嶺時間
-
-if (now < cutoff) {
-    hint.innerText = "提醒：最快可選擇 05/16 門市自取 (週日、週一固定公休)";
-} else {
-    hint.innerText = "提醒：最快可選擇 05/19 門市自取 (週日、週一固定公休)";
-}
+                    hint.innerText = "提醒：最快可選擇兩天後出貨 (週六、日、一公休不出貨)";
                 }
 
-                generateOptions('delivery', 0);
+                generateOptions('delivery', 2);
             } else {
                 dateLabel.innerHTML = '預計到店取貨日 <span class="req-star">*</span>';
                 selectEl.style.display = 'block';
@@ -1065,18 +1058,14 @@ if (now < cutoff) {
                 deliveryInfoBox.style.display = 'none';
                 recipientSection.style.display = 'none'; 
 
-                // --- 加入自動判斷時間替換文字的邏輯 ---
-                const now = new Date();
-                const cutoff = new Date('2026-05-16T06:00:00');
-
-                if (now < cutoff) {
-                    hint.innerText = "提醒：訂單熱烈，門市自取滿單至 05/15，最快可選擇 05/16 門市自取 (週日、週一公休)";
+                const hasDubai = cart.some(item => item.id === 12);
+                if (hasDubai) {
+                    hint.innerText = "提醒：訂單包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 期間自取。";
                 } else {
-                    hint.innerText = "提醒：訂單熱烈，門市自取滿單至 05/18，最快可選擇 05/19 門市自取 (週日、週一公休)";
+                    hint.innerText = "提醒：最快可選擇兩天後門市自取 (週日、週一固定公休)";
                 }
-                // ------------------------------------
 
-                generateOptions('pickup', 0);
+                generateOptions('pickup', 2);
             }
         }
 
@@ -1146,40 +1135,12 @@ if (now < cutoff) {
             for(let i=0; i<60; i++) {
                 let current = new Date(startDate);
                 current.setDate(startDate.getDate() + i);
-
-                let cYear = current.getFullYear();
-                let cMonth = current.getMonth();
-                let cDate = current.getDate();
-
-                // 🎯 滿單限制邏輯
-                if (mode === 'delivery') {
-                    // 宅配關閉至 2026/05/18，2026/05/19 起開放
-                    if (cYear < 2026 || (cYear === 2026 && cMonth < 4) || (cYear === 2026 && cMonth === 4 && cDate <= 18)) {
-                        continue;
-                    }
-                } else {
-    // 自取動態開放邏輯：判斷當下是否超過 05/16 06:00
-    const now = new Date();
-    const cutoff = new Date('2026-05-16T06:00:00');
-    
-    if (now < cutoff) {
-        // 05/16 06:00 前：關閉至 05/15 (05/16 起開放)
-        if (cYear < 2026 || (cYear === 2026 && cMonth < 4) || (cYear === 2026 && cMonth === 4 && cDate <= 15)) {
-            continue;
-        }
-    } else {
-        // 05/16 06:00 後：關閉至 05/18 (05/19 起開放)
-        if (cYear < 2026 || (cYear === 2026 && cMonth < 4) || (cYear === 2026 && cMonth === 4 && cDate <= 18)) {
-            continue;
-        }
-    }
-}
                 
                 let day = current.getDay(); 
                 let month = current.getMonth() + 1;
                 let date = current.getDate();
                 let dayStr = ['日','一','二','三','四','五','六'][day];
-                let dateStr = `${month}/${date} (週${dayStr})`;
+                let dateStr = `${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (週${dayStr})`;
                 let fullDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (${dayStr})`;
 
                 if (mode === 'delivery') {
