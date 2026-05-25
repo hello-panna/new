@@ -466,7 +466,7 @@
         }
     </style>
 </head>   
-    <body>
+<body>
 
     <div id="loading-overlay">
         <div class="spinner"></div>
@@ -663,16 +663,16 @@
                     </div>
 
                     <div class="form-label" style="margin-top:20px;">付款方式 <span class="req-star">*</span></div>
-<div class="radio-group" style="flex-direction: column; gap: 10px;">
-    <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 10px;">
-        <input type="radio" name="paymentMethod" value="ECPAY_Credit_LINEPay" class="radio-input" checked>
-        <span style="font-size: 1rem;">💳 信用卡 / LINE Pay (綠界金流)</span>
-    </label>
-    <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 10px;">
-        <input type="radio" name="paymentMethod" value="ECPAY_ATM" class="radio-input">
-        <span style="font-size: 1rem;">🏧 產出 ATM 虛擬帳號轉帳</span>
-    </label>
-</div>
+                    <div class="radio-group" style="flex-direction: column; gap: 10px;">
+                        <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 10px;">
+                            <input type="radio" name="paymentMethod" value="ECPAY_Credit_LINEPay" class="radio-input" checked>
+                            <span style="font-size: 1rem;">💳 信用卡 / LINE Pay (綠界金流)</span>
+                        </label>
+                        <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 10px;">
+                            <input type="radio" name="paymentMethod" value="ECPAY_ATM" class="radio-input">
+                            <span style="font-size: 1rem;">🏧 產出 ATM 虛擬帳號轉帳</span>
+                        </label>
+                    </div>
                     
                     <div style="margin-top: 25px;">
                         <div class="coupon-section" style="margin-bottom: 10px; border-color: #e67e22;">
@@ -862,6 +862,9 @@
             <button onclick="closeRefundPolicy()" style="display: block; width: 100%; margin-top: 25px; padding: 12px; background: var(--c-primary); color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer;">關閉</button>
         </div>
     </div>
+
+    <form id="ecpay-post-form" method="POST" action="https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5" style="display:none;"></form>
+
     <script>
         const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
         const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSenpCJdVZWJ4seiaz4GimXwasppPbnX3o1pLGyrnIMWaJ_sqw/formResponse";
@@ -933,7 +936,6 @@
         const discountBadge = document.getElementById('discount-badge');
         const loadingOverlay = document.getElementById('loading-overlay');
 
-        // 同訂購人資料的雙向綁定邏輯
         function toggleRecipientSame() {
             const isSame = document.getElementById('same-as-cust').checked;
             const rName = document.getElementById('rcpt-name');
@@ -950,7 +952,6 @@
             }
         }
 
-        // 監聽訂購人輸入框，如果「同訂購人」有打勾，就即時同步到收件人
         document.getElementById('cust-name').addEventListener('input', function() {
             if(document.getElementById('same-as-cust').checked) document.getElementById('rcpt-name').value = this.value;
         });
@@ -1143,7 +1144,6 @@
                 let fullDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (${dayStr})`;
 
                 if (mode === 'delivery') {
-                    // 宅配僅開放 週二 到 週五
                     if (day >= 2 && day <= 5) {
                         let opt = document.createElement('option');
                         opt.value = `${fullDateStr} 宅配出貨`;
@@ -1151,8 +1151,7 @@
                         select.appendChild(opt);
                     }
                 } else {
-                    // 自取開放 週二 到 週六
-                    if (day >= 2 && day <= 5) { // 週二至週五 (中午12:00~18:00)
+                    if (day >= 2 && day <= 5) {
                         const weekdaySlots = ['12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'];
                         weekdaySlots.forEach(slotTime => {
                             let opt = document.createElement('option');
@@ -1161,7 +1160,7 @@
                             select.appendChild(opt);
                         });
                     }
-                    else if (day === 6) { // 週六 (早上10:00~18:00)
+                    else if (day === 6) {
                         const weekendSlots = ['10:00~11:00', '11:00~12:00', '12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'];
                         weekendSlots.forEach(slotTime => {
                             let opt = document.createElement('option');
@@ -1187,7 +1186,6 @@
             }
         }
 
-        // 一鍵複製訂單資訊
         function copyOrderInfo() {
             const orderId = document.getElementById('receipt-order-id').innerText;
             const name = document.getElementById('receipt-name').innerText;
@@ -1212,7 +1210,6 @@
             copyText += `手機號碼：${phone}\n`;
             copyText += `取貨方式：${delivery}\n`;
             
-            // 宅配特別顯示收件人
             if (delivery === '宅配') {
                 const rName = document.getElementById('receipt-rcpt-name').innerText;
                 const rPhone = document.getElementById('receipt-rcpt-phone').innerText;
@@ -1479,6 +1476,7 @@
             renderCart();
         }
 
+        // 🌟 金流修正 2：全方位優化拋接偵錯能力，杜絕不透明的生成失敗
         async function processCheckout() {
             if (cart.length === 0) { alert("請先加入商品"); return; }
 
@@ -1509,7 +1507,6 @@
                 return;
             }
 
-            // --- 新增收件人檢查與整合地址邏輯 ---
             let uiAddress = "";
             let backendAddress = "";
             let rcptName = "";
@@ -1535,40 +1532,7 @@
                 }
 
                 uiAddress = city + detailAddr;
-                // 將收件人資訊封裝進 Google Form 接收的單一地址欄位字串中
                 backendAddress = `收件人：${rcptName} (${rcptPhone}) / 地址：${uiAddress}`;
-            }
-
-            if (appliedCoupon) {
-                if (!TRAFFIC_SCRIPT_URL || TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
-                    alert("系統錯誤：尚未設定後端檢查網址，請聯繫管理員。"); return;
-                }
-                const submitBtn = document.getElementById('submit-btn');
-                const originalBtnText = submitBtn.innerText;
-                submitBtn.innerText = "驗證折扣中..."; 
-                submitBtn.disabled = true;
-
-                try {
-                    const checkUrl = TRAFFIC_SCRIPT_URL + "?action=checkDiscount&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email) + "&code=" + encodeURIComponent(appliedCoupon.code);
-                    const response = await fetch(checkUrl);
-                    const data = await response.json();
-                    
-                    if (data.used === true) {
-                        alert("【系統提醒】\n此電話號碼或 Email 已經使用過此折扣碼，無法再次使用。\n\n系統將自動移除折扣碼，請重新確認金額後再結帳。");
-                        appliedCoupon = null; 
-                        document.getElementById('coupon-code').value = ""; 
-                        document.getElementById('coupon-msg').innerText = "";
-                        renderCart(); 
-                        submitBtn.innerText = originalBtnText; 
-                        submitBtn.disabled = false; 
-                        return; 
-                    }
-                } catch (error) { 
-                    console.error("驗證失敗:", error); 
-                }
-                
-                submitBtn.innerText = originalBtnText; 
-                submitBtn.disabled = false;
             }
 
             let finalDateStr = "";
@@ -1644,13 +1608,12 @@
             }
             confirmMsg += `取貨方式：${delivery}\n日期：${finalDateStr}\n訂購人：${name}\n電話：${phone}\n`;
             
-            // 宅配特別顯示收件人與地址
             if(delivery === '宅配') {
                 confirmMsg += `收件人：${rcptName}\n收件電話：${rcptPhone}\n地址：${uiAddress}\n`;
             }
             
             if(remarks) confirmMsg += `備註：${remarks}\n`;
-            confirmMsg += `付款方式：${payment === 'linepay' ? 'LINE Pay' : '銀行匯款'}\n\n請確認以上資訊無誤，點擊「確定」送出訂單。`;
+            confirmMsg += `付款方式：${payment === 'ECPAY_ATM' ? 'ATM 虛擬帳號' : '信用卡 / LINE Pay'}\n\n請確認以上資訊無誤，點擊「確定」送出訂單。`;
 
             if (!confirm(confirmMsg)) return; 
 
@@ -1669,7 +1632,7 @@
             formData.append(FORM_FIELDS.email, email);
             formData.append(FORM_FIELDS.payment, payment);                
             formData.append(FORM_FIELDS.delivery, delivery);              
-            formData.append(FORM_FIELDS.address, backendAddress); // 寫入合併過的新地址字串       
+            formData.append(FORM_FIELDS.address, backendAddress);       
             formData.append(FORM_FIELDS.date, finalDateStr);              
             formData.append(FORM_FIELDS.cups, totalCups);                 
             formData.append(FORM_FIELDS.subtotal, rawTotal); 
@@ -1684,14 +1647,13 @@
                 if (flavorCounts[id] > 0) formData.append(FLAVOR_MAPPING[id], flavorCounts[id]);
             }
 
+            // 先行遞交至舊有的 Google Forms 管道進行資料搜集備份
             fetch(GOOGLE_FORM_URL, {
                 method: "POST", body: formData, mode: "no-cors"
             }).then(async () => {
                 
-                // 檢查是否有設定後端 GAS
                 if (TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     
-                    // 打包要傳給 GAS 做紀錄與計算綠界檢查碼的資料
                     const backendOrderData = {
                         items: cart,
                         originalTotal: rawTotal,
@@ -1716,7 +1678,6 @@
                     try {
                         document.getElementById('loading-text').innerText = "訂單已登記！正在連線綠界安全金流...";
                         
-                        // 向您的 GAS 發送請求，要求建立綠界需要的發票/壓碼參數
                         const response = await fetch(TRAFFIC_SCRIPT_URL, {
                             method: "POST",
                             body: JSON.stringify({ 
@@ -1731,14 +1692,21 @@
                             })
                         });
                         
-                        const result = await response.json();
+                        // 🛠️ 雷達診斷防爆網：讀取未加工文字
+                        const rawText = await response.text();
+                        console.log("後端拋接雷達回傳內容：", rawText);
+                        
+                        let result;
+                        try {
+                            result = JSON.parse(rawText);
+                        } catch(jsonErr) {
+                            result = { success: false, msg: "後端 GAS 回傳非標準 JSON 格式物件" };
+                        }
                         
                         if (result.success && result.ecpayParams) {
-                            // 🌟 【關鍵安全作法】動態將綠界參數塞入隱藏表單，並以 POST 遞交
                             const ecpayForm = document.getElementById('ecpay-post-form');
-                            ecpayForm.innerHTML = ''; // 先清空舊內容
+                            ecpayForm.innerHTML = ''; 
                             
-                            // 遍歷後端傳回來的所有綠界必要參數（包含 CheckMacValue）
                             for (const key in result.ecpayParams) {
                                 if (result.ecpayParams.hasOwnProperty(key)) {
                                     const hiddenInput = document.createElement('input');
@@ -1749,24 +1717,23 @@
                                 }
                             }
                             
-                            // 遞交表單，頁面將安全轉跳至綠界支付畫面
                             loadingOverlay.style.display = 'none';
-                            ecpayForm.submit();
+                            ecpayForm.submit(); // 安全推進綠界支付網關
                             
                         } else {
-                            alert("金流參數生成失敗：" + (result.msg || "請聯繫客服。"));
+                            // 🛠️ 雷達直接顯示真相：若錯誤，直接跳窗指出 GAS 的輸出狀況
+                            alert("【金流對接診斷視窗】\n狀態碼解析錯誤：" + (result.msg || "物件屬性缺失") + "\n\n後端回傳的原始字串回報如下：\n" + rawText);
                             loadingOverlay.style.display = 'none';
                             document.getElementById('submit-btn').disabled = false;
                         }
                         
                     } catch (e) {
                         console.error("金流串接發生錯誤:", e);
-                        alert("後端系統忙碌中，但您的訂單已送出！請點擊確定查看您的轉帳匯款帳號。");
+                        alert("後端金流連線異常，但您的訂單已送出！請點擊確定查看您的轉帳匯款帳號。");
                         showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPoints, earnedPoints, rcptName, rcptPhone);
                         loadingOverlay.style.display = 'none';
                     }
                 } else {
-                    // 若無設定後端，直接走原本的收據畫面
                     showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPoints, earnedPoints, rcptName, rcptPhone);
                     loadingOverlay.style.display = 'none';
                 }
@@ -1776,7 +1743,6 @@
             });
         }
 
-        // 修改後的收據函式增加 rcptName 與 rcptPhone 參數
         function showReceipt(name, phone, email, dateStr, delivery, payment, uiAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPts, earnedPts, rcptName, rcptPhone) {
             
             gtag('event', 'conversion', { 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 'value': finalAllPrice, 'currency': 'TWD', 'transaction_id': orderId });
@@ -1818,7 +1784,6 @@
             document.getElementById('receipt-date').innerText = dateStr;
             
             if(delivery === '宅配') {
-                // 顯示專屬收件人資訊列
                 document.getElementById('receipt-rcpt-name-row').style.display = 'flex';
                 document.getElementById('receipt-rcpt-name').innerText = rcptName;
                 document.getElementById('receipt-rcpt-phone-row').style.display = 'flex';
@@ -1889,6 +1854,4 @@
         init();
     </script>
 </body>
-<form id="ecpay-post-form" method="POST" action="https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5" style="display:none;">
-    </form>
-</html>
+</html>    
