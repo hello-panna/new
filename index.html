@@ -663,16 +663,16 @@
                     </div>
 
                     <div class="form-label" style="margin-top:20px;">付款方式 <span class="req-star">*</span></div>
-                    <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="paymentMethod" value="linepay" class="radio-input" checked>
-                            <span>LINE Pay</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="paymentMethod" value="bank" class="radio-input">
-                            <span>銀行匯款</span>
-                        </label>
-                    </div>
+<div class="radio-group" style="flex-direction: column; gap: 10px;">
+    <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 10px;">
+        <input type="radio" name="paymentMethod" value="ECPAY_Credit_LINEPay" class="radio-input" checked>
+        <span style="font-size: 1rem;">💳 信用卡 / LINE Pay (綠界金流)</span>
+    </label>
+    <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 10px;">
+        <input type="radio" name="paymentMethod" value="ECPAY_ATM" class="radio-input">
+        <span style="font-size: 1rem;">🏧 產出 ATM 虛擬帳號轉帳</span>
+    </label>
+</div>
                     
                     <div style="margin-top: 25px;">
                         <div class="coupon-section" style="margin-bottom: 10px; border-color: #e67e22;">
@@ -1685,12 +1685,14 @@
             }
 
             fetch(GOOGLE_FORM_URL, {
-    method: "POST", body: formData, mode: "no-cors"
-}).then(() => {
-    // 移除 email 的條件限制，讓訂單資料無論如何都會傳送到 Google Sheets
-    if (TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
-        
-        const backendOrderData = {
+                method: "POST", body: formData, mode: "no-cors"
+            }).then(async () => {
+                
+                // 檢查是否有設定後端 GAS
+                if (TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
+                    
+                    // 打包要傳給 GAS 做紀錄與計算綠界檢查碼的資料
+                    const backendOrderData = {
                         items: cart,
                         originalTotal: rawTotal,
                         discountPoints: usedPoints,
@@ -1702,7 +1704,7 @@
                         email: email,
                         name: name,
                         delivery: delivery,
-                        address: backendAddress, // 這裡也同步寫入合併過的地址
+                        address: backendAddress,
                         date: finalDateStr,
                         shippingFee: shippingFee,
                         finalTotal: finalAllPrice,
@@ -1711,23 +1713,63 @@
                         couponCode: appliedCoupon ? appliedCoupon.code : "" 
                     };
 
-                    fetch(TRAFFIC_SCRIPT_URL, {
-                        method: "POST",
-                        body: JSON.stringify({ 
-                            action: "addMember", 
-                            phone: phone, 
-                            email: email, 
-                            name: name,
-                            points: earnedPoints, 
-                            usedPoints: usedPoints, 
-                            orderId: orderId,
-                            orderData: backendOrderData 
-                        })
-                    }).catch(e => console.log(e));
+                    try {
+                        document.getElementById('loading-text').innerText = "訂單已登記！正在連線綠界安全金流...";
+                        
+                        // 向您的 GAS 發送請求，要求建立綠界需要的發票/壓碼參數
+                        const response = await fetch(TRAFFIC_SCRIPT_URL, {
+                            method: "POST",
+                            body: JSON.stringify({ 
+                                action: "createEcpayOrder", 
+                                phone: phone, 
+                                email: email, 
+                                name: name,
+                                points: earnedPoints, 
+                                usedPoints: usedPoints, 
+                                orderId: orderId,
+                                orderData: backendOrderData 
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success && result.ecpayParams) {
+                            // 🌟 【關鍵安全作法】動態將綠界參數塞入隱藏表單，並以 POST 遞交
+                            const ecpayForm = document.getElementById('ecpay-post-form');
+                            ecpayForm.innerHTML = ''; // 先清空舊內容
+                            
+                            // 遍歷後端傳回來的所有綠界必要參數（包含 CheckMacValue）
+                            for (const key in result.ecpayParams) {
+                                if (result.ecpayParams.hasOwnProperty(key)) {
+                                    const hiddenInput = document.createElement('input');
+                                    hiddenInput.type = 'hidden';
+                                    hiddenInput.name = key;
+                                    hiddenInput.value = result.ecpayParams[key];
+                                    ecpayForm.appendChild(hiddenInput);
+                                }
+                            }
+                            
+                            // 遞交表單，頁面將安全轉跳至綠界支付畫面
+                            loadingOverlay.style.display = 'none';
+                            ecpayForm.submit();
+                            
+                        } else {
+                            alert("金流參數生成失敗：" + (result.msg || "請聯繫客服。"));
+                            loadingOverlay.style.display = 'none';
+                            document.getElementById('submit-btn').disabled = false;
+                        }
+                        
+                    } catch (e) {
+                        console.error("金流串接發生錯誤:", e);
+                        alert("後端系統忙碌中，但您的訂單已送出！請點擊確定查看您的轉帳匯款帳號。");
+                        showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPoints, earnedPoints, rcptName, rcptPhone);
+                        loadingOverlay.style.display = 'none';
+                    }
+                } else {
+                    // 若無設定後端，直接走原本的收據畫面
+                    showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPoints, earnedPoints, rcptName, rcptPhone);
+                    loadingOverlay.style.display = 'none';
                 }
-
-                showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPoints, earnedPoints, rcptName, rcptPhone);
-                loadingOverlay.style.display = 'none';
             }).catch(err => {
                 alert("訂單傳送失敗，請檢查網路或稍後再試。\n" + err);
                 loadingOverlay.style.display = 'none'; document.getElementById('submit-btn').disabled = false;
@@ -1847,4 +1889,6 @@
         init();
     </script>
 </body>
+<form id="ecpay-post-form" method="POST" action="https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5" style="display:none;">
+    </form>
 </html>
