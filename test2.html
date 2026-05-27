@@ -979,56 +979,46 @@
                 if (TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     const backendOrderData = { items: cart, originalTotal: currentRawTotal, discountPoints: usedPoints, otherDiscount: currentDiscountAmount - usedPoints, paymentMethod: payment, receivedAmount: currentFinalTotal, changeAmount: 0, phone: phone, email: email, name: name, delivery: delivery, address: backendAddress, date: finalDateStr, shippingFee: currentShippingFee, finalTotal: currentFinalTotal, remarks: remarks, totalCups: currentTotalCups, couponCode: appliedCoupon ? appliedCoupon.code : "" };
                     try {
-                        if (payment === 'LinePay') {
-                            document.getElementById('loading-text').innerText = "系統已登記訂單！正在同步試算表與會員點數...";
-                        } else {
-                            document.getElementById('loading-text').innerText = "系統已登記訂單！正在連線綠界安全支付網關...";
-                        }
+                        document.getElementById('loading-text').innerText = "系統已登記訂單！正在為您準備結帳收據...";
 
                         const response = await fetch(TRAFFIC_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "createEcpayOrder", phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, orderId: orderId, orderData: backendOrderData, paymentMethod: payment }) });
                         const rawText = await response.text();
                         let result; try { result = JSON.parse(rawText); } catch(jsonErr) { result = { success: false, msg: "後端回傳格式非標準 JSON" }; }
                         
                         if (result.success) {
-                            
-                            // 📱 【核心修正】如果是 LINE Pay，此時試算表已經寫入成功，我們在這裡直接攔截並顯示收據，不跳轉綠界
-                            if (payment === 'LinePay') {
-                                showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
-                                document.getElementById('loading-overlay').style.display = 'none';
-                                return;
-                            }
-
-                            // 💳 如果是綠界金流渠道（信用卡、Apple Pay、ATM），則正常塞入引導表單並執行自動 POST 跳轉
-                            if (result.ecpayParams) {
+                            // 若綠界回傳參數存在，我們將參數塞入隱藏表單（但不立刻跳轉）
+                            if (result.ecpayParams && payment !== 'LinePay') {
                                 const ecpayForm = document.getElementById('ecpay-post-form'); ecpayForm.innerHTML = ''; 
                                 for (const key in result.ecpayParams) {
                                     if (result.ecpayParams.hasOwnProperty(key)) {
                                         const hiddenInput = document.createElement('input'); hiddenInput.type = 'hidden'; hiddenInput.name = key; hiddenInput.value = result.ecpayParams[key]; ecpayForm.appendChild(hiddenInput);
                                     }
                                 }
-                                document.getElementById('loading-overlay').style.display = 'none';
-                                ecpayForm.submit(); 
                             }
+                            
+                            // 無論何種付款方式，通通呼叫 showReceipt 先顯示收據與大按鈕
+                            showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
+                            document.getElementById('loading-overlay').style.display = 'none';
+
                         } else {
                             alert("【系統登記失敗】\n" + (result.msg || "參數異常") + "\n請截圖告知客服為您確認試算表狀態。");
                             document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('btn-next').disabled = false;
                         }
                     } catch (e) {
-                        // 備用防爆網：若中央 Apps Script 真的連線逾時，依舊讓客人看得到匯款/LINE Pay 畫面
-                        alert("中央伺服器同步線路異常，但您的訂單已透過防漏管道送出！請點擊確定查看您的訂單明細與付款條碼。");
+                        alert("中央伺服器同步線路異常，但您的訂單已透過防漏管道安全送出！請點擊確定查看您的訂單明細與付款條碼。");
                         showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
                         document.getElementById('loading-overlay').style.display = 'none';
                     }
                 } else {
-                    // 未指定 TRAFFIC_SCRIPT_URL 的本地測試環境
                     showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
                     document.getElementById('loading-overlay').style.display = 'none';
                 }
             }).catch(err => { alert("伺服器連線中斷，傳送失敗，請檢查您的網路訊號。"); document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('btn-next').disabled = false; });
         }
 
+
         // ==========================================
-        // 6. 收據生成與一鍵複製功能
+        // 收據與一鍵複製功能 (整合全付款管道動態按鈕)
         // ==========================================
         function showReceipt(name, phone, email, dateStr, delivery, payment, uiAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPts, earnedPts, rcptName, rcptPhone) {
             gtag('event', 'conversion', { 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 'value': finalAllPrice, 'currency': 'TWD', 'transaction_id': orderId });
@@ -1039,31 +1029,49 @@
             document.getElementById('receipt-total-highlight').innerText = "NT$ " + finalAllPrice;
             
             let paymentText = "";
-            if (payment === 'Credit') paymentText = "信用卡線上刷卡 (綠界金流)";
-            else if (payment === 'ApplePay') paymentText = "Apple Pay 行動支付 (綠界金流)";
-            else if (payment === 'ATM') paymentText = "銀行匯款 / ATM 虛擬帳號";
-            else if (payment === 'LinePay') paymentText = "LINE Pay 條碼快速支付 (自主輸入金額)";
+            if (payment === 'Credit') paymentText = "信用卡線上刷卡 (請點擊下方按鈕結帳)";
+            else if (payment === 'ApplePay') paymentText = "Apple Pay 行動支付 (請點擊下方按鈕結帳)";
+            else if (payment === 'ATM') paymentText = "綠界 ATM 虛擬帳號 (請點擊下方按鈕取號)";
+            else if (payment === 'LinePay') paymentText = "LINE Pay 條碼快速支付 (請自主輸入金額)";
             document.getElementById('receipt-payment-method').innerText = paymentText;
 
             const paymentContainer = document.getElementById('dynamic-payment-info');
+            // 檢查綠界表單有沒有成功生成參數
+            const ecpayReady = document.getElementById('ecpay-post-form').children.length > 0;
+
             if(payment === 'LinePay') {
                 paymentContainer.innerHTML = `
                     <div style="background:#E8F5E9; padding:20px; border-radius:12px; border:1px solid #C8E6C9; margin-top:5px; text-align:center;">
                         <div style="font-weight:bold; color:#2E7D32; margin-bottom:12px; font-size:1rem;">📱 您已選擇 LINE Pay 付款</div>
-                        <p style="font-size:0.9rem; color:#555; margin-bottom:15px;">請點擊下方按鈕或商品條碼，手動輸入本次預訂結帳總額 <strong style="color:var(--c-danger); font-size:1.1rem;">$${finalAllPrice}</strong> 元：</p>
-                        <a href="${LINE_PAY_LINK}" target="_blank" class="action-btn linepay-btn">
+                        <p style="font-size:0.9rem; color:#555; margin-bottom:15px;">您的訂單已保留，請點擊下方按鈕，手動輸入本次結帳總額 <strong style="color:var(--c-danger); font-size:1.1rem;">$${finalAllPrice}</strong> 元：</p>
+                        <a href="${LINE_PAY_LINK}" target="_blank" class="action-btn linepay-btn" style="background:#00C300; color:white; width:100%; display:block; padding:16px; border-radius:50px; font-size:1rem; font-weight:bold; text-decoration:none;">
                             👉 點我立即開啟 LINE Pay 付款
                         </a>
                     </div>`;
-            } else {
+            } else if (ecpayReady) {
+                // 如果是綠界，顯示專屬安全的藍色大按鈕
+                let btnText = "👉 點我前往綠界安全付款";
+                if (payment === 'ATM') btnText = "👉 點我前往綠界取得轉帳帳號";
+                else if (payment === 'ApplePay') btnText = "👉 點我開啟 Apple Pay 結帳";
+
                 paymentContainer.innerHTML = `
-                    <div style="background:#F9F9F9; padding:20px; border-radius:12px; border:1px solid #EEE; margin-top:5px;">
-                        <div style="font-weight:bold; color:var(--c-text); margin-bottom:10px;">臨櫃匯款 / 網銀轉帳資訊 (彰化六信 162)</div>
+                    <div style="background:#F0F8FF; padding:20px; border-radius:12px; border:1px solid #BFE0FF; margin-top:5px; text-align:center;">
+                        <div style="font-weight:bold; color:#0056b3; margin-bottom:12px; font-size:1rem;">🔐 綠界科技安全支付</div>
+                        <p style="font-size:0.9rem; color:#555; margin-bottom:15px;">您的訂單已經登記成功！請點擊下方按鈕前往綠界金流完成結帳步驟：</p>
+                        <button onclick="document.getElementById('ecpay-post-form').submit();" class="action-btn" style="background:#0056b3; color:white; width:100%; padding:16px; border-radius:50px; font-size:1rem; border:none; cursor:pointer; box-shadow: 0 4px 15px rgba(0, 86, 179, 0.2); font-weight:bold;">
+                            ${btnText}
+                        </button>
+                    </div>`;
+            } else {
+                // 如果金流有異常，自動彈出備用銀行帳號
+                paymentContainer.innerHTML = `
+                    <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:1px solid #FFCDD2; margin-top:5px;">
+                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:10px;">⚠️ 系統金流連線異常，請使用備用實體帳號匯款：</div>
                         <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 15px; border-radius:8px; border:1px solid #E0E0E0;">
                             <span id="bank-acc-num-display" style="font-size:1.1rem; font-family:monospace; font-weight:bold; letter-spacing:1px; color:#333;">0142000331194</span>
                             <button class="copy-btn" onclick="copyBankAccount()" style="font-size:0.8rem; padding:4px 10px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer;">複製帳號</button>
                         </div>
-                        <div style="font-size:0.85rem; color:#888; margin-top:8px;">總行代碼：162-0019 | 戶名：甲賀食品金冠吟</div>
+                        <div style="font-size:0.85rem; color:#888; margin-top:8px;">(銀行代碼：彰化六信 162) | 戶名：甲賀食品金冠吟</div>
                     </div>`;
             }
 
