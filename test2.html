@@ -784,45 +784,78 @@
             currentRawTotal = 0; currentTotalCups = 0;
             cart.forEach(item => {
                 currentRawTotal += item.price * item.quantity; 
+                // ID 13 是保冷袋，不列入總杯數計算
                 if (item.id !== 13) currentTotalCups += item.quantity;
             });
 
+            // 1. 運費計算
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             if (delivery === '宅配') {
                 const boxes = currentTotalCups / 6; 
-                if(boxes <= 2) currentShippingFee = 130; else if (boxes <= 8) currentShippingFee = 170; else currentShippingFee = 210; 
-            } else { currentShippingFee = 0; }
-
-            if (usedPoints > currentRawTotal) {
-                usedPoints = currentRawTotal; 
-                document.getElementById('use-points-input').value = usedPoints;
+                if (boxes <= 2) currentShippingFee = 130; 
+                else if (boxes <= 8) currentShippingFee = 170; 
+                else currentShippingFee = 210; 
+            } else { 
+                currentShippingFee = 0; 
             }
 
-            let productFinalPrice = currentRawTotal - usedPoints;
-            currentDiscountAmount = usedPoints; 
-            currentDiscountName = usedPoints > 0 ? `點數折抵${usedPoints}元 ` : "";
+            // 2. 先計算折扣碼與滿額活動 (以商品原價 currentRawTotal 來算)
+            let productFinalPrice = currentRawTotal;
+            currentDiscountAmount = 0;
+            currentDiscountName = "";
 
             if (appliedCoupon) {
                 let originalForCoupon = productFinalPrice;
-                if (appliedCoupon.type === 'rate') { productFinalPrice = Math.floor(productFinalPrice * appliedCoupon.value); } 
-                else if (appliedCoupon.type === 'minus') { productFinalPrice = productFinalPrice - appliedCoupon.value; }
+                if (appliedCoupon.type === 'rate') { 
+                    productFinalPrice = Math.floor(productFinalPrice * appliedCoupon.value); 
+                } else if (appliedCoupon.type === 'minus') { 
+                    productFinalPrice = productFinalPrice - appliedCoupon.value; 
+                }
                 currentDiscountAmount += (originalForCoupon - productFinalPrice);
                 currentDiscountName += appliedCoupon.name;
             } else {
                 let originalForPromo = productFinalPrice;
-                if (productFinalPrice >= 5000) { productFinalPrice = Math.floor(productFinalPrice * 0.9); currentDiscountAmount += (originalForPromo - productFinalPrice); currentDiscountName += "滿額9折"; } 
-                else if (productFinalPrice >= 3000) { productFinalPrice = Math.floor(productFinalPrice * 0.95); currentDiscountAmount += (originalForPromo - productFinalPrice); currentDiscountName += "滿額95折"; }
+                if (productFinalPrice >= 5000) { 
+                    productFinalPrice = Math.floor(productFinalPrice * 0.9); 
+                    currentDiscountAmount += (originalForPromo - productFinalPrice); 
+                    currentDiscountName += "滿額9折"; 
+                } else if (productFinalPrice >= 3000) { 
+                    productFinalPrice = Math.floor(productFinalPrice * 0.95); 
+                    currentDiscountAmount += (originalForPromo - productFinalPrice); 
+                    currentDiscountName += "滿額95折"; 
+                }
             }
 
+            // 3. 再進行會員點數折抵 (防呆檢查：點數不能超過「打折後的金額」)
+            if (usedPoints > productFinalPrice) {
+                usedPoints = productFinalPrice; 
+                document.getElementById('use-points-input').value = usedPoints;
+            }
+            
+            productFinalPrice = productFinalPrice - usedPoints;
+            currentDiscountAmount += usedPoints;
+            
+            // 處理折抵名稱字串串接，讓畫面顯示更清楚
+            if (usedPoints > 0) {
+                let pointsStr = `點數折抵${usedPoints}元`;
+                currentDiscountName = currentDiscountName ? `${pointsStr} + ${currentDiscountName}` : pointsStr;
+            }
+
+            // 4. 最終總計
             currentFinalTotal = productFinalPrice + currentShippingFee;
-            if(currentFinalTotal < 0) currentFinalTotal = 0;
+            if (currentFinalTotal < 0) currentFinalTotal = 0;
             
             // 同步渲染底部全局懸浮列
             document.getElementById('total-cups-badge').innerText = currentTotalCups;
             document.getElementById('final-total').innerText = currentFinalTotal.toLocaleString();
+            
             const badge = document.getElementById('discount-badge');
-            if (currentDiscountName) { badge.style.display = 'inline-block'; badge.innerText = currentDiscountName; } 
-            else { badge.style.display = 'none'; }
+            if (currentDiscountName) { 
+                badge.style.display = 'inline-block'; 
+                badge.innerText = currentDiscountName; 
+            } else { 
+                badge.style.display = 'none'; 
+            }
         }
 
         function renderCart() {
@@ -905,14 +938,40 @@
         }
 
         function applyCoupon() {
-            const input = document.getElementById('coupon-code'); const msg = document.getElementById('coupon-msg');
+            const input = document.getElementById('coupon-code'); 
+            const msg = document.getElementById('coupon-msg');
             const code = input.value.trim().toUpperCase();
-            if (!code) { msg.innerText = "請輸入活動折扣代碼"; msg.style.color = "var(--c-danger)"; return; }
+            
+            // 1. 防呆：檢查是否輸入空白
+            if (!code) { 
+                msg.innerText = "請輸入活動折扣代碼"; 
+                msg.style.color = "var(--c-danger)"; 
+                return; 
+            }
+            
+            // 2. 防呆：檢查是否已經套用了同一個折扣碼
+            if (appliedCoupon && appliedCoupon.code === code) {
+                msg.innerText = "⚠️ 此折扣碼已經成功套用囉！"; 
+                msg.style.color = "#888"; 
+                return;
+            }
+
+            // 3. 驗證與套用
             if (COUPONS[code]) {
                 appliedCoupon = { code: code, ...COUPONS[code] };
-                msg.innerText = `✅ 已成功套用優惠：${appliedCoupon.name}`; msg.style.color = "var(--c-success)"; renderCart(); 
+                msg.innerText = `✅ 已成功套用優惠：${appliedCoupon.name}`; 
+                msg.style.color = "var(--c-success)"; 
+                
+                // 為了防止重複計算，套用後清空輸入框，並強制重新渲染購物車計算最新金額
+                input.value = ""; 
+                renderCart(); 
             } else {
-                appliedCoupon = null; msg.innerText = "❌ 查無此折扣代碼或已過期"; msg.style.color = "var(--c-danger)"; renderCart();
+                appliedCoupon = null; 
+                msg.innerText = "❌ 查無此折扣代碼或已過期"; 
+                msg.style.color = "var(--c-danger)"; 
+                
+                // 若輸入錯誤的折扣碼，強制取消之前的優惠並重新計算
+                renderCart(); 
             }
         }
 
