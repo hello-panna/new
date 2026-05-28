@@ -509,7 +509,7 @@
                 <div style="font-family:var(--font-title); font-size:1.5rem; font-weight:700; color:var(--c-danger); margin-bottom:5px;">訂單已登記 (尚未付款)</div>
                 
                 <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:15px; font-weight:bold; color:#D84315;">
-                    <div style="font-size: 1.05rem;">⚠️ 請務必點擊下方按鈕完成結帳 ⚠️</div>
+                    <div style="font-size: 1.05rem;">⚠️ 請點擊下方按鈕完成結帳 ⚠️</div>
                     <div style="display:flex; align-items:center; gap:8px; font-weight:normal; font-size:0.9rem; color:#888; margin-top:2px;">
                         (付款完成後，再複製訂單資訊傳給客服)
                         <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none;"><img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" style="width:24px; height:24px; vertical-align:middle;"></a>
@@ -1193,7 +1193,7 @@
             if(payment === 'LinePay') {
                 paymentContainer.innerHTML = `
                     <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px; text-align:center; box-shadow: 0 4px 15px rgba(216, 124, 124, 0.25);">
-                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請立即完成付款</div>
+                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請完成付款</div>
                         <p style="font-size:0.95rem; color:#555; margin-bottom:15px;">您的訂單已為您保留，請點擊下方按鈕，手動輸入本次結帳總額 <strong style="color:var(--c-danger); font-size:1.2rem;">$${finalAllPrice}</strong> 元：</p>
                         <a href="${LINE_PAY_LINK}" target="_blank" class="action-btn linepay-btn" style="background:#00C300; color:white; width:100%; display:block; padding:16px; border-radius:50px; font-size:1.05rem; font-weight:bold; text-decoration:none; animation: pulseBtn 1.5s infinite;">
                             👉 點我立即開啟 LINE Pay 付款
@@ -1207,7 +1207,7 @@
                 paymentContainer.innerHTML = `
                     <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px; text-align:center; box-shadow: 0 4px 15px rgba(216, 124, 124, 0.25);">
                         <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請立即完成付款</div>
-                        <p style="font-size:0.95rem; color:#555; margin-bottom:15px;">系統已登記您的商品！請務必點擊下方按鈕前往綠界完成結帳步驟：</p>
+                        <p style="font-size:0.95rem; color:#555; margin-bottom:15px;">系統已登記您的商品！請點擊下方按鈕前往綠界完成結帳步驟：</p>
                         <button onclick="document.getElementById('ecpay-post-form').submit();" class="action-btn" style="background:#0056b3; color:white; width:100%; padding:16px; border-radius:50px; font-size:1.05rem; border:none; cursor:pointer; font-weight:bold; animation: pulseBtn 1.5s infinite;">
                             ${btnText}
                         </button>
