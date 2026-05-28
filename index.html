@@ -237,6 +237,12 @@
         .bookmark-line-btn img { width: 24px; height: 24px; margin-bottom: 6px; }
         .bookmark-line-btn span { font-size: 12px; font-weight: 500; writing-mode: vertical-rl; letter-spacing: 2px; }
         @media (min-width: 620px) { .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; } }
+        /* 結帳按鈕呼吸燈閃爍特效 */
+        @keyframes pulseBtn {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(216, 124, 124, 0.7); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(216, 124, 124, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(216, 124, 124, 0); }
+        }
     </style>
 </head>   
 <body>
@@ -499,11 +505,15 @@
 
         <div id="receipt-view" style="display:none; padding:40px 20px;">
             <div style="text-align:center;">
-                <div style="width:60px; height:60px; background:var(--c-primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 20px;">✓</div>
-                <div style="font-family:var(--font-title); font-size:1.5rem; font-weight:700; color:var(--c-text); margin-bottom:5px;">訂單已成立</div>
-                <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:15px;">
-                    <div style="color:var(--c-danger); font-size:0.95rem;">(請複製訂單資訊傳給客服避免漏單)</div>
-                    <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none;"><img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" style="width:24px; height:24px; vertical-align:middle;"></a>
+                <div style="width:60px; height:60px; background:var(--c-danger); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 20px;">!</div>
+                <div style="font-family:var(--font-title); font-size:1.5rem; font-weight:700; color:var(--c-danger); margin-bottom:5px;">訂單已登記 (尚未付款)</div>
+                
+                <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:15px; font-weight:bold; color:#D84315;">
+                    <div style="font-size: 1.05rem;">⚠️ 請務必點擊下方按鈕完成結帳 ⚠️</div>
+                    <div style="display:flex; align-items:center; gap:8px; font-weight:normal; font-size:0.9rem; color:#888; margin-top:2px;">
+                        (付款完成後，再複製訂單資訊傳給客服)
+                        <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none;"><img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" style="width:24px; height:24px; vertical-align:middle;"></a>
+                    </div>
                 </div>
                 <button onclick="copyOrderInfo()" class="action-btn" style="display:inline-flex; width:auto; padding:12px 24px; background:#5c4e46; color:white; margin:0 auto 20px; box-shadow:0 4px 15px rgba(92, 78, 70, 0.2); font-size:0.95rem;">📋 一鍵複製訂單資訊</button>
                 <div class="receipt-time" id="receipt-time" style="color:#aaa; font-size:0.85rem; margin-bottom:30px;"></div>
@@ -1182,10 +1192,10 @@
 
             if(payment === 'LinePay') {
                 paymentContainer.innerHTML = `
-                    <div style="background:#E8F5E9; padding:20px; border-radius:12px; border:1px solid #C8E6C9; margin-top:5px; text-align:center;">
-                        <div style="font-weight:bold; color:#2E7D32; margin-bottom:12px; font-size:1rem;">📱 您已選擇 LINE Pay 付款</div>
-                        <p style="font-size:0.9rem; color:#555; margin-bottom:15px;">您的訂單已保留，請點擊下方按鈕，手動輸入本次結帳總額 <strong style="color:var(--c-danger); font-size:1.1rem;">$${finalAllPrice}</strong> 元：</p>
-                        <a href="${LINE_PAY_LINK}" target="_blank" class="action-btn linepay-btn" style="background:#00C300; color:white; width:100%; display:block; padding:16px; border-radius:50px; font-size:1rem; font-weight:bold; text-decoration:none;">
+                    <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px; text-align:center; box-shadow: 0 4px 15px rgba(216, 124, 124, 0.25);">
+                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請立即完成付款</div>
+                        <p style="font-size:0.95rem; color:#555; margin-bottom:15px;">您的訂單已為您保留，請點擊下方按鈕，手動輸入本次結帳總額 <strong style="color:var(--c-danger); font-size:1.2rem;">$${finalAllPrice}</strong> 元：</p>
+                        <a href="${LINE_PAY_LINK}" target="_blank" class="action-btn linepay-btn" style="background:#00C300; color:white; width:100%; display:block; padding:16px; border-radius:50px; font-size:1.05rem; font-weight:bold; text-decoration:none; animation: pulseBtn 1.5s infinite;">
                             👉 點我立即開啟 LINE Pay 付款
                         </a>
                     </div>`;
@@ -1195,17 +1205,17 @@
                 else if (payment === 'ApplePay') btnText = "👉 點我開啟 Apple Pay 結帳";
                 else if (payment === 'TWQR') btnText = "👉 點我開啟 TWQR 掃碼付款";
                 paymentContainer.innerHTML = `
-                    <div style="background:#F0F8FF; padding:20px; border-radius:12px; border:1px solid #BFE0FF; margin-top:5px; text-align:center;">
-                        <div style="font-weight:bold; color:#0056b3; margin-bottom:12px; font-size:1rem;">🔐 綠界科技安全支付</div>
-                        <p style="font-size:0.9rem; color:#555; margin-bottom:15px;">您的訂單已經登記成功！請點擊下方按鈕前往綠界金流完成結帳步驟：</p>
-                        <button onclick="document.getElementById('ecpay-post-form').submit();" class="action-btn" style="background:#0056b3; color:white; width:100%; padding:16px; border-radius:50px; font-size:1rem; border:none; cursor:pointer; box-shadow: 0 4px 15px rgba(0, 86, 179, 0.2); font-weight:bold;">
+                    <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px; text-align:center; box-shadow: 0 4px 15px rgba(216, 124, 124, 0.25);">
+                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請立即完成付款</div>
+                        <p style="font-size:0.95rem; color:#555; margin-bottom:15px;">系統已登記您的商品！請務必點擊下方按鈕前往綠界完成結帳步驟：</p>
+                        <button onclick="document.getElementById('ecpay-post-form').submit();" class="action-btn" style="background:#0056b3; color:white; width:100%; padding:16px; border-radius:50px; font-size:1.05rem; border:none; cursor:pointer; font-weight:bold; animation: pulseBtn 1.5s infinite;">
                             ${btnText}
                         </button>
                     </div>`;
             } else {
                 paymentContainer.innerHTML = `
-                    <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:1px solid #FFCDD2; margin-top:5px;">
-                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:10px;">⚠️ 系統金流連線異常，請使用備用實體帳號匯款：</div>
+                    <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px;">
+                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:10px; font-size:1.05rem;">⚠️ 系統金流連線異常，請使用備用實體帳號匯款：</div>
                         <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 15px; border-radius:8px; border:1px solid #E0E0E0;">
                             <span id="bank-acc-num-display" style="font-size:1.1rem; font-family:monospace; font-weight:bold; letter-spacing:1px; color:#333;">0142000331194</span>
                             <button class="copy-btn" onclick="copyBankAccount()" style="font-size:0.8rem; padding:4px 10px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer;">複製帳號</button>
