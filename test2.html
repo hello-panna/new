@@ -156,7 +156,7 @@
         .qty-btn-card { background: none; border: none; font-size: 1.2rem; color: var(--c-primary); cursor: pointer; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; }
         .qty-text-card { font-family: var(--font-title); font-weight: 700; color: var(--c-text); }
 
-        /* 購物清單與折抵摘要 */
+        /* 購物清單 */
         .cart-item { padding: 20px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; background: #fff; border-radius: var(--radius-box); border: 1px solid var(--c-line); box-shadow: var(--shadow-card); }
         .cart-info { flex: 1; }
         .cart-title { font-family: var(--font-title); font-weight: 700; font-size: 1rem; color: var(--c-text); }
@@ -214,61 +214,15 @@
         .spinner { border: 3px solid #eee; border-top: 3px solid var(--c-primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s ease-in-out infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @media (min-width: 620px) { .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; } }
-/* --- 點數與折扣碼區塊優化 --- */
-.coupon-section.points-card {
-    background: linear-gradient(145deg, #FDFBF8 0%, #FAF8F5 100%);
-    border: 1px solid rgba(175, 168, 139, 0.3); /* 抹茶灰綠微透邊框 */
-}
 
-.points-verify-btn {
-    background: var(--c-accent); /* 抹茶灰綠 */
-    color: #fff;
-    width: 100%;
-    padding: 14px 0;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: bold;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(175, 168, 139, 0.2);
-}
-
-.points-verify-btn:hover, .points-verify-btn:active {
-    background: #9a9378;
-    transform: translateY(-1px);
-}
-
-.coupon-input-group {
-    display: flex;
-    gap: 10px;
-}
-
-.coupon-btn {
-    background: var(--c-primary); /* 焙茶棕 */
-    color: #fff;
-    border: none;
-    padding: 0 22px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-.coupon-btn:hover, .coupon-btn:active {
-    background: var(--c-text);
-}
-
-/* 點數輸入區塊的柔和內框 */
-.points-inner-box {
-    background: #fff; 
-    padding: 16px; 
-    border-radius: 8px; 
-    border: 1px dashed var(--c-line);
-    margin-top: 18px;
-}
+        /* --- 點數與折扣碼區塊優化 --- */
+        .coupon-section.points-card { background: linear-gradient(145deg, #FDFBF8 0%, #FAF8F5 100%); border: 1px solid rgba(175, 168, 139, 0.3); }
+        .points-verify-btn { background: var(--c-accent); color: #fff; width: 100%; padding: 14px 0; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: bold; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(175, 168, 139, 0.2); }
+        .points-verify-btn:hover, .points-verify-btn:active { background: #9a9378; transform: translateY(-1px); }
+        .coupon-input-group { display: flex; gap: 10px; }
+        .coupon-btn { background: var(--c-primary); color: #fff; border: none; padding: 0 22px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
+        .coupon-btn:hover, .coupon-btn:active { background: var(--c-text); }
+        .points-inner-box { background: #fff; padding: 16px; border-radius: 8px; border: 1px dashed var(--c-line); margin-top: 18px; }
     </style>
 </head>   
 <body>
@@ -435,83 +389,83 @@
             </div>
 
             <div id="step-2" class="step-content">
-    <div class="section-header first">小計與運費明細</div>
-    <div class="summary-box" id="step2-summary"></div>
-
-    <div class="section-header">會員點數即時折抵</div>
-    <div class="coupon-section points-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-            <span style="color: var(--c-text); font-weight: 500; font-size: 0.95rem;">
-                <span style="color: var(--c-accent); margin-right: 4px;">✦</span>驗證帳戶：
-                <span id="verify-email-text" style="color: #888;"></span>
-            </span>
-            <span id="member-points-balance" style="font-size: 0.9rem; color: var(--c-primary); font-weight: 700;"></span>
-        </div>
-        
-        <button type="button" class="points-verify-btn" onclick="checkMemberPoints()">使用手機與姓名查詢我的點數</button>
-        
-        <div id="points-input-area" class="points-inner-box" style="display: none;">
-            <div style="font-size: 0.85rem; color: #888; margin-bottom: 10px;">本次欲折抵點數 (1點 = 1元)</div>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="number" id="use-points-input" class="form-input" placeholder="請輸入折抵金額" min="0" oninput="validatePointsInput()">
-                <span style="white-space: nowrap; color: var(--c-text); font-weight: 500;">點</span>
+                <div class="section-header first">小計與運費明細</div>
+                <div class="summary-box" id="step2-summary"></div>
+            
+                <div class="section-header">會員點數即時折抵</div>
+                <div class="coupon-section points-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                        <span style="color: var(--c-text); font-weight: 500; font-size: 0.95rem;">
+                            <span style="color: var(--c-accent); margin-right: 4px;">✦</span>驗證帳戶：
+                            <span id="verify-email-text" style="color: #888;"></span>
+                        </span>
+                        <span id="member-points-balance" style="font-size: 0.9rem; color: var(--c-primary); font-weight: 700;"></span>
+                    </div>
+                    
+                    <button type="button" class="points-verify-btn" onclick="checkMemberPoints()">使用手機與姓名查詢我的點數</button>
+                    
+                    <div id="points-input-area" class="points-inner-box" style="display: none;">
+                        <div style="font-size: 0.85rem; color: #888; margin-bottom: 10px;">本次欲折抵點數 (1點 = 1元)</div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="use-points-input" class="form-input" placeholder="請輸入折抵金額" min="0" oninput="validatePointsInput()">
+                            <span style="white-space: nowrap; color: var(--c-text); font-weight: 500;">點</span>
+                        </div>
+                    </div>
+                    <div id="points-msg" style="font-size: 0.85rem; margin-top: 12px; color: var(--c-danger); text-align: center;"></div>
+                </div>
+            
+                <div class="section-header">兌換折扣代碼</div>
+                <div class="coupon-section">
+                    <div class="coupon-input-group">
+                        <input type="text" id="coupon-code" class="form-input" placeholder="請輸入活動折扣碼">
+                        <button type="button" class="coupon-btn" onclick="applyCoupon()">兌換</button>
+                    </div>
+                    <div id="coupon-msg" style="font-size: 0.9rem; margin-top: 12px; text-align: center;"></div>
+                </div>
             </div>
-        </div>
-        <div id="points-msg" style="font-size: 0.85rem; margin-top: 12px; color: var(--c-danger); text-align: center;"></div>
-    </div>
-
-    <div class="section-header">兌換折扣代碼</div>
-    <div class="coupon-section">
-        <div class="coupon-input-group">
-            <input type="text" id="coupon-code" class="form-input" placeholder="請輸入活動折扣碼">
-            <button type="button" class="coupon-btn" onclick="applyCoupon()">兌換</button>
-        </div>
-        <div id="coupon-msg" style="font-size: 0.9rem; margin-top: 12px; text-align: center;"></div>
-    </div>
-</div>
-
-<div id="step-3" class="step-content">
-    <div class="section-header first">最終結帳明細總覽</div>
-    <div class="summary-box" id="step3-summary" style="border-color: var(--c-primary); margin-bottom: 25px;"></div>
-
-    <div class="form-label" style="font-size:1.1rem; margin-top:20px;">請選擇付款方式 <span class="req-star">*</span></div>
-    <div class="options-section">
-        <div class="radio-group" style="flex-direction: column; gap: 12px;">
-            <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
-                <input type="radio" name="paymentMethod" value="Credit" class="radio-input" checked>
-                <span style="font-size: 1.05rem;">💳 信用卡線上刷卡 (綠界金流)</span>
-            </label>
-            <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
-                <input type="radio" name="paymentMethod" value="ApplePay" class="radio-input">
-                <span style="font-size: 1.05rem;">🍎 Apple Pay 行動支付 (綠界金流)</span>
-            </label>
-            <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
-                <input type="radio" name="paymentMethod" value="ATM" class="radio-input">
-                <span style="font-size: 1.05rem;">🏧 銀行轉帳 / 虛擬帳號自動產出 (綠界金流)</span>
-            </label>
-            <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
-                <input type="radio" name="paymentMethod" value="LinePay" class="radio-input">
-                <span style="font-size: 1.05rem;">📱 LINE Pay 條碼快速支付 (自主輸入金額)</span>
-            </label>
-        </div>
-    </div>
-
-    <div class="section-header">關於好酪</div>
-    <div class="brand-story">
-        <h3>三寶媽的溫柔堅持</h3>
-        <p>「好酪」的故事，始於一個母親對孩子的愛。為了讓孩子吃到最純粹、無添加的點心，我開始鑽研奶酪的製作。</p>
-        <p>從家庭廚房到考取國家證照，從投保產品責任險到完成食品登錄，每一步都是為了證明「媽媽手作」也能有職人的堅持。與您相遇的每一個笑容，都是我們前行的動力。</p>
-    </div>
-
-    <div style="text-align: center; font-size: 0.75rem; color: #999; margin: 40px 0 100px 0; line-height: 1.8;">
-        甲賀食品 | 統編: 94427773<br>彰化市中正路一段 403 號<br>客服專線: 0972-005078<br>食品登錄字號: N-194427773-00000-4<br>*已投保國泰產險產品責任險*<br><br>
-        <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none; color:var(--c-success); font-weight:bold; display:inline-flex; align-items:center; gap:5px;"><span>💬 聯絡官方 LINE</span></a>
-        <div style="color: var(--c-success);">ID: @817ytyld</div>
-        <div style="margin-top: 20px;"><a href="javascript:void(0)" onclick="openRefundPolicy()" style="color: #bbb; text-decoration: underline;">退貨與退款政策</a></div>
-    </div>
-</div>
-
-        <div class="bottom-bar" id="checkout-bottom-bar">
+            
+            <div id="step-3" class="step-content">
+                <div class="section-header first">最終結帳明細總覽</div>
+                <div class="summary-box" id="step3-summary" style="border-color: var(--c-primary); margin-bottom: 25px;"></div>
+            
+                <div class="form-label" style="font-size:1.1rem; margin-top:20px;">請選擇付款方式 <span class="req-star">*</span></div>
+                <div class="options-section">
+                    <div class="radio-group" style="flex-direction: column; gap: 12px;">
+                        <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
+                            <input type="radio" name="paymentMethod" value="Credit" class="radio-input" checked>
+                            <span style="font-size: 1.05rem;">💳 信用卡線上刷卡 (綠界金流)</span>
+                        </label>
+                        <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
+                            <input type="radio" name="paymentMethod" value="ApplePay" class="radio-input">
+                            <span style="font-size: 1.05rem;">🍎 Apple Pay 行動支付 (綠界金流)</span>
+                        </label>
+                        <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
+                            <input type="radio" name="paymentMethod" value="ATM" class="radio-input">
+                            <span style="font-size: 1.05rem;">🏧 銀行轉帳 / 虛擬帳號自動產出 (綠界金流)</span>
+                        </label>
+                        <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
+                            <input type="radio" name="paymentMethod" value="LinePay" class="radio-input">
+                            <span style="font-size: 1.05rem;">📱 LINE Pay 條碼快速支付 (自主輸入金額)</span>
+                        </label>
+                    </div>
+                </div>
+            
+                <div class="section-header">關於好酪</div>
+                <div class="brand-story">
+                    <h3>三寶媽的溫柔堅持</h3>
+                    <p>「好酪」的故事，始於一個母親對孩子的愛。為了讓孩子吃到最純粹、無添加的點心，我開始鑽研奶酪的製作。</p>
+                    <p>從家庭廚房到考取國家證照，從投保產品責任險到完成食品登錄，每一步都是為了證明「媽媽手作」也能有職人的堅持。與您相遇的每一個笑容，都是我們前行的動力。</p>
+                </div>
+            
+                <div style="text-align: center; font-size: 0.75rem; color: #999; margin: 40px 0 100px 0; line-height: 1.8;">
+                    甲賀食品 | 統編: 94427773<br>彰化市中正路一段 403 號<br>客服專線: 0972-005078<br>食品登錄字號: N-194427773-00000-4<br>*已投保國泰產險產品責任險*<br><br>
+                    <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none; color:var(--c-success); font-weight:bold; display:inline-flex; align-items:center; gap:5px;"><span>💬 聯絡官方 LINE</span></a>
+                    <div style="color: var(--c-success);">ID: @817ytyld</div>
+                    <div style="margin-top: 20px;"><a href="javascript:void(0)" onclick="openRefundPolicy()" style="color: #bbb; text-decoration: underline;">退貨與退款政策</a></div>
+                </div>
+            </div>
+            
+        </div> <div class="bottom-bar" id="checkout-bottom-bar">
             <div class="price-area">
                 <div style="font-size:0.8rem; color:var(--c-text-light);">
                     共 <span id="total-cups-badge" style="font-weight:bold; color:var(--c-text);">0</span> 杯
@@ -592,7 +546,7 @@
 
     <script>
         // ==========================================
-        // 1. 核心設定變數與 100% 完整的 11 項商品陣列
+        // 1. 核心設定變數與商品陣列
         // ==========================================
         const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
         const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSenpCJdVZWJ4seiaz4GimXwasppPbnX3o1pLGyrnIMWaJ_sqw/formResponse";
@@ -774,7 +728,7 @@
                 if (mode === 'delivery') {
                     select.innerHTML += `<option value="2026/02/25 (三) 宅配出貨">02/25 (週三) 宅配出貨</option><option value="2026/02/26 (四) 宅配出貨">02/26 (週四) 宅配出貨</option>`;
                 } else {
-                    select.innerHTML += `<option value="2026/02/25 (三) 12:00~13:00">02/25 (週三) 12:00~13:00</option><option value="2026/02/25 (三) 17:00~18:00">02/25 (週三) 17:00~18:00</option><option value="2026/02/26 ( Stark) 12:00~13:00">02/26 (週四) 12:00~13:00</option><option value="2026/02/26 (四) 17:00~18:00">02/26 (週四) 17:00~18:00</option>`;
+                    select.innerHTML += `<option value="2026/02/25 (三) 12:00~13:00">02/25 (週三) 12:00~13:00</option><option value="2026/02/25 (三) 17:00~18:00">02/25 (週三) 17:00~18:00</option><option value="2026/02/26 (四) 12:00~13:00">02/26 (週四) 12:00~13:00</option><option value="2026/02/26 (四) 17:00~18:00">02/26 (週四) 17:00~18:00</option>`;
                 }
                 return;
             }
@@ -1032,10 +986,8 @@
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('btn-next').disabled = true;
 
-            // 管道 1：遞交 Google Forms 進行防漏備份
             fetch(GOOGLE_FORM_URL, { method: "POST", body: formData, mode: "no-cors" }).then(async () => {
                 
-                // 管道 2：通通送往中央後端 Apps Script 進行試算表登記與點數扣除
                 if (TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     const backendOrderData = { items: cart, originalTotal: currentRawTotal, discountPoints: usedPoints, otherDiscount: currentDiscountAmount - usedPoints, paymentMethod: payment, receivedAmount: currentFinalTotal, changeAmount: 0, phone: phone, email: email, name: name, delivery: delivery, address: backendAddress, date: finalDateStr, shippingFee: currentShippingFee, finalTotal: currentFinalTotal, remarks: remarks, totalCups: currentTotalCups, couponCode: appliedCoupon ? appliedCoupon.code : "" };
                     try {
@@ -1046,7 +998,6 @@
                         let result; try { result = JSON.parse(rawText); } catch(jsonErr) { result = { success: false, msg: "後端回傳格式非標準 JSON" }; }
                         
                         if (result.success) {
-                            // 若綠界回傳參數存在，我們將參數塞入隱藏表單（但不立刻跳轉）
                             if (result.ecpayParams && payment !== 'LinePay') {
                                 const ecpayForm = document.getElementById('ecpay-post-form'); ecpayForm.innerHTML = ''; 
                                 for (const key in result.ecpayParams) {
@@ -1056,7 +1007,6 @@
                                 }
                             }
                             
-                            // 無論何種付款方式，通通呼叫 showReceipt 先顯示收據與大按鈕
                             showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
                             document.getElementById('loading-overlay').style.display = 'none';
 
@@ -1096,7 +1046,6 @@
             document.getElementById('receipt-payment-method').innerText = paymentText;
 
             const paymentContainer = document.getElementById('dynamic-payment-info');
-            // 檢查綠界表單有沒有成功生成參數
             const ecpayReady = document.getElementById('ecpay-post-form').children.length > 0;
 
             if(payment === 'LinePay') {
@@ -1109,7 +1058,6 @@
                         </a>
                     </div>`;
             } else if (ecpayReady) {
-                // 如果是綠界，顯示專屬安全的藍色大按鈕
                 let btnText = "👉 點我前往綠界安全付款";
                 if (payment === 'ATM') btnText = "👉 點我前往綠界取得轉帳帳號";
                 else if (payment === 'ApplePay') btnText = "👉 點我開啟 Apple Pay 結帳";
@@ -1123,7 +1071,6 @@
                         </button>
                     </div>`;
             } else {
-                // 如果金流有異常，自動彈出備用銀行帳號
                 paymentContainer.innerHTML = `
                     <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:1px solid #FFCDD2; margin-top:5px;">
                         <div style="font-weight:bold; color:var(--c-danger); margin-bottom:10px;">⚠️ 系統金流連線異常，請使用備用實體帳號匯款：</div>
