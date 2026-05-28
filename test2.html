@@ -1105,7 +1105,8 @@
             else if (payment === 'ApplePay') payMethodName = 'Apple Pay 行動支付 (綠界金流)';
             else if (payment === 'ATM') payMethodName = 'ATM 虛擬帳號自動轉帳 (綠界金流)';
             else if (payment === 'LinePay') payMethodName = 'LINE Pay 條碼快速支付 (自主輸入金額)';
-
+            else if (payment === 'TWQR') payMethodName = 'TWQR 行動支付 (綠界金流)';
+            
             let confirmMsg = `【訂單確認】\n---------------------\n[購買明細]\n${itemsDetailStr}奶酪數量：${currentTotalCups} 杯\n---------------------\n應付總額：$${currentFinalTotal}\n取貨方式：${delivery}\n付款方式：${payMethodName}\n\n請確認以上資訊無誤，點擊「確定」送出訂單。`;
             if (!confirm(confirmMsg)) return; 
 
@@ -1169,6 +1170,7 @@
             else if (payment === 'ApplePay') paymentText = "Apple Pay 行動支付 (請點擊下方按鈕結帳)";
             else if (payment === 'ATM') paymentText = "綠界 ATM 虛擬帳號 (請點擊下方按鈕取號)";
             else if (payment === 'LinePay') paymentText = "LINE Pay 條碼快速支付 (請自主輸入金額)";
+            else if (payment === 'TWQR') paymentText = "TWQR 行動支付 (請點擊下方按鈕掃碼結帳)";
             document.getElementById('receipt-payment-method').innerText = paymentText;
 
             const paymentContainer = document.getElementById('dynamic-payment-info');
@@ -1187,7 +1189,7 @@
                 let btnText = "👉 點我前往綠界安全付款";
                 if (payment === 'ATM') btnText = "👉 點我前往綠界取得轉帳帳號";
                 else if (payment === 'ApplePay') btnText = "👉 點我開啟 Apple Pay 結帳";
-
+                else if (payment === 'TWQR') btnText = "👉 點我開啟 TWQR 掃碼付款";
                 paymentContainer.innerHTML = `
                     <div style="background:#F0F8FF; padding:20px; border-radius:12px; border:1px solid #BFE0FF; margin-top:5px; text-align:center;">
                         <div style="font-weight:bold; color:#0056b3; margin-bottom:12px; font-size:1rem;">🔐 綠界科技安全支付</div>
