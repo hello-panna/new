@@ -882,13 +882,78 @@
             if(currentStep === 3) prepareStep3();
         }
 
+        // ==========================================
+        // 替換：Step 2 明細產生器
+        // ==========================================
         function prepareStep2() {
             const email = document.getElementById('cust-email').value.trim();
             document.getElementById('verify-email-text').innerText = email || '(未填寫 Email)';
-            document.getElementById('step2-summary').innerHTML = `
-                <div class="summary-row"><span>商品小計 (${currentTotalCups}杯)</span><span>$${currentRawTotal}</span></div>
-                <div class="summary-row"><span>低溫運費小計</span><span>$${currentShippingFee}</span></div>
-            `;
+            
+            // 判斷目前的取貨方式
+            const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
+            
+            let html = '';
+            
+            // 1. 展開實際購買的菜色品項與數量、金額
+            cart.forEach(item => {
+                html += `<div class="summary-row"><span style="color:var(--c-text);">${item.name} <span style="color:#999; font-size:0.85rem;">x ${item.quantity}</span></span><span>$${item.price * item.quantity}</span></div>`;
+            });
+            
+            // 加上一條虛線做視覺區隔
+            html += `<div style="border-top: 1px dashed #E0E0E0; margin: 10px 0;"></div>`;
+            
+            // 2. 顯示商品小計
+            html += `<div class="summary-row"><span>商品小計 (${currentTotalCups}杯)</span><span>$${currentRawTotal}</span></div>`;
+            
+            // 3. 如果是宅配，才顯示運費
+            if (delivery === '宅配') {
+                html += `<div class="summary-row"><span>低溫運費小計</span><span>$${currentShippingFee}</span></div>`;
+            }
+
+            document.getElementById('step2-summary').innerHTML = html;
+        }
+
+        // ==========================================
+        // 替換：Step 3 最終結帳明細總覽產生器
+        // ==========================================
+        function prepareStep3() {
+            const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
+            let html = '';
+
+            // 1. 展開實際購買的菜色品項與數量、金額
+            cart.forEach(item => {
+                html += `<div class="summary-row"><span style="color:var(--c-text);">${item.name} <span style="color:#999; font-size:0.85rem;">x ${item.quantity}</span></span><span>$${item.price * item.quantity}</span></div>`;
+            });
+
+            html += `<div style="border-top: 1px dashed #E0E0E0; margin: 10px 0;"></div>`;
+
+            // 2. 商品原價小計
+            html += `<div class="summary-row"><span>商品原價小計</span><span>$${currentRawTotal}</span></div>`;
+            
+            // 3. 如果是宅配有運費，才顯示運費
+            if (delivery === '宅配' || currentShippingFee > 0) {
+                html += `<div class="summary-row"><span>低溫冷藏運費</span><span>$${currentShippingFee}</span></div>`;
+            }
+
+            // 4. 活動折扣與點數折抵
+            if (currentDiscountAmount > 0) { 
+                html += `<div class="summary-row discount"><span>活動折扣與點數折抵總計</span><span>-$${currentDiscountAmount}</span></div>`; 
+            }
+            
+            // 5. 最終應付總額
+            html += `<div class="summary-row total"><span>最終應付總額</span><span style="color:var(--c-danger); font-size:1.25rem;">$${currentFinalTotal}</span></div>`;
+            
+            // 6. 點數獲得與扣除的視覺提示區塊
+            const email = document.getElementById('cust-email').value.trim();
+            const earnedPoints = email ? currentTotalCups : 0;
+            if(usedPoints > 0 || earnedPoints > 0) {
+                html += `<div style="background:#E8F5E9; padding:10px; border-radius:8px; margin-top:10px; font-size:0.85rem;">`;
+                if(usedPoints > 0) html += `<div style="display:flex; justify-content:space-between; color:#c0392b; margin-bottom:4px;"><span>本次折抵扣除點數</span><span>-${usedPoints} 點</span></div>`;
+                if(earnedPoints > 0) html += `<div style="display:flex; justify-content:space-between; color:#2E7D32;"><span>本次下單預計獲得點數</span><span>+${earnedPoints} 點</span></div>`;
+                html += `</div>`;
+            }
+            
+            document.getElementById('step3-summary').innerHTML = html;
         }
 
         async function checkMemberPoints() {
@@ -981,25 +1046,7 @@
             }
         }
 
-        // ==========================================
-        // 5. Step 3 功能：四選一支付渠道過濾、LINE Pay 攔截導向
-        // ==========================================
-        function prepareStep3() {
-            let html = `<div class="summary-row"><span>商品原價小計</span><span>$${currentRawTotal}</span></div>`;
-            html += `<div class="summary-row"><span>低溫冷藏運費</span><span>$${currentShippingFee}</span></div>`;
-            if (currentDiscountAmount > 0) { html += `<div class="summary-row discount"><span>活動折扣與點數折抵總計</span><span>-$${currentDiscountAmount}</span></div>`; }
-            html += `<div class="summary-row total"><span>最終應付總額</span><span style="color:var(--c-danger); font-size:1.25rem;">$${currentFinalTotal}</span></div>`;
-            
-            const email = document.getElementById('cust-email').value.trim();
-            const earnedPoints = email ? currentTotalCups : 0;
-            if(usedPoints > 0 || earnedPoints > 0) {
-                html += `<div style="background:#E8F5E9; padding:10px; border-radius:8px; margin-top:10px; font-size:0.85rem;">`;
-                if(usedPoints>0) html += `<div style="display:flex; justify-content:space-between; color:#c0392b; margin-bottom:4px;"><span>本次折抵扣除點數</span><span>-${usedPoints} 點</span></div>`;
-                if(earnedPoints>0) html += `<div style="display:flex; justify-content:space-between; color:#2E7D32;"><span>本次下單預計獲得點數</span><span>+${earnedPoints} 點</span></div>`;
-                html += `</div>`;
-            }
-            document.getElementById('step3-summary').innerHTML = html;
-        }
+    
 
         function submitFinalOrder() {
             const name = document.getElementById('cust-name').value.trim(); 
