@@ -1206,7 +1206,7 @@
                 else if (payment === 'TWQR') btnText = "👉 點我開啟 TWQR 掃碼付款";
                 paymentContainer.innerHTML = `
                     <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px; text-align:center; box-shadow: 0 4px 15px rgba(216, 124, 124, 0.25);">
-                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請立即完成付款</div>
+                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請完成付款</div>
                         <p style="font-size:0.95rem; color:#555; margin-bottom:15px;">系統已登記您的商品！請點擊下方按鈕前往綠界完成結帳步驟：</p>
                         <button onclick="document.getElementById('ecpay-post-form').submit();" class="action-btn" style="background:#0056b3; color:white; width:100%; padding:16px; border-radius:50px; font-size:1.05rem; border:none; cursor:pointer; font-weight:bold; animation: pulseBtn 1.5s infinite;">
                             ${btnText}
