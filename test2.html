@@ -937,41 +937,47 @@
             usedPoints = val; renderCart();
         }
 
-        function applyCoupon() {
+        async function applyCoupon() {
             const input = document.getElementById('coupon-code'); 
             const msg = document.getElementById('coupon-msg');
+            const btn = document.querySelector('.coupon-btn[onclick="applyCoupon()"]');
+            
             const code = input.value.trim().toUpperCase();
-            
-            // 1. 防呆：檢查是否輸入空白
-            if (!code) { 
-                msg.innerText = "請輸入活動折扣代碼"; 
-                msg.style.color = "var(--c-danger)"; 
-                return; 
-            }
-            
-            // 2. 防呆：檢查是否已經套用了同一個折扣碼
-            if (appliedCoupon && appliedCoupon.code === code) {
-                msg.innerText = "⚠️ 此折扣碼已經成功套用囉！"; 
-                msg.style.color = "#888"; 
-                return;
+            const phone = document.getElementById('cust-phone').value.trim();
+
+            if (!code) { msg.innerText = "請輸入活動折扣代碼"; msg.style.color = "var(--c-danger)"; return; }
+            if (!phone) { msg.innerText = "⚠️ 請先填寫上方「訂購人手機號碼」以便系統驗證折扣資格"; msg.style.color = "var(--c-danger)"; window.scrollTo(0, 0); return; }
+
+            // 先檢查這個代碼在我們系統存不存在
+            if (!COUPONS[code]) {
+                appliedCoupon = null; msg.innerText = "❌ 查無此折扣代碼或已過期"; msg.style.color = "var(--c-danger)"; renderCart(); return;
             }
 
-            // 3. 驗證與套用
-            if (COUPONS[code]) {
-                appliedCoupon = { code: code, ...COUPONS[code] };
-                msg.innerText = `✅ 已成功套用優惠：${appliedCoupon.name}`; 
-                msg.style.color = "var(--c-success)"; 
+            // 按鈕顯示連線中，防止連點
+            btn.innerText = "驗證中..."; btn.disabled = true; msg.innerText = "";
+
+            try {
+                // 發送給 Apps Script 驗證
+                const response = await fetch(TRAFFIC_SCRIPT_URL + "?action=verifyCoupon&code=" + encodeURIComponent(code) + "&phone=" + encodeURIComponent(phone));
+                const data = await response.json();
                 
-                // 為了防止重複計算，套用後清空輸入框，並強制重新渲染購物車計算最新金額
-                input.value = ""; 
-                renderCart(); 
-            } else {
-                appliedCoupon = null; 
-                msg.innerText = "❌ 查無此折扣代碼或已過期"; 
-                msg.style.color = "var(--c-danger)"; 
-                
-                // 若輸入錯誤的折扣碼，強制取消之前的優惠並重新計算
-                renderCart(); 
+                btn.innerText = "兌換"; btn.disabled = false;
+
+                if (data.success) {
+                    appliedCoupon = { code: code, ...COUPONS[code] };
+                    msg.innerText = `✅ 驗證成功！已套用優惠：${appliedCoupon.name}`; 
+                    msg.style.color = "var(--c-success)"; 
+                    input.value = ""; 
+                    renderCart(); 
+                } else {
+                    appliedCoupon = null; 
+                    msg.innerText = "❌ " + (data.msg || "此折扣碼無法使用"); 
+                    msg.style.color = "var(--c-danger)"; 
+                    renderCart(); 
+                }
+            } catch (e) {
+                btn.innerText = "兌換"; btn.disabled = false;
+                msg.innerText = "連線驗證失敗，請檢查網路訊號。"; msg.style.color = "var(--c-danger)";
             }
         }
 
