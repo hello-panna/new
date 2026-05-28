@@ -435,81 +435,81 @@
             </div>
 
             <div id="step-2" class="step-content">
-                <div class="section-header first">小計與運費明細</div>
-                <div class="summary-box" id="step2-summary"></div>
+    <div class="section-header first">小計與運費明細</div>
+    <div class="summary-box" id="step2-summary"></div>
 
-                <div class="section-header">會員點數即時折抵</div>
-<div class="coupon-section points-card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-        <span style="color: var(--c-text); font-weight: 500; font-size: 0.95rem;">
-            <span style="color: var(--c-accent); margin-right: 4px;">✦</span>驗證帳戶：
-            <span id="verify-email-text" style="color: #888;"></span>
-        </span>
-        <span id="member-points-balance" style="font-size: 0.9rem; color: var(--c-primary); font-weight: 700;"></span>
-    </div>
-    
-    <button type="button" class="points-verify-btn" onclick="checkMemberPoints()">使用手機與姓名查詢我的點數</button>
-    
-    <div id="points-input-area" class="points-inner-box" style="display: none;">
-        <div style="font-size: 0.85rem; color: #888; margin-bottom: 10px;">本次欲折抵點數 (1點 = 1元)</div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <input type="number" id="use-points-input" class="form-input" placeholder="請輸入折抵金額" min="0" oninput="validatePointsInput()">
-            <span style="white-space: nowrap; color: var(--c-text); font-weight: 500;">點</span>
+    <div class="section-header">會員點數即時折抵</div>
+    <div class="coupon-section points-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+            <span style="color: var(--c-text); font-weight: 500; font-size: 0.95rem;">
+                <span style="color: var(--c-accent); margin-right: 4px;">✦</span>驗證帳戶：
+                <span id="verify-email-text" style="color: #888;"></span>
+            </span>
+            <span id="member-points-balance" style="font-size: 0.9rem; color: var(--c-primary); font-weight: 700;"></span>
         </div>
-    </div>
-    <div id="points-msg" style="font-size: 0.85rem; margin-top: 12px; color: var(--c-danger); text-align: center;"></div>
-</div>
-
-<div class="section-header">兌換折扣代碼</div>
-<div class="coupon-section">
-    <div class="coupon-input-group">
-        <input type="text" id="coupon-code" class="form-input" placeholder="請輸入活動折扣碼">
-        <button type="button" class="coupon-btn" onclick="applyCoupon()">兌換</button>
-    </div>
-    <div id="coupon-msg" style="font-size: 0.9rem; margin-top: 12px; text-align: center;"></div>
-</div>
-
-            <div id="step-3" class="step-content">
-                <div class="section-header first">最終結帳明細總覽</div>
-                <div class="summary-box" id="step3-summary" style="border-color: var(--c-primary); margin-bottom: 25px;"></div>
-
-                <div class="form-label" style="font-size:1.1rem; margin-top:20px;">請選擇付款方式 <span class="req-star">*</span></div>
-                <div class="options-section">
-                    <div class="radio-group" style="flex-direction: column; gap: 12px;">
-                        <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
-                            <input type="radio" name="paymentMethod" value="Credit" class="radio-input" checked>
-                            <span style="font-size: 1.05rem;">💳 信用卡線上刷卡 (綠界金流)</span>
-                        </label>
-                        <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
-                            <input type="radio" name="paymentMethod" value="ApplePay" class="radio-input">
-                            <span style="font-size: 1.05rem;">🍎 Apple Pay 行動支付 (綠界金流)</span>
-                        </label>
-                        <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
-                            <input type="radio" name="paymentMethod" value="ATM" class="radio-input">
-                            <span style="font-size: 1.05rem;">🏧 銀行轉帳 / 虛擬帳號自動產出 (綠界金流)</span>
-                        </label>
-                        <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
-                            <input type="radio" name="paymentMethod" value="LinePay" class="radio-input">
-                            <span style="font-size: 1.05rem;">📱 LINE Pay 條碼快速支付 (自主輸入金額)</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="section-header">關於好酪</div>
-                <div class="brand-story">
-                    <h3>三寶媽的溫柔堅持</h3>
-                    <p>「好酪」的故事，始於一個母親對孩子的愛。為了讓孩子吃到最純粹、無添加的點心，我開始鑽研奶酪的製作。</p>
-                    <p>從家庭廚房到考取國家證照，從投保產品責任險到完成食品登錄，每一步都是為了證明「媽媽手作」也能有職人的堅持。與您相遇的每一個笑容，都是我們前行的動力。</p>
-                </div>
-
-                <div style="text-align: center; font-size: 0.75rem; color: #999; margin: 40px 0 100px 0; line-height: 1.8;">
-                    甲賀食品 | 統編: 94427773<br>彰化市中正路一段 403 號<br>客服專線: 0972-005078<br>食品登錄字號: N-194427773-00000-4<br>*已投保國泰產險產品責任險*<br><br>
-                    <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none; color:var(--c-success); font-weight:bold; display:inline-flex; align-items:center; gap:5px;"><span>💬 聯絡官方 LINE</span></a>
-                    <div style="color: var(--c-success);">ID: @817ytyld</div>
-                    <div style="margin-top: 20px;"><a href="javascript:void(0)" onclick="openRefundPolicy()" style="color: #bbb; text-decoration: underline;">退貨與退款政策</a></div>
-                </div>
+        
+        <button type="button" class="points-verify-btn" onclick="checkMemberPoints()">使用手機與姓名查詢我的點數</button>
+        
+        <div id="points-input-area" class="points-inner-box" style="display: none;">
+            <div style="font-size: 0.85rem; color: #888; margin-bottom: 10px;">本次欲折抵點數 (1點 = 1元)</div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="number" id="use-points-input" class="form-input" placeholder="請輸入折抵金額" min="0" oninput="validatePointsInput()">
+                <span style="white-space: nowrap; color: var(--c-text); font-weight: 500;">點</span>
             </div>
         </div>
+        <div id="points-msg" style="font-size: 0.85rem; margin-top: 12px; color: var(--c-danger); text-align: center;"></div>
+    </div>
+
+    <div class="section-header">兌換折扣代碼</div>
+    <div class="coupon-section">
+        <div class="coupon-input-group">
+            <input type="text" id="coupon-code" class="form-input" placeholder="請輸入活動折扣碼">
+            <button type="button" class="coupon-btn" onclick="applyCoupon()">兌換</button>
+        </div>
+        <div id="coupon-msg" style="font-size: 0.9rem; margin-top: 12px; text-align: center;"></div>
+    </div>
+</div>
+
+<div id="step-3" class="step-content">
+    <div class="section-header first">最終結帳明細總覽</div>
+    <div class="summary-box" id="step3-summary" style="border-color: var(--c-primary); margin-bottom: 25px;"></div>
+
+    <div class="form-label" style="font-size:1.1rem; margin-top:20px;">請選擇付款方式 <span class="req-star">*</span></div>
+    <div class="options-section">
+        <div class="radio-group" style="flex-direction: column; gap: 12px;">
+            <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
+                <input type="radio" name="paymentMethod" value="Credit" class="radio-input" checked>
+                <span style="font-size: 1.05rem;">💳 信用卡線上刷卡 (綠界金流)</span>
+            </label>
+            <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
+                <input type="radio" name="paymentMethod" value="ApplePay" class="radio-input">
+                <span style="font-size: 1.05rem;">🍎 Apple Pay 行動支付 (綠界金流)</span>
+            </label>
+            <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
+                <input type="radio" name="paymentMethod" value="ATM" class="radio-input">
+                <span style="font-size: 1.05rem;">🏧 銀行轉帳 / 虛擬帳號自動產出 (綠界金流)</span>
+            </label>
+            <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
+                <input type="radio" name="paymentMethod" value="LinePay" class="radio-input">
+                <span style="font-size: 1.05rem;">📱 LINE Pay 條碼快速支付 (自主輸入金額)</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="section-header">關於好酪</div>
+    <div class="brand-story">
+        <h3>三寶媽的溫柔堅持</h3>
+        <p>「好酪」的故事，始於一個母親對孩子的愛。為了讓孩子吃到最純粹、無添加的點心，我開始鑽研奶酪的製作。</p>
+        <p>從家庭廚房到考取國家證照，從投保產品責任險到完成食品登錄，每一步都是為了證明「媽媽手作」也能有職人的堅持。與您相遇的每一個笑容，都是我們前行的動力。</p>
+    </div>
+
+    <div style="text-align: center; font-size: 0.75rem; color: #999; margin: 40px 0 100px 0; line-height: 1.8;">
+        甲賀食品 | 統編: 94427773<br>彰化市中正路一段 403 號<br>客服專線: 0972-005078<br>食品登錄字號: N-194427773-00000-4<br>*已投保國泰產險產品責任險*<br><br>
+        <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none; color:var(--c-success); font-weight:bold; display:inline-flex; align-items:center; gap:5px;"><span>💬 聯絡官方 LINE</span></a>
+        <div style="color: var(--c-success);">ID: @817ytyld</div>
+        <div style="margin-top: 20px;"><a href="javascript:void(0)" onclick="openRefundPolicy()" style="color: #bbb; text-decoration: underline;">退貨與退款政策</a></div>
+    </div>
+</div>
 
         <div class="bottom-bar" id="checkout-bottom-bar">
             <div class="price-area">
@@ -910,7 +910,7 @@
             const email = document.getElementById('cust-email').value.trim();
             const msgArea = document.getElementById('points-msg');
             const inputArea = document.getElementById('points-input-area');
-            const btn = document.querySelector('.coupon-btn[onclick="checkMemberPoints()"]');
+            const btn = document.querySelector('button[onclick="checkMemberPoints()"]');
             
             if (!name || !phone || !email) { msgArea.innerText = "請先回第一步完整填寫姓名、手機號碼與 Email 以供驗證！"; return; }
             
