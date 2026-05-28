@@ -186,18 +186,27 @@
         #delivery-info-box { background-color: #FFF8E1; color: #8D6E63; border: none; }
         .info-box div { margin-bottom: 6px; font-size: 0.95rem; }
 
-        /* 底部導航懸浮列 */
-        .bottom-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 480px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 12px 20px; box-shadow: var(--shadow-float); display: flex; justify-content: space-between; align-items: center; z-index: 999; border-radius: 60px; border: 1px solid rgba(255,255,255,0.8); }
-        .price-area { display: flex; flex-direction: column; justify-content: center; }
-        .total-price { font-family: var(--font-title); font-size: 1.35rem; font-weight: 700; color: var(--c-text); }
-        .btn-group { display: flex; gap: 8px; }
-        .action-btn { background: var(--c-primary); color: #fff; border: none; padding: 14px 28px; border-radius: 50px; font-size: 0.95rem; font-weight: bold; box-shadow: 0 4px 15px rgba(140, 123, 117, 0.25); cursor: pointer; transition: transform 0.2s; white-space: nowrap; }
+        /* 底部導航懸浮列 (防擠壓換行優化版) */
+        .bottom-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 96%; max-width: 480px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 10px 16px; box-shadow: var(--shadow-float); display: flex; justify-content: space-between; align-items: center; z-index: 999; border-radius: 60px; border: 1px solid rgba(255,255,255,0.8); }
+        
+        /* 重點修正：強制不換行，且保證區塊不被擠壓 */
+        .price-area { display: flex; flex-direction: column; justify-content: center; flex-shrink: 0; min-width: 90px; white-space: nowrap; }
+        .total-price { font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; color: var(--c-text); white-space: nowrap; }
+        
+        .btn-group { display: flex; gap: 6px; flex-shrink: 1; }
+        .action-btn { background: var(--c-primary); color: #fff; border: none; padding: 12px 18px; border-radius: 50px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 15px rgba(140, 123, 117, 0.25); cursor: pointer; transition: transform 0.2s; white-space: nowrap; }
         .action-btn:active { transform: scale(0.96); }
-        .action-btn.secondary { background: #f0f0f0; color: #666; box-shadow: none; padding: 14px 20px; }
-
-        .bookmark-line-btn { position: fixed; top: 50%; right: 0; transform: translateY(-50%); background-color: var(--c-text); color: white; border-radius: 8px 0 0 8px; box-shadow: -2px 2px 10px rgba(0,0,0,0.1); padding: 12px 5px; width: 38px; z-index: 998; cursor: pointer; text-decoration: none; display: flex; flex-direction: column; align-items: center; }
-        .bookmark-line-btn img { width: 24px; height: 24px; margin-bottom: 6px; }
-        .bookmark-line-btn span { font-size: 12px; font-weight: 500; writing-mode: vertical-rl; letter-spacing: 2px; }
+        .action-btn.secondary { background: #f0f0f0; color: #666; box-shadow: none; padding: 12px 14px; }
+        
+        /* 小螢幕自動縮放字體與按鈕，防止按鈕過長導致跑版 */
+        @media (max-width: 390px) {
+            .bottom-bar { padding: 8px 12px; width: 98%; }
+            .action-btn { padding: 10px 12px; font-size: 0.85rem; }
+            .action-btn.secondary { padding: 10px 10px; font-size: 0.85rem; }
+            .total-price { font-size: 1.15rem; }
+            /* 若折扣標籤字數太多，自動變成刪節號避免撐開版面 */
+            #discount-badge { max-width: 75px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+        }
 
         /* 收據樣式設計 */
         .receipt-card { border: 1px solid #e0e0e0; background: #fff; border-radius: 12px; padding: 25px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; position: relative; }
