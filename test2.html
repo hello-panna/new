@@ -214,6 +214,61 @@
         .spinner { border: 3px solid #eee; border-top: 3px solid var(--c-primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s ease-in-out infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @media (min-width: 620px) { .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; } }
+/* --- 點數與折扣碼區塊優化 --- */
+.coupon-section.points-card {
+    background: linear-gradient(145deg, #FDFBF8 0%, #FAF8F5 100%);
+    border: 1px solid rgba(175, 168, 139, 0.3); /* 抹茶灰綠微透邊框 */
+}
+
+.points-verify-btn {
+    background: var(--c-accent); /* 抹茶灰綠 */
+    color: #fff;
+    width: 100%;
+    padding: 14px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(175, 168, 139, 0.2);
+}
+
+.points-verify-btn:hover, .points-verify-btn:active {
+    background: #9a9378;
+    transform: translateY(-1px);
+}
+
+.coupon-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.coupon-btn {
+    background: var(--c-primary); /* 焙茶棕 */
+    color: #fff;
+    border: none;
+    padding: 0 22px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.coupon-btn:hover, .coupon-btn:active {
+    background: var(--c-text);
+}
+
+/* 點數輸入區塊的柔和內框 */
+.points-inner-box {
+    background: #fff; 
+    padding: 16px; 
+    border-radius: 8px; 
+    border: 1px dashed var(--c-line);
+    margin-top: 18px;
+}
     </style>
 </head>   
 <body>
@@ -384,30 +439,35 @@
                 <div class="summary-box" id="step2-summary"></div>
 
                 <div class="section-header">會員點數即時折抵</div>
-                <div class="coupon-section" style="border-color: #e67e22;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <span style="color:#e67e22; font-weight:bold;">驗證帳戶：<span id="verify-email-text"></span></span>
-                        <span id="member-points-balance" style="font-size: 0.9rem; color: #888; font-weight: bold;"></span>
-                    </div>
-                    <button type="button" class="coupon-btn" style="background-color: #e67e22; width: 100%; padding: 12px 0;" onclick="checkMemberPoints()">使用手機與姓名查詢我的點數</button>
-                    <div id="points-input-area" style="display: none; margin-top: 20px;">
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="number" id="use-points-input" class="form-input" placeholder="請輸入欲折抵之點數金額" min="0" oninput="validatePointsInput()">
-                            <span style="white-space: nowrap; color: #666; font-size: 0.9rem;">點 (1點折抵1元)</span>
-                        </div>
-                    </div>
-                    <div id="points-msg" style="font-size:0.85rem; margin-top:10px; color: var(--c-danger); text-align:center;"></div>
-                </div>
+<div class="coupon-section points-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <span style="color: var(--c-text); font-weight: 500; font-size: 0.95rem;">
+            <span style="color: var(--c-accent); margin-right: 4px;">✦</span>驗證帳戶：
+            <span id="verify-email-text" style="color: #888;"></span>
+        </span>
+        <span id="member-points-balance" style="font-size: 0.9rem; color: var(--c-primary); font-weight: 700;"></span>
+    </div>
+    
+    <button type="button" class="points-verify-btn" onclick="checkMemberPoints()">使用手機與姓名查詢我的點數</button>
+    
+    <div id="points-input-area" class="points-inner-box" style="display: none;">
+        <div style="font-size: 0.85rem; color: #888; margin-bottom: 10px;">本次欲折抵點數 (1點 = 1元)</div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="number" id="use-points-input" class="form-input" placeholder="請輸入折抵金額" min="0" oninput="validatePointsInput()">
+            <span style="white-space: nowrap; color: var(--c-text); font-weight: 500;">點</span>
+        </div>
+    </div>
+    <div id="points-msg" style="font-size: 0.85rem; margin-top: 12px; color: var(--c-danger); text-align: center;"></div>
+</div>
 
-                <div class="section-header">兌換折扣代碼</div>
-                <div class="coupon-section">
-                    <div class="coupon-input-group">
-                        <input type="text" id="coupon-code" class="form-input" placeholder="請輸入活動折扣碼">
-                        <button type="button" class="coupon-btn" onclick="applyCoupon()">兌換</button>
-                    </div>
-                    <div id="coupon-msg" style="font-size:0.9rem; margin-top:8px;"></div>
-                </div>
-            </div>
+<div class="section-header">兌換折扣代碼</div>
+<div class="coupon-section">
+    <div class="coupon-input-group">
+        <input type="text" id="coupon-code" class="form-input" placeholder="請輸入活動折扣碼">
+        <button type="button" class="coupon-btn" onclick="applyCoupon()">兌換</button>
+    </div>
+    <div id="coupon-msg" style="font-size: 0.9rem; margin-top: 12px; text-align: center;"></div>
+</div>
 
             <div id="step-3" class="step-content">
                 <div class="section-header first">最終結帳明細總覽</div>
