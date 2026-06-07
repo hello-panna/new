@@ -222,7 +222,6 @@
         #loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(253, 251, 248, 0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { border: 3px solid #eee; border-top: 3px solid var(--c-primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s ease-in-out infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @media (min-width: 620px) { .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; } }
 
         /* --- 點數與折扣碼區塊優化 --- */
         .coupon-section.points-card { background: linear-gradient(145deg, #FDFBF8 0%, #FAF8F5 100%); border: 1px solid rgba(175, 168, 139, 0.3); }
@@ -232,11 +231,24 @@
         .coupon-btn { background: var(--c-primary); color: #fff; border: none; padding: 0 22px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
         .coupon-btn:hover, .coupon-btn:active { background: var(--c-text); }
         .points-inner-box { background: #fff; padding: 16px; border-radius: 8px; border: 1px dashed var(--c-line); margin-top: 18px; }
-        /* --- 側邊 LINE 領取折扣碼懸浮按鈕 --- */
-        .bookmark-line-btn { position: fixed; top: 50%; right: 0; transform: translateY(-50%); background-color: var(--c-text); color: white; border-radius: 8px 0 0 8px; box-shadow: -2px 2px 10px rgba(0,0,0,0.1); padding: 12px 5px; width: 38px; z-index: 998; cursor: pointer; text-decoration: none; display: flex; flex-direction: column; align-items: center; }
-        .bookmark-line-btn img { width: 24px; height: 24px; margin-bottom: 6px; }
-        .bookmark-line-btn span { font-size: 12px; font-weight: 500; writing-mode: vertical-rl; letter-spacing: 2px; }
-        @media (min-width: 620px) { .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; } }
+        /* --- 側邊懸浮按鈕群組 --- */
+        .floating-btn-group {
+            position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+            display: flex; flex-direction: column; gap: 10px; z-index: 998;
+        }
+        .bookmark-line-btn, .query-order-btn {
+            background-color: var(--c-text); color: white; border-radius: 8px 0 0 8px;
+            box-shadow: -2px 2px 10px rgba(0,0,0,0.1); padding: 12px 5px; width: 38px;
+            cursor: pointer; text-decoration: none; display: flex; flex-direction: column; align-items: center;
+            border: none; outline: none;
+        }
+        .query-order-btn { background-color: var(--c-primary); } /* 用不同顏色區分 */
+        .bookmark-line-btn img, .query-order-btn span.icon { width: 24px; height: 24px; margin-bottom: 6px; font-size: 18px; line-height: 24px; text-align: center; }
+        .bookmark-line-btn span.text, .query-order-btn span.text { font-size: 12px; font-weight: 500; writing-mode: vertical-rl; letter-spacing: 2px; font-family: var(--font-body); }
+        @media (min-width: 620px) { 
+            .floating-btn-group { right: calc(50% - 260px); } 
+            .bookmark-line-btn, .query-order-btn { border-radius: 8px; }
+        }
         /* 結帳按鈕呼吸燈閃爍特效 */
         @keyframes pulseBtn {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(216, 124, 124, 0.7); }
@@ -253,10 +265,16 @@
     </div>
 
     <div id="app-container">
-        <a href="https://lin.ee/UHEkfgW" target="_blank" class="bookmark-line-btn" title="加入官方LINE">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE">
-            <span>領取折扣碼</span>
-        </a>
+        <div class="floating-btn-group">
+            <a href="https://lin.ee/UHEkfgW" target="_blank" class="bookmark-line-btn" title="加入官方LINE">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE">
+                <span class="text">領取折扣碼</span>
+            </a>
+            <button onclick="openOrderQuery()" class="query-order-btn" title="查詢訂單">
+                <span class="icon">🔍</span>
+                <span class="text">查詢訂單</span>
+            </button>
+        </div>
 
         <header>
             <img src="logo.jpg" alt="Logo" class="header-logo">
@@ -569,7 +587,29 @@
             <button onclick="closeRefundPolicy()" style="display: block; width: 100%; margin-top: 25px; padding: 12px; background: var(--c-primary); color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer;">關閉</button>
         </div>
     </div>
-
+    <div id="order-query-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; padding: 20px;">
+        <div style="background: #fff; width: 100%; max-width: 400px; padding: 30px; border-radius: 12px; position: relative; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-float);">
+            <span onclick="closeOrderQuery()" style="position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #ccc;">×</span>
+            <h3 style="text-align: center; margin-bottom: 25px; color: var(--c-primary); font-family:var(--font-title); font-weight: 700; letter-spacing: 1px;">查詢訂單狀態</h3>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label class="form-label">訂購人姓名 <span class="req-star">*</span></label>
+                <input type="text" id="query-name" class="form-input" placeholder="您訂購時填寫的姓名">
+            </div>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label class="form-label">手機號碼 <span class="req-star">*</span></label>
+                <input type="tel" id="query-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric">
+            </div>
+            <div class="form-group" style="margin-bottom:25px;">
+                <label class="form-label">Email <span class="req-star">*</span></label>
+                <input type="email" id="query-email" class="form-input" placeholder="您訂購時填寫的 Email">
+            </div>
+            
+            <button id="btn-do-query" onclick="executeOrderQuery()" style="display: block; width: 100%; padding: 14px; background: var(--c-primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; letter-spacing: 1px;">開始查詢</button>
+            
+            <div id="query-result-area" style="margin-top: 20px; display: none;"></div>
+        </div>
+    </div>
     <form id="ecpay-post-form" method="POST" action="https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5" style="display:none;"></form>
 
     <script>
@@ -1285,7 +1325,93 @@
 
         function openRefundPolicy() { document.getElementById('refund-policy-modal').style.display = 'flex'; }
         function closeRefundPolicy() { document.getElementById('refund-policy-modal').style.display = 'none'; }
+        // ==========================================
+        // 訂單查詢功能
+        // ==========================================
+        function openOrderQuery() { 
+            document.getElementById('order-query-modal').style.display = 'flex'; 
+        }
+        
+        function closeOrderQuery() { 
+            document.getElementById('order-query-modal').style.display = 'none'; 
+            document.getElementById('query-result-area').style.display = 'none';
+            document.getElementById('query-result-area').innerHTML = '';
+            document.getElementById('query-name').value = '';
+            document.getElementById('query-phone').value = '';
+            document.getElementById('query-email').value = '';
+        }
 
+        async function executeOrderQuery() {
+            const name = document.getElementById('query-name').value.trim();
+            const phone = document.getElementById('query-phone').value.trim();
+            const email = document.getElementById('query-email').value.trim();
+            const resultArea = document.getElementById('query-result-area');
+            const btn = document.getElementById('btn-do-query');
+
+            if (!name || !phone || !email) {
+                alert("請完整填寫姓名、手機號碼與 Email 以進行驗證！"); 
+                return; 
+            }
+
+            btn.innerText = "系統查詢中..."; 
+            btn.disabled = true;
+            resultArea.style.display = 'block'; 
+            resultArea.innerHTML = '<div style="text-align:center; color:#888; margin-top:10px;">資料庫連線比對中，請稍候...</div>';
+
+            try {
+                // 向您的 Google Apps Script 發送查詢請求 (需在 GAS 後端新增 action=queryOrder 的對應邏輯)
+                const response = await fetch(TRAFFIC_SCRIPT_URL + "?action=queryOrder&name=" + encodeURIComponent(name) + "&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email));
+                const data = await response.json();
+
+                if (data.success && data.orders && data.orders.length > 0) {
+                    let html = '<div style="font-weight:700; color:var(--c-text); margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">近期的訂單紀錄 (點擊可看明細)：</div>';
+                    
+                    data.orders.forEach(order => {
+                        html += `
+                        <div style="background:#FAF8F5; border:1px solid #EFEBE9; border-radius:8px; margin-bottom:12px; overflow:hidden;">
+                            
+                            <div onclick="const detail = this.nextElementSibling; detail.style.display = detail.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('.toggle-icon'); icon.innerText = detail.style.display === 'none' ? '▼' : '▲';" style="padding:15px; cursor:pointer; position:relative; transition: background 0.2s;" onmouseover="this.style.background='#F5F2EB'" onmouseout="this.style.background='transparent'">
+                                <div style="font-family:monospace; font-size:1.05rem; font-weight:bold; color:var(--c-text); margin-bottom:5px;">#${order.orderId || '未知單號'}</div>
+                                <div style="color:#888; font-size:0.85rem; margin-bottom:8px;">預定日期：${order.date || '無'}</div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                                    <span>狀態</span>
+                                    <strong style="background:var(--c-accent); color:white; padding:2px 8px; border-radius:4px; font-size:0.85rem;">${order.status || '處理中'}</strong>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span>總額</span>
+                                    <strong style="color:var(--c-danger);">NT$ ${order.total || 0}</strong>
+                                </div>
+                                <div class="toggle-icon" style="position:absolute; top:15px; right:15px; color:#BCAAA4; font-size:0.8rem;">▼</div>
+                            </div>
+                            
+                            <div style="display:none; padding:15px; border-top:1px dashed #EFEBE9; background:#fff; font-size:0.9rem;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                    <span style="color:#888;">付款方式</span>
+                                    <span style="color:var(--c-text); font-weight:500;">${order.paymentMethod}</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                                    <span style="color:#888;">總杯數</span>
+                                    <span style="color:var(--c-text); font-weight:500;">${order.cups} 杯</span>
+                                </div>
+                                <div>
+                                    <span style="color:#888; display:block; margin-bottom:6px;">訂購內容：</span>
+                                    <div style="color:var(--c-text); background:#FDFBF8; padding:10px; border-radius:6px; line-height:1.6; white-space:pre-wrap; border:1px solid #F5F2EB;">${order.items}</div>
+                                </div>
+                            </div>
+                            
+                        </div>`;
+                    });
+                    resultArea.innerHTML = html;
+                } else {
+                    resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">❌ 查無符合的訂單資料。<br><span style="font-size:0.85rem; color:#888;">請確認輸入的資料與訂購時是否完全一致。</span></div>`;
+                }
+            } catch (e) {
+                resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">連線失敗，請檢查網路狀態或稍後再試。</div>`;
+            }
+            
+            btn.innerText = "開始查詢"; 
+            btn.disabled = false;
+        }
         window.onload = init;
     </script>
 </body>
