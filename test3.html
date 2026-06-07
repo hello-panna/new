@@ -1364,22 +1364,41 @@
                 const data = await response.json();
 
                 if (data.success && data.orders && data.orders.length > 0) {
-                    let html = '<div style="font-weight:700; color:var(--c-text); margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">近期的訂單紀錄：</div>';
+                    let html = '<div style="font-weight:700; color:var(--c-text); margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">近期的訂單紀錄 (點擊可看明細)：</div>';
                     
                     data.orders.forEach(order => {
-                        // 假設後端回傳：orderId, date, status, total
                         html += `
-                        <div style="background:#FAF8F5; border:1px solid #EFEBE9; padding:15px; border-radius:8px; margin-bottom:12px;">
-                            <div style="font-family:monospace; font-size:1.05rem; font-weight:bold; color:var(--c-text); margin-bottom:5px;">#${order.orderId || '未知單號'}</div>
-                            <div style="color:#888; font-size:0.85rem; margin-bottom:8px;">預定日期：${order.date || '無'}</div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                <span>狀態</span>
-                                <strong style="background:var(--c-accent); color:white; padding:2px 8px; border-radius:4px; font-size:0.85rem;">${order.status || '處理中'}</strong>
+                        <div style="background:#FAF8F5; border:1px solid #EFEBE9; border-radius:8px; margin-bottom:12px; overflow:hidden;">
+                            
+                            <div onclick="const detail = this.nextElementSibling; detail.style.display = detail.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('.toggle-icon'); icon.innerText = detail.style.display === 'none' ? '▼' : '▲';" style="padding:15px; cursor:pointer; position:relative; transition: background 0.2s;" onmouseover="this.style.background='#F5F2EB'" onmouseout="this.style.background='transparent'">
+                                <div style="font-family:monospace; font-size:1.05rem; font-weight:bold; color:var(--c-text); margin-bottom:5px;">#${order.orderId || '未知單號'}</div>
+                                <div style="color:#888; font-size:0.85rem; margin-bottom:8px;">預定日期：${order.date || '無'}</div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                                    <span>狀態</span>
+                                    <strong style="background:var(--c-accent); color:white; padding:2px 8px; border-radius:4px; font-size:0.85rem;">${order.status || '處理中'}</strong>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span>總額</span>
+                                    <strong style="color:var(--c-danger);">NT$ ${order.total || 0}</strong>
+                                </div>
+                                <div class="toggle-icon" style="position:absolute; top:15px; right:15px; color:#BCAAA4; font-size:0.8rem;">▼</div>
                             </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span>總額</span>
-                                <strong style="color:var(--c-danger);">NT$ ${order.total || 0}</strong>
+                            
+                            <div style="display:none; padding:15px; border-top:1px dashed #EFEBE9; background:#fff; font-size:0.9rem;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                    <span style="color:#888;">付款方式</span>
+                                    <span style="color:var(--c-text); font-weight:500;">${order.paymentMethod}</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                                    <span style="color:#888;">總杯數</span>
+                                    <span style="color:var(--c-text); font-weight:500;">${order.cups} 杯</span>
+                                </div>
+                                <div>
+                                    <span style="color:#888; display:block; margin-bottom:6px;">訂購內容：</span>
+                                    <div style="color:var(--c-text); background:#FDFBF8; padding:10px; border-radius:6px; line-height:1.6; white-space:pre-wrap; border:1px solid #F5F2EB;">${order.items}</div>
+                                </div>
                             </div>
+                            
                         </div>`;
                     });
                     resultArea.innerHTML = html;
