@@ -222,7 +222,6 @@
         #loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(253, 251, 248, 0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
         .spinner { border: 3px solid #eee; border-top: 3px solid var(--c-primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s ease-in-out infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @media (min-width: 620px) { .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; } }
 
         /* --- 點數與折扣碼區塊優化 --- */
         .coupon-section.points-card { background: linear-gradient(145deg, #FDFBF8 0%, #FAF8F5 100%); border: 1px solid rgba(175, 168, 139, 0.3); }
@@ -232,11 +231,30 @@
         .coupon-btn { background: var(--c-primary); color: #fff; border: none; padding: 0 22px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
         .coupon-btn:hover, .coupon-btn:active { background: var(--c-text); }
         .points-inner-box { background: #fff; padding: 16px; border-radius: 8px; border: 1px dashed var(--c-line); margin-top: 18px; }
-        /* --- 側邊 LINE 領取折扣碼懸浮按鈕 --- */
-        .bookmark-line-btn { position: fixed; top: 50%; right: 0; transform: translateY(-50%); background-color: var(--c-text); color: white; border-radius: 8px 0 0 8px; box-shadow: -2px 2px 10px rgba(0,0,0,0.1); padding: 12px 5px; width: 38px; z-index: 998; cursor: pointer; text-decoration: none; display: flex; flex-direction: column; align-items: center; }
-        .bookmark-line-btn img { width: 24px; height: 24px; margin-bottom: 6px; }
-        .bookmark-line-btn span { font-size: 12px; font-weight: 500; writing-mode: vertical-rl; letter-spacing: 2px; }
-        @media (min-width: 620px) { .bookmark-line-btn { right: calc(50% - 260px); border-radius: 8px; } }
+        /* --- 側邊懸浮按鈕群組 --- */
+        .floating-btn-group {
+            position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+            display: flex; flex-direction: column; gap: 10px; z-index: 998;
+        }
+        .bookmark-line-btn, .query-order-btn {
+            background-color: var(--c-text); color: white; border-radius: 8px 0 0 8px;
+            box-shadow: -2px 2px 10px rgba(0,0,0,0.1); padding: 12px 5px; width: 38px;
+            cursor: pointer; text-decoration: none; display: flex; flex-direction: column; align-items: center;
+            border: none; outline: none;
+        }
+        .query-order-btn { background-color: var(--c-primary); } /* 用不同顏色區分 */
+        .bookmark-line-btn img, .query-order-btn span.icon { width: 24px; height: 24px; margin-bottom: 6px; font-size: 18px; line-height: 24px; text-align: center; }
+        .bookmark-line-btn span.text, .query-order-btn span.text { font-size: 12px; font-weight: 500; writing-mode: vertical-rl; letter-spacing: 2px; font-family: var(--font-body); }
+        @media (min-width: 620px) { 
+            .floating-btn-group { right: calc(50% - 260px); } 
+            .bookmark-line-btn, .query-order-btn { border-radius: 8px; }
+        }
+        /* 結帳按鈕呼吸燈閃爍特效 */
+        @keyframes pulseBtn {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(216, 124, 124, 0.7); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(216, 124, 124, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(216, 124, 124, 0); }
+        }
     </style>
 </head>   
 <body>
@@ -499,11 +517,15 @@
 
         <div id="receipt-view" style="display:none; padding:40px 20px;">
             <div style="text-align:center;">
-                <div style="width:60px; height:60px; background:var(--c-primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 20px;">✓</div>
-                <div style="font-family:var(--font-title); font-size:1.5rem; font-weight:700; color:var(--c-text); margin-bottom:5px;">訂單已成立</div>
-                <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:15px;">
-                    <div style="color:var(--c-danger); font-size:0.95rem;">(請複製訂單資訊傳給客服避免漏單)</div>
-                    <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none;"><img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" style="width:24px; height:24px; vertical-align:middle;"></a>
+                <div style="width:60px; height:60px; background:var(--c-danger); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 20px;">!</div>
+                <div style="font-family:var(--font-title); font-size:1.5rem; font-weight:700; color:var(--c-danger); margin-bottom:5px;">訂單已登記 (尚未付款)</div>
+                
+                <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:15px; font-weight:bold; color:#D84315;">
+                    <div style="font-size: 1.05rem;">⚠️ 請點擊下方按鈕完成結帳 ⚠️</div>
+                    <div style="display:flex; align-items:center; gap:8px; font-weight:normal; font-size:0.9rem; color:#888; margin-top:2px;">
+                        (付款完成後，再複製訂單資訊傳給客服)
+                        <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none;"><img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE" style="width:24px; height:24px; vertical-align:middle;"></a>
+                    </div>
                 </div>
                 <button onclick="copyOrderInfo()" class="action-btn" style="display:inline-flex; width:auto; padding:12px 24px; background:#5c4e46; color:white; margin:0 auto 20px; box-shadow:0 4px 15px rgba(92, 78, 70, 0.2); font-size:0.95rem;">📋 一鍵複製訂單資訊</button>
                 <div class="receipt-time" id="receipt-time" style="color:#aaa; font-size:0.85rem; margin-bottom:30px;"></div>
@@ -559,7 +581,29 @@
             <button onclick="closeRefundPolicy()" style="display: block; width: 100%; margin-top: 25px; padding: 12px; background: var(--c-primary); color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer;">關閉</button>
         </div>
     </div>
-
+    <div id="order-query-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; padding: 20px;">
+        <div style="background: #fff; width: 100%; max-width: 400px; padding: 30px; border-radius: 12px; position: relative; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-float);">
+            <span onclick="closeOrderQuery()" style="position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #ccc;">×</span>
+            <h3 style="text-align: center; margin-bottom: 25px; color: var(--c-primary); font-family:var(--font-title); font-weight: 700; letter-spacing: 1px;">查詢訂單狀態</h3>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label class="form-label">訂購人姓名 <span class="req-star">*</span></label>
+                <input type="text" id="query-name" class="form-input" placeholder="您訂購時填寫的姓名">
+            </div>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label class="form-label">手機號碼 <span class="req-star">*</span></label>
+                <input type="tel" id="query-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric">
+            </div>
+            <div class="form-group" style="margin-bottom:25px;">
+                <label class="form-label">Email <span class="req-star">*</span></label>
+                <input type="email" id="query-email" class="form-input" placeholder="您訂購時填寫的 Email">
+            </div>
+            
+            <button id="btn-do-query" onclick="executeOrderQuery()" style="display: block; width: 100%; padding: 14px; background: var(--c-primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; letter-spacing: 1px;">開始查詢</button>
+            
+            <div id="query-result-area" style="margin-top: 20px; display: none;"></div>
+        </div>
+    </div>
     <form id="ecpay-post-form" method="POST" action="https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5" style="display:none;"></form>
 
     <script>
@@ -1182,10 +1226,10 @@
 
             if(payment === 'LinePay') {
                 paymentContainer.innerHTML = `
-                    <div style="background:#E8F5E9; padding:20px; border-radius:12px; border:1px solid #C8E6C9; margin-top:5px; text-align:center;">
-                        <div style="font-weight:bold; color:#2E7D32; margin-bottom:12px; font-size:1rem;">📱 您已選擇 LINE Pay 付款</div>
-                        <p style="font-size:0.9rem; color:#555; margin-bottom:15px;">您的訂單已保留，請點擊下方按鈕，手動輸入本次結帳總額 <strong style="color:var(--c-danger); font-size:1.1rem;">$${finalAllPrice}</strong> 元：</p>
-                        <a href="${LINE_PAY_LINK}" target="_blank" class="action-btn linepay-btn" style="background:#00C300; color:white; width:100%; display:block; padding:16px; border-radius:50px; font-size:1rem; font-weight:bold; text-decoration:none;">
+                    <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px; text-align:center; box-shadow: 0 4px 15px rgba(216, 124, 124, 0.25);">
+                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請完成付款</div>
+                        <p style="font-size:0.95rem; color:#555; margin-bottom:15px;">您的訂單已為您保留，請點擊下方按鈕，手動輸入本次結帳總額 <strong style="color:var(--c-danger); font-size:1.2rem;">$${finalAllPrice}</strong> 元：</p>
+                        <a href="${LINE_PAY_LINK}" target="_blank" class="action-btn linepay-btn" style="background:#00C300; color:white; width:100%; display:block; padding:16px; border-radius:50px; font-size:1.05rem; font-weight:bold; text-decoration:none; animation: pulseBtn 1.5s infinite;">
                             👉 點我立即開啟 LINE Pay 付款
                         </a>
                     </div>`;
@@ -1195,17 +1239,17 @@
                 else if (payment === 'ApplePay') btnText = "👉 點我開啟 Apple Pay 結帳";
                 else if (payment === 'TWQR') btnText = "👉 點我開啟 TWQR 掃碼付款";
                 paymentContainer.innerHTML = `
-                    <div style="background:#F0F8FF; padding:20px; border-radius:12px; border:1px solid #BFE0FF; margin-top:5px; text-align:center;">
-                        <div style="font-weight:bold; color:#0056b3; margin-bottom:12px; font-size:1rem;">🔐 綠界科技安全支付</div>
-                        <p style="font-size:0.9rem; color:#555; margin-bottom:15px;">您的訂單已經登記成功！請點擊下方按鈕前往綠界金流完成結帳步驟：</p>
-                        <button onclick="document.getElementById('ecpay-post-form').submit();" class="action-btn" style="background:#0056b3; color:white; width:100%; padding:16px; border-radius:50px; font-size:1rem; border:none; cursor:pointer; box-shadow: 0 4px 15px rgba(0, 86, 179, 0.2); font-weight:bold;">
+                    <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px; text-align:center; box-shadow: 0 4px 15px rgba(216, 124, 124, 0.25);">
+                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請完成付款</div>
+                        <p style="font-size:0.95rem; color:#555; margin-bottom:15px;">系統已登記您的商品！請點擊下方按鈕前往綠界完成結帳步驟：</p>
+                        <button onclick="document.getElementById('ecpay-post-form').submit();" class="action-btn" style="background:#0056b3; color:white; width:100%; padding:16px; border-radius:50px; font-size:1.05rem; border:none; cursor:pointer; font-weight:bold; animation: pulseBtn 1.5s infinite;">
                             ${btnText}
                         </button>
                     </div>`;
             } else {
                 paymentContainer.innerHTML = `
-                    <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:1px solid #FFCDD2; margin-top:5px;">
-                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:10px;">⚠️ 系統金流連線異常，請使用備用實體帳號匯款：</div>
+                    <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px;">
+                        <div style="font-weight:bold; color:var(--c-danger); margin-bottom:10px; font-size:1.05rem;">⚠️ 系統金流連線異常，請使用備用實體帳號匯款：</div>
                         <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 15px; border-radius:8px; border:1px solid #E0E0E0;">
                             <span id="bank-acc-num-display" style="font-size:1.1rem; font-family:monospace; font-weight:bold; letter-spacing:1px; color:#333;">0142000331194</span>
                             <button class="copy-btn" onclick="copyBankAccount()" style="font-size:0.8rem; padding:4px 10px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer;">複製帳號</button>
@@ -1275,7 +1319,74 @@
 
         function openRefundPolicy() { document.getElementById('refund-policy-modal').style.display = 'flex'; }
         function closeRefundPolicy() { document.getElementById('refund-policy-modal').style.display = 'none'; }
+        // ==========================================
+        // 訂單查詢功能
+        // ==========================================
+        function openOrderQuery() { 
+            document.getElementById('order-query-modal').style.display = 'flex'; 
+        }
+        
+        function closeOrderQuery() { 
+            document.getElementById('order-query-modal').style.display = 'none'; 
+            document.getElementById('query-result-area').style.display = 'none';
+            document.getElementById('query-result-area').innerHTML = '';
+            document.getElementById('query-name').value = '';
+            document.getElementById('query-phone').value = '';
+            document.getElementById('query-email').value = '';
+        }
 
+        async function executeOrderQuery() {
+            const name = document.getElementById('query-name').value.trim();
+            const phone = document.getElementById('query-phone').value.trim();
+            const email = document.getElementById('query-email').value.trim();
+            const resultArea = document.getElementById('query-result-area');
+            const btn = document.getElementById('btn-do-query');
+
+            if (!name || !phone || !email) {
+                alert("請完整填寫姓名、手機號碼與 Email 以進行驗證！"); 
+                return; 
+            }
+
+            btn.innerText = "系統查詢中..."; 
+            btn.disabled = true;
+            resultArea.style.display = 'block'; 
+            resultArea.innerHTML = '<div style="text-align:center; color:#888; margin-top:10px;">資料庫連線比對中，請稍候...</div>';
+
+            try {
+                // 向您的 Google Apps Script 發送查詢請求 (需在 GAS 後端新增 action=queryOrder 的對應邏輯)
+                const response = await fetch(TRAFFIC_SCRIPT_URL + "?action=queryOrder&name=" + encodeURIComponent(name) + "&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email));
+                const data = await response.json();
+
+                if (data.success && data.orders && data.orders.length > 0) {
+                    let html = '<div style="font-weight:700; color:var(--c-text); margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">近期的訂單紀錄：</div>';
+                    
+                    data.orders.forEach(order => {
+                        // 假設後端回傳：orderId, date, status, total
+                        html += `
+                        <div style="background:#FAF8F5; border:1px solid #EFEBE9; padding:15px; border-radius:8px; margin-bottom:12px;">
+                            <div style="font-family:monospace; font-size:1.05rem; font-weight:bold; color:var(--c-text); margin-bottom:5px;">#${order.orderId || '未知單號'}</div>
+                            <div style="color:#888; font-size:0.85rem; margin-bottom:8px;">預定日期：${order.date || '無'}</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                                <span>狀態</span>
+                                <strong style="background:var(--c-accent); color:white; padding:2px 8px; border-radius:4px; font-size:0.85rem;">${order.status || '處理中'}</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span>總額</span>
+                                <strong style="color:var(--c-danger);">NT$ ${order.total || 0}</strong>
+                            </div>
+                        </div>`;
+                    });
+                    resultArea.innerHTML = html;
+                } else {
+                    resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">❌ 查無符合的訂單資料。<br><span style="font-size:0.85rem; color:#888;">請確認輸入的資料與訂購時是否完全一致。</span></div>`;
+                }
+            } catch (e) {
+                resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">連線失敗，請檢查網路狀態或稍後再試。</div>`;
+            }
+            
+            btn.innerText = "開始查詢"; 
+            btn.disabled = false;
+        }
         window.onload = init;
     </script>
 </body>
