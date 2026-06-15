@@ -189,23 +189,27 @@
         /* 底部導航懸浮列 (防擠壓換行優化版) */
         .bottom-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 96%; max-width: 480px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 10px 16px; box-shadow: var(--shadow-float); display: flex; justify-content: space-between; align-items: center; z-index: 999; border-radius: 60px; border: 1px solid rgba(255,255,255,0.8); }
         
-        /* 重點修正：強制不換行，且保證區塊不被擠壓 */
-        .price-area { display: flex; flex-direction: column; justify-content: center; flex-shrink: 0; min-width: 90px; white-space: nowrap; }
-        .total-price { font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; color: var(--c-text); white-space: nowrap; }
-        
-        .btn-group { display: flex; gap: 6px; flex-shrink: 1; }
+        /* 重點修正：讓價格區塊自動收縮，並保護按鈕不被擠壓或推出版面 */
+        .price-area { display: flex; flex-direction: column; justify-content: center; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; padding-right: 8px; }
+        .price-area > div:first-child { display: flex; align-items: center; flex-wrap: nowrap; overflow: hidden; }
+        .total-price { font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* btn-group 設為 flex-shrink: 0，確保按鈕絕對不會被壓縮或導致變形 */
+        .btn-group { display: flex; gap: 6px; flex-shrink: 0; }
         .action-btn { background: var(--c-primary); color: #fff; border: none; padding: 12px 18px; border-radius: 50px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 4px 15px rgba(140, 123, 117, 0.25); cursor: pointer; transition: transform 0.2s; white-space: nowrap; }
         .action-btn:active { transform: scale(0.96); }
         .action-btn.secondary { background: #f0f0f0; color: #666; box-shadow: none; padding: 12px 14px; }
-        
+
+        /* 折扣標籤全局套用截斷，避免字數過長撐破版面 */
+        #discount-badge { max-width: 85px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }
+
         /* 小螢幕自動縮放字體與按鈕，防止按鈕過長導致跑版 */
         @media (max-width: 390px) {
             .bottom-bar { padding: 8px 12px; width: 98%; }
             .action-btn { padding: 10px 12px; font-size: 0.85rem; }
             .action-btn.secondary { padding: 10px 10px; font-size: 0.85rem; }
             .total-price { font-size: 1.15rem; }
-            /* 若折扣標籤字數太多，自動變成刪節號避免撐開版面 */
-            #discount-badge { max-width: 75px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+            #discount-badge { max-width: 65px; }
         }
 
         /* 收據樣式設計 */
@@ -378,6 +382,7 @@
 
                     <div id="delivery-info-box" class="info-box" style="display:none;">
                         <div style="font-weight:bold; color:#D84315;">🚚 運費說明 (新竹物流)</div>
+                        <div style="font-weight:bold; color:var(--c-danger); margin-top:5px; margin-bottom: 8px;">🎉 即日起單筆訂單合計滿 $900 享免運費！</div>
                         <div>• 1-2 盒 (6-12入)：$130</div>
                         <div>• 3-8 盒 (18-48入)：$170</div>
                         <div>• 9 盒以上：$210</div>
@@ -482,7 +487,7 @@
                         </label>
                         <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
                             <input type="radio" name="paymentMethod" value="ApplePay" class="radio-input">
-                            <span style="font-size: 1.05rem;"> Apple Pay 行動支付 (綠界金流)</span>
+                            <span style="font-size: 1.05rem;">🍎 Apple Pay 行動支付 (綠界金流)</span>
                         </label>
                         <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
                             <input type="radio" name="paymentMethod" value="ATM" class="radio-input">
@@ -490,7 +495,7 @@
                         </label>
                         <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
                             <input type="radio" name="paymentMethod" value="LinePay" class="radio-input">
-                            <span style="font-size: 1.05rem;"> 🟢 LINE Pay 快速支付 (自主輸入金額)</span>
+                            <span style="font-size: 1.05rem;">📱 LINE Pay 條碼快速支付 (自主輸入金額)</span>
                         </label>
                         <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
                             <input type="radio" name="paymentMethod" value="TWQR" class="radio-input">
@@ -654,7 +659,7 @@
             { id: 8, name: "芋香紫薯鮮奶酪", price: 55, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯" },
             { id: 9, name: "微醺蘭姆鮮奶酪", price: 55, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
             { id: 5, name: "咖啡鮮奶酪", price: 55, image: "230236_0.jpg", desc: "嚴選阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
-            { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，可裝 12杯奶酪，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" }
+            { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" }
         ];
         const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" }, "LINE50": { type: "minus", value: 50, name: "好友現折50" } };
 
@@ -876,13 +881,17 @@
                 if (item.id !== 13) currentTotalCups += item.quantity;
             });
 
-            // 1. 運費計算
+            // 1. 運費計算 (加入滿900免運邏輯)
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             if (delivery === '宅配') {
-                const boxes = currentTotalCups / 6; 
-                if (boxes <= 2) currentShippingFee = 130; 
-                else if (boxes <= 8) currentShippingFee = 170; 
-                else currentShippingFee = 210; 
+                if (currentRawTotal >= 900) {
+                    currentShippingFee = 0; // 商品合計滿900直接免運
+                } else {
+                    const boxes = currentTotalCups / 6; 
+                        if (boxes <= 2) currentShippingFee = 130; 
+                        else if (boxes <= 8) currentShippingFee = 170; 
+                        else currentShippingFee = 210; 
+                }
             } else { 
                 currentShippingFee = 0; 
             }
@@ -1007,7 +1016,8 @@
             
             // 3. 如果是宅配，才顯示運費
             if (delivery === '宅配') {
-                html += `<div class="summary-row"><span>低溫運費小計</span><span>$${currentShippingFee}</span></div>`;
+                const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
+                html += `<div class="summary-row"><span>低溫運費小計</span><span>${feeDisplay}</span></div>`;
             }
 
             document.getElementById('step2-summary').innerHTML = html;
@@ -1030,10 +1040,11 @@
             // 2. 商品原價小計
             html += `<div class="summary-row"><span>商品原價小計</span><span>$${currentRawTotal}</span></div>`;
             
-            // 3. 如果是宅配有運費，才顯示運費
-            if (delivery === '宅配' || currentShippingFee > 0) {
-                html += `<div class="summary-row"><span>低溫冷藏運費</span><span>$${currentShippingFee}</span></div>`;
-            }
+            // 3. 如果是宅配，顯示運費或免運提示
+if (delivery === '宅配') {
+    const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
+    html += `<div class="summary-row"><span>低溫冷藏運費</span><span>${feeDisplay}</span></div>`;
+}
 
             // 4. 活動折扣與點數折抵
             if (currentDiscountAmount > 0) { 
@@ -1311,7 +1322,12 @@
             let itemsHtml = ''; cart.forEach(p => { itemsHtml += `<div class="receipt-row"><span>${p.name}</span><span>${p.quantity} x $${p.price}</span></div>`; });
             document.getElementById('receipt-items').innerHTML = itemsHtml;
             document.getElementById('receipt-subtotal-text').innerText = "$" + rawTotal;
-            document.getElementById('receipt-shipping-val').innerText = "$" + shippingFee;
+            // 判斷收據上的運費顯示
+if (delivery === '宅配' && shippingFee === 0) {
+    document.getElementById('receipt-shipping-val').innerHTML = '<span style="color:var(--c-danger); font-weight:bold;">免運費</span>';
+} else {
+    document.getElementById('receipt-shipping-val').innerText = "$" + shippingFee;
+}
             document.getElementById('receipt-total').innerText = "NT$ " + finalAllPrice;
 
             if (discountAmount > 0) {
