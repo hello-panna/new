@@ -1245,10 +1245,11 @@
                 
                 if (TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     
-                    // === 修正：建立傳送給後端的購物車陣列，若達標則把贈品也推進去 ===
+                    // === 修正：建立傳送給後端的購物車陣列 ===
                     let finalCartForBackend = JSON.parse(JSON.stringify(cart));
                     if (currentTotalCups >= 12) {
-                        finalCartForBackend.push({ id: 13, name: "🎁 [贈品] 質感保冷袋", price: 0, quantity: 1 });
+                        // 【關鍵修改】給贈品一個虛擬 ID (例如 999)，避免與一般加購的保冷袋 (ID:13) 衝突
+                        finalCartForBackend.push({ id: 999, name: "🎁 [贈品] 質感保冷袋", price: 0, quantity: 1 });
                     }
                     
                     const backendOrderData = { items: finalCartForBackend, originalTotal: currentRawTotal, discountPoints: usedPoints, otherDiscount: currentDiscountAmount - usedPoints, paymentMethod: payment, receivedAmount: currentFinalTotal, changeAmount: 0, phone: phone, email: email, name: name, delivery: delivery, address: backendAddress, date: finalDateStr, shippingFee: currentShippingFee, finalTotal: currentFinalTotal, remarks: remarks, totalCups: currentTotalCups, couponCode: appliedCoupon ? appliedCoupon.code : "" };
