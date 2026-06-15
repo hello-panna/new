@@ -959,7 +959,23 @@
             calculateOrderTotals();
             const cartContainer = document.getElementById('cart-list');
             cartContainer.innerHTML = '';
-            if (cart.length === 0) { cartContainer.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">購物車內尚未加入商品</div>'; return; }
+
+            // === 新增：滿12杯贈送保冷袋提示 ===
+            let promoHtml = '';
+            if (currentTotalCups > 0 && currentTotalCups < 12) {
+                let diff = 12 - currentTotalCups;
+                promoHtml = `<div style="background:#FFF8E1; color:#D84315; padding:12px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.95rem; font-weight:bold; border: 1px dashed #FFCC80; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">🎁 滿額優惠：再買 ${diff} 杯，即免費贈送「質感保冷袋」一只！</div>`;
+            } else if (currentTotalCups >= 12) {
+                promoHtml = `<div style="background:#E8F5E9; color:#2E7D32; padding:12px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.95rem; font-weight:bold; border: 1px dashed #A5D6A7; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">🎉 恭喜達成！本單將免費贈送「質感保冷袋」一只！</div>`;
+            }
+
+            if (cart.length === 0) { 
+                cartContainer.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">購物車內尚未加入商品</div>'; 
+                return; 
+            } else {
+                cartContainer.innerHTML = promoHtml; // 插入提示
+            }
+
             cart.forEach((item, index) => {
                 let warningHtml = '';
                 if (item.id === 9) warningHtml = '<div style="font-size:0.75rem; color:#888;">(未滿18歲請勿購買)</div>';
@@ -977,7 +993,7 @@
             });
             if(currentStep === 2) prepareStep2();
             if(currentStep === 3) prepareStep3();
-            // 如果購物車視窗是開啟狀態，同步更新視窗內的內容
+            
             if (document.getElementById('cart-modal-overlay').style.display === 'flex') {
                 document.getElementById('modal-cart-list').innerHTML = cartContainer.innerHTML;
             }
@@ -998,23 +1014,22 @@
             const email = document.getElementById('cust-email').value.trim();
             document.getElementById('verify-email-text').innerText = email || '(未填寫 Email)';
             
-            // 判斷目前的取貨方式
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
-            
             let html = '';
             
-            // 1. 展開實際購買的菜色品項與數量、金額
             cart.forEach(item => {
                 html += `<div class="summary-row"><span style="color:var(--c-text);">${item.name} <span style="color:#999; font-size:0.85rem;">x ${item.quantity}</span></span><span>$${item.price * item.quantity}</span></div>`;
             });
             
-            // 加上一條虛線做視覺區隔
+            // === 新增：贈品顯示 ===
+            if (currentTotalCups >= 12) {
+                html += `<div class="summary-row"><span style="color:var(--c-accent); font-weight:bold;">🎁 [贈品] 質感保冷袋 <span style="color:#999; font-size:0.85rem; font-weight:normal;">x 1</span></span><span style="color:var(--c-danger); font-weight:bold;">免費</span></div>`;
+            }
+            
             html += `<div style="border-top: 1px dashed #E0E0E0; margin: 10px 0;"></div>`;
             
-            // 2. 顯示商品小計
             html += `<div class="summary-row"><span>商品小計 (${currentTotalCups}杯)</span><span>$${currentRawTotal}</span></div>`;
             
-            // 3. 如果是宅配，才顯示運費
             if (delivery === '宅配') {
                 const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
                 html += `<div class="summary-row"><span>低溫運費小計</span><span>${feeDisplay}</span></div>`;
@@ -1030,21 +1045,42 @@
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             let html = '';
 
-            // 1. 展開實際購買的菜色品項與數量、金額
             cart.forEach(item => {
                 html += `<div class="summary-row"><span style="color:var(--c-text);">${item.name} <span style="color:#999; font-size:0.85rem;">x ${item.quantity}</span></span><span>$${item.price * item.quantity}</span></div>`;
             });
 
+            // === 新增：贈品顯示 ===
+            if (currentTotalCups >= 12) {
+                html += `<div class="summary-row"><span style="color:var(--c-accent); font-weight:bold;">🎁 [贈品] 質感保冷袋 <span style="color:#999; font-size:0.85rem; font-weight:normal;">x 1</span></span><span style="color:var(--c-danger); font-weight:bold;">免費</span></div>`;
+            }
+
             html += `<div style="border-top: 1px dashed #E0E0E0; margin: 10px 0;"></div>`;
 
-            // 2. 商品原價小計
             html += `<div class="summary-row"><span>商品原價小計</span><span>$${currentRawTotal}</span></div>`;
             
-            // 3. 如果是宅配，顯示運費或免運提示
-if (delivery === '宅配') {
-    const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
-    html += `<div class="summary-row"><span>低溫冷藏運費</span><span>${feeDisplay}</span></div>`;
-}
+            // ... 底下維持原本運費與點數的程式碼不變
+            if (delivery === '宅配') {
+                const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
+                html += `<div class="summary-row"><span>低溫冷藏運費</span><span>${feeDisplay}</span></div>`;
+            }
+
+            if (currentDiscountAmount > 0) { 
+                html += `<div class="summary-row discount"><span>活動折扣與點數折抵總計</span><span>-$${currentDiscountAmount}</span></div>`; 
+            }
+            
+            html += `<div class="summary-row total"><span>最終應付總額</span><span style="color:var(--c-danger); font-size:1.25rem;">$${currentFinalTotal}</span></div>`;
+            
+            const email = document.getElementById('cust-email').value.trim();
+            const earnedPoints = email ? currentTotalCups : 0;
+            if(usedPoints > 0 || earnedPoints > 0) {
+                html += `<div style="background:#E8F5E9; padding:10px; border-radius:8px; margin-top:10px; font-size:0.85rem;">`;
+                if(usedPoints > 0) html += `<div style="display:flex; justify-content:space-between; color:#c0392b; margin-bottom:4px;"><span>本次折抵扣除點數</span><span>-${usedPoints} 點</span></div>`;
+                if(earnedPoints > 0) html += `<div style="display:flex; justify-content:space-between; color:#2E7D32;"><span>本次下單預計獲得點數</span><span>+${earnedPoints} 點</span></div>`;
+                html += `</div>`;
+            }
+            
+            document.getElementById('step3-summary').innerHTML = html;
+        }
 
             // 4. 活動折扣與點數折抵
             if (currentDiscountAmount > 0) { 
@@ -1177,7 +1213,21 @@ if (delivery === '宅配') {
 
             let flavorCounts = {}; for (let id in FLAVOR_MAPPING) flavorCounts[id] = 0;
             let orderDetails = ""; let itemsDetailStr = "";
-            cart.forEach(p => { let qty = parseInt(p.quantity, 10) || 0; orderDetails += `${p.name}x${qty}, `; itemsDetailStr += `• ${p.name} x ${qty}\n`; if (flavorCounts.hasOwnProperty(p.id)) flavorCounts[p.id] += qty; });
+            
+            cart.forEach(p => { 
+                let qty = parseInt(p.quantity, 10) || 0; 
+                orderDetails += `${p.name}x${qty}, `; 
+                itemsDetailStr += `• ${p.name} x ${qty}\n`; 
+                if (flavorCounts.hasOwnProperty(p.id)) flavorCounts[p.id] += qty; 
+            });
+            
+            // === 新增：寫入後端紀錄與 LINE 顯示明細 ===
+            if (currentTotalCups >= 12) {
+                orderDetails += `🎁[贈品]保冷袋x1, `;
+                itemsDetailStr += `• 🎁 [贈品] 質感保冷袋 x 1\n`;
+                // 將保冷袋(ID:13)的數量自動 +1，讓後端表單統計庫存也能同步計算
+                if (flavorCounts.hasOwnProperty(13)) flavorCounts[13] += 1;
+            }
             
             const now = new Date();
             const orderId = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
@@ -1319,7 +1369,16 @@ if (delivery === '宅配') {
             if(remarks) { document.getElementById('receipt-remarks-row').style.display = 'flex'; document.getElementById('receipt-remarks').innerText = remarks; } 
             else { document.getElementById('receipt-remarks-row').style.display = 'none'; }
 
-            let itemsHtml = ''; cart.forEach(p => { itemsHtml += `<div class="receipt-row"><span>${p.name}</span><span>${p.quantity} x $${p.price}</span></div>`; });
+            let itemsHtml = ''; 
+            cart.forEach(p => { 
+                itemsHtml += `<div class="receipt-row"><span>${p.name}</span><span>${p.quantity} x $${p.price}</span></div>`; 
+            });
+            
+            // === 新增：收據明細顯示贈品 ===
+            if (totalCups >= 12) {
+                itemsHtml += `<div class="receipt-row"><span style="color:var(--c-accent); font-weight:bold;">🎁 [贈品] 質感保冷袋</span><span style="color:var(--c-danger); font-weight:bold;">1 x 免費</span></div>`;
+            }
+            
             document.getElementById('receipt-items').innerHTML = itemsHtml;
             document.getElementById('receipt-subtotal-text').innerText = "$" + rawTotal;
             // 判斷收據上的運費顯示
