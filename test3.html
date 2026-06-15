@@ -1041,6 +1041,9 @@
         // ==========================================
         // 替換：Step 3 最終結帳明細總覽產生器
         // ==========================================
+        // ==========================================
+        // 替換：Step 3 最終結帳明細總覽產生器
+        // ==========================================
         function prepareStep3() {
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             let html = '';
@@ -1058,7 +1061,6 @@
 
             html += `<div class="summary-row"><span>商品原價小計</span><span>$${currentRawTotal}</span></div>`;
             
-            // ... 底下維持原本運費與點數的程式碼不變
             if (delivery === '宅配') {
                 const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
                 html += `<div class="summary-row"><span>低溫冷藏運費</span><span>${feeDisplay}</span></div>`;
@@ -1070,27 +1072,6 @@
             
             html += `<div class="summary-row total"><span>最終應付總額</span><span style="color:var(--c-danger); font-size:1.25rem;">$${currentFinalTotal}</span></div>`;
             
-            const email = document.getElementById('cust-email').value.trim();
-            const earnedPoints = email ? currentTotalCups : 0;
-            if(usedPoints > 0 || earnedPoints > 0) {
-                html += `<div style="background:#E8F5E9; padding:10px; border-radius:8px; margin-top:10px; font-size:0.85rem;">`;
-                if(usedPoints > 0) html += `<div style="display:flex; justify-content:space-between; color:#c0392b; margin-bottom:4px;"><span>本次折抵扣除點數</span><span>-${usedPoints} 點</span></div>`;
-                if(earnedPoints > 0) html += `<div style="display:flex; justify-content:space-between; color:#2E7D32;"><span>本次下單預計獲得點數</span><span>+${earnedPoints} 點</span></div>`;
-                html += `</div>`;
-            }
-            
-            document.getElementById('step3-summary').innerHTML = html;
-        }
-
-            // 4. 活動折扣與點數折抵
-            if (currentDiscountAmount > 0) { 
-                html += `<div class="summary-row discount"><span>活動折扣與點數折抵總計</span><span>-$${currentDiscountAmount}</span></div>`; 
-            }
-            
-            // 5. 最終應付總額
-            html += `<div class="summary-row total"><span>最終應付總額</span><span style="color:var(--c-danger); font-size:1.25rem;">$${currentFinalTotal}</span></div>`;
-            
-            // 6. 點數獲得與扣除的視覺提示區塊
             const email = document.getElementById('cust-email').value.trim();
             const earnedPoints = email ? currentTotalCups : 0;
             if(usedPoints > 0 || earnedPoints > 0) {
