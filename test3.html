@@ -378,6 +378,7 @@
 
                     <div id="delivery-info-box" class="info-box" style="display:none;">
                         <div style="font-weight:bold; color:#D84315;">🚚 運費說明 (新竹物流)</div>
+                        <div style="font-weight:bold; color:var(--c-danger); margin-top:5px; margin-bottom: 8px;">🎉 即日起單筆訂單合計滿 $900 享免運費！</div>
                         <div>• 1-2 盒 (6-12入)：$130</div>
                         <div>• 3-8 盒 (18-48入)：$170</div>
                         <div>• 9 盒以上：$210</div>
@@ -876,13 +877,17 @@
                 if (item.id !== 13) currentTotalCups += item.quantity;
             });
 
-            // 1. 運費計算
+            // 1. 運費計算 (加入滿900免運邏輯)
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             if (delivery === '宅配') {
-                const boxes = currentTotalCups / 6; 
-                if (boxes <= 2) currentShippingFee = 130; 
-                else if (boxes <= 8) currentShippingFee = 170; 
-                else currentShippingFee = 210; 
+                if (currentRawTotal >= 900) {
+                    currentShippingFee = 0; // 商品合計滿900直接免運
+                } else {
+                    const boxes = currentTotalCups / 6; 
+                        if (boxes <= 2) currentShippingFee = 130; 
+                        else if (boxes <= 8) currentShippingFee = 170; 
+                        else currentShippingFee = 210; 
+                }
             } else { 
                 currentShippingFee = 0; 
             }
@@ -1007,7 +1012,8 @@
             
             // 3. 如果是宅配，才顯示運費
             if (delivery === '宅配') {
-                html += `<div class="summary-row"><span>低溫運費小計</span><span>$${currentShippingFee}</span></div>`;
+                const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
+                html += `<div class="summary-row"><span>低溫運費小計</span><span>${feeDisplay}</span></div>`;
             }
 
             document.getElementById('step2-summary').innerHTML = html;
@@ -1030,10 +1036,11 @@
             // 2. 商品原價小計
             html += `<div class="summary-row"><span>商品原價小計</span><span>$${currentRawTotal}</span></div>`;
             
-            // 3. 如果是宅配有運費，才顯示運費
-            if (delivery === '宅配' || currentShippingFee > 0) {
-                html += `<div class="summary-row"><span>低溫冷藏運費</span><span>$${currentShippingFee}</span></div>`;
-            }
+            // 3. 如果是宅配，顯示運費或免運提示
+if (delivery === '宅配') {
+    const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
+    html += `<div class="summary-row"><span>低溫冷藏運費</span><span>${feeDisplay}</span></div>`;
+}
 
             // 4. 活動折扣與點數折抵
             if (currentDiscountAmount > 0) { 
@@ -1311,7 +1318,12 @@
             let itemsHtml = ''; cart.forEach(p => { itemsHtml += `<div class="receipt-row"><span>${p.name}</span><span>${p.quantity} x $${p.price}</span></div>`; });
             document.getElementById('receipt-items').innerHTML = itemsHtml;
             document.getElementById('receipt-subtotal-text').innerText = "$" + rawTotal;
-            document.getElementById('receipt-shipping-val').innerText = "$" + shippingFee;
+            // 判斷收據上的運費顯示
+if (delivery === '宅配' && shippingFee === 0) {
+    document.getElementById('receipt-shipping-val').innerHTML = '<span style="color:var(--c-danger); font-weight:bold;">免運費</span>';
+} else {
+    document.getElementById('receipt-shipping-val').innerText = "$" + shippingFee;
+}
             document.getElementById('receipt-total').innerText = "NT$ " + finalAllPrice;
 
             if (discountAmount > 0) {
