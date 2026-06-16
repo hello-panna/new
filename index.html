@@ -830,6 +830,14 @@
             for(let i=0; i<60; i++) {
                 let current = new Date(startDate); current.setDate(startDate.getDate() + i);
                 let day = current.getDay(); let month = current.getMonth() + 1; let date = current.getDate();
+                
+                // === 新增：排除特定店休區間 (2026/07/05 ~ 2026/07/10) ===
+                let checkDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')}`;
+                if (checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") {
+                    continue; // 遇到這幾天直接跳過，不管自取或宅配都不產生選項
+                }
+                // =========================================================
+                
                 let dayStr = ['日','一','二','三','四','五','六'][day];
                 let dateStr = `${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (週${dayStr})`;
                 let fullDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (${dayStr})`;
@@ -960,13 +968,30 @@
             const cartContainer = document.getElementById('cart-list');
             cartContainer.innerHTML = '';
 
-            // === 新增：滿12杯贈送保冷袋提示 ===
+            // 取得目前的取貨方式
+            const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             let promoHtml = '';
-            if (currentTotalCups > 0 && currentTotalCups < 12) {
-                let diff = 12 - currentTotalCups;
-                promoHtml = `<div style="background:#FFF8E1; color:#D84315; padding:12px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.95rem; font-weight:bold; border: 1px dashed #FFCC80; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">🎁 滿額優惠：再買 ${diff} 杯，即免費贈送「質感保冷袋」一只！</div>`;
-            } else if (currentTotalCups >= 12) {
-                promoHtml = `<div style="background:#E8F5E9; color:#2E7D32; padding:12px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.95rem; font-weight:bold; border: 1px dashed #A5D6A7; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">🎉 恭喜達成！本單將免費贈送「質感保冷袋」一只！</div>`;
+
+            // === 升級 1：滿12杯保冷袋無上限累加提示 ===
+            let freeBags = Math.floor(currentTotalCups / 12); // 計算送幾個
+            let nextBagDiff = 12 - (currentTotalCups % 12);   // 計算差幾杯再多送一個
+
+            if (currentTotalCups > 0) {
+                if (freeBags === 0) {
+                    promoHtml += `<div style="background:#FFF8E1; color:#D84315; padding:12px; border-radius:8px; margin-bottom:10px; text-align:center; font-size:0.95rem; font-weight:bold; border: 1px dashed #FFCC80; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">🎁 滿額優惠：再買 ${nextBagDiff} 杯，即免費贈送「質感保冷袋」一只！</div>`;
+                } else {
+                    promoHtml += `<div style="background:#E8F5E9; color:#2E7D32; padding:12px; border-radius:8px; margin-bottom:10px; text-align:center; font-size:0.95rem; font-weight:bold; border: 1px dashed #A5D6A7; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">🎉 恭喜達成！本單將免費贈送「質感保冷袋」 ${freeBags} 只！<span style="font-size:0.85rem; font-weight:normal; display:block; margin-top:4px;">(再買 ${nextBagDiff} 杯多送一只)</span></div>`;
+                }
+            }
+
+            // === 升級 2：自取滿6杯免費紙盒提示 ===
+            if (delivery === '自取') {
+                if (currentTotalCups >= 6) {
+                    promoHtml += `<div style="background:#E3F2FD; color:#1565C0; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #90CAF9;">📦 已達 6 杯！自取將為您提供免費「質感紙盒」包裝</div>`;
+                } else if (currentTotalCups > 0) {
+                    let boxDiff = 6 - currentTotalCups;
+                    promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">📦 門市自取專屬：再買 ${boxDiff} 杯，即可享有免費「質感紙盒」包裝！</div>`;
+                }
             }
 
             if (cart.length === 0) { 
@@ -998,6 +1023,7 @@
                 document.getElementById('modal-cart-list').innerHTML = cartContainer.innerHTML;
             }
         }
+        
         function openCartModal() {
             document.getElementById('cart-modal-overlay').style.display = 'flex';
             // 將畫面上做好的 cart-list HTML 結構直接複製到視窗內
@@ -1021,9 +1047,10 @@
                 html += `<div class="summary-row"><span style="color:var(--c-text);">${item.name} <span style="color:#999; font-size:0.85rem;">x ${item.quantity}</span></span><span>$${item.price * item.quantity}</span></div>`;
             });
             
-            // === 新增：贈品顯示 ===
-            if (currentTotalCups >= 12) {
-                html += `<div class="summary-row"><span style="color:var(--c-accent); font-weight:bold;">🎁 [贈品] 質感保冷袋 <span style="color:#999; font-size:0.85rem; font-weight:normal;">x 1</span></span><span style="color:var(--c-danger); font-weight:bold;">免費</span></div>`;
+            // === 新增：動態贈品數量顯示 ===
+            let freeBags = Math.floor(currentTotalCups / 12);
+            if (freeBags > 0) {
+                html += `<div class="summary-row"><span style="color:var(--c-accent); font-weight:bold;">🎁 [贈品] 質感保冷袋 <span style="color:#999; font-size:0.85rem; font-weight:normal;">x ${freeBags}</span></span><span style="color:var(--c-danger); font-weight:bold;">免費</span></div>`;
             }
             
             html += `<div style="border-top: 1px dashed #E0E0E0; margin: 10px 0;"></div>`;
@@ -1052,9 +1079,10 @@
                 html += `<div class="summary-row"><span style="color:var(--c-text);">${item.name} <span style="color:#999; font-size:0.85rem;">x ${item.quantity}</span></span><span>$${item.price * item.quantity}</span></div>`;
             });
 
-            // === 新增：贈品顯示 ===
-            if (currentTotalCups >= 12) {
-                html += `<div class="summary-row"><span style="color:var(--c-accent); font-weight:bold;">🎁 [贈品] 質感保冷袋 <span style="color:#999; font-size:0.85rem; font-weight:normal;">x 1</span></span><span style="color:var(--c-danger); font-weight:bold;">免費</span></div>`;
+            // === 新增：動態贈品數量顯示 ===
+            let freeBags = Math.floor(currentTotalCups / 12);
+            if (freeBags > 0) {
+                html += `<div class="summary-row"><span style="color:var(--c-accent); font-weight:bold;">🎁 [贈品] 質感保冷袋 <span style="color:#999; font-size:0.85rem; font-weight:normal;">x ${freeBags}</span></span><span style="color:var(--c-danger); font-weight:bold;">免費</span></div>`;
             }
 
             html += `<div style="border-top: 1px dashed #E0E0E0; margin: 10px 0;"></div>`;
@@ -1211,12 +1239,12 @@
                 if (flavorCounts.hasOwnProperty(p.id)) flavorCounts[p.id] += qty; 
             });
             
-            // === 新增：寫入後端紀錄與 LINE 顯示明細 ===
-            if (currentTotalCups >= 12) {
-                orderDetails += `🎁[贈品]保冷袋x1, `;
-                itemsDetailStr += `• 🎁 [贈品] 質感保冷袋 x 1\n`;
-                // 將保冷袋(ID:13)的數量自動 +1，讓後端表單統計庫存也能同步計算
-                if (flavorCounts.hasOwnProperty(13)) flavorCounts[13] += 1;
+            // === 新增：寫入後端紀錄與 LINE 顯示明細 (動態數量) ===
+            let freeBags = Math.floor(currentTotalCups / 12);
+            if (freeBags > 0) {
+                orderDetails += `🎁[贈品]保冷袋x${freeBags}, `;
+                itemsDetailStr += `• 🎁 [贈品] 質感保冷袋 x ${freeBags}\n`;
+                if (flavorCounts.hasOwnProperty(13)) flavorCounts[13] += freeBags;
             }
             
             const now = new Date();
@@ -1257,18 +1285,14 @@
                     // === 修正：建立傳送給後端的購物車陣列 ===
                     let finalCartForBackend = JSON.parse(JSON.stringify(cart));
                     
-                    if (currentTotalCups >= 12) {
-                        // 尋找購物車內是否已經有加購保冷袋 (ID: 13)
+                    if (freeBags > 0) {
                         let existingCoolerBag = finalCartForBackend.find(item => item.id === 13);
                         
                         if (existingCoolerBag) {
-                            // 如果有加購，直接把數量 +1 (合併送給後端，面板格子才會正確顯示總數)
-                            existingCoolerBag.quantity += 1;
-                            // 在品名後方加個註記，讓後端文字明細也能看出來
+                            existingCoolerBag.quantity += freeBags; // 加上贈送的總數量
                             existingCoolerBag.name = existingCoolerBag.name + " (含滿額贈)";
                         } else {
-                            // 如果完全沒有加購，則新增一筆 ID 為 13 的贈品
-                            finalCartForBackend.push({ id: 13, name: "🎁 [贈品] 質感保冷袋", price: 0, quantity: 1 });
+                            finalCartForBackend.push({ id: 13, name: "🎁 [贈品] 質感保冷袋", price: 0, quantity: freeBags }); // 直接帶入獲得的數量
                         }
                     }
                     
@@ -1383,9 +1407,10 @@
                 itemsHtml += `<div class="receipt-row"><span>${p.name}</span><span>${p.quantity} x $${p.price}</span></div>`; 
             });
             
-            // === 新增：收據明細顯示贈品 ===
-            if (totalCups >= 12) {
-                itemsHtml += `<div class="receipt-row"><span style="color:var(--c-accent); font-weight:bold;">🎁 [贈品] 質感保冷袋</span><span style="color:var(--c-danger); font-weight:bold;">1 x 免費</span></div>`;
+            // === 新增：收據明細顯示贈品 (動態數量) ===
+            let freeBags = Math.floor(totalCups / 12);
+            if (freeBags > 0) {
+                itemsHtml += `<div class="receipt-row"><span style="color:var(--c-accent); font-weight:bold;">🎁 [贈品] 質感保冷袋</span><span style="color:var(--c-danger); font-weight:bold;">${freeBags} x 免費</span></div>`;
             }
             
             document.getElementById('receipt-items').innerHTML = itemsHtml;
@@ -1431,9 +1456,10 @@ if (delivery === '宅配' && shippingFee === 0) {
             let itemsStr = ""; 
             cart.forEach(p => { itemsStr += `• ${p.name} x ${p.quantity}\n`; });
             
-            // === 修正：複製給 LINE 客服的明細，手動加上贈品行 ===
-            if (currentTotalCups >= 12) {
-                itemsStr += `• 🎁 [贈品] 質感保冷袋 x 1\n`;
+            // === 修正：複製給 LINE 客服的明細，動態計算贈品數量 ===
+            let freeBags = Math.floor(currentTotalCups / 12);
+            if (freeBags > 0) {
+                itemsStr += `• 🎁 [贈品] 質感保冷袋 x ${freeBags}\n`;
             }
 
             let copyText = `【hello好酪 訂單預訂資訊】\n訂單編號：${orderId}\n訂購人姓名：${name}\n手機號碼：${phone}\n取貨方式：${delivery}\n`;
