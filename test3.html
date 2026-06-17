@@ -845,9 +845,16 @@
                 if (mode === 'delivery' && day >= 2 && day <= 5) {
                     select.innerHTML += `<option value="${fullDateStr} 宅配出貨">${dateStr} 宅配出貨</option>`;
                 } else if (mode === 'pickup') {
-                    if (day >= 2 && day <= 5) {
+                    // === 新增特例：2026/06/19 破例提早開放 10:00~18:00 ===
+                    if (checkDateStr === "2026/06/19") {
+                        ['10:00~11:00', '11:00~12:00', '12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'].forEach(t => select.innerHTML += `<option value="${fullDateStr} ${t}">🌟 ${dateStr} ${t}</option>`);
+                    }
+                    // 正常平日：週二到週五 12:00~18:00
+                    else if (day >= 2 && day <= 5) {
                         ['12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'].forEach(t => select.innerHTML += `<option value="${fullDateStr} ${t}">${dateStr} ${t}</option>`);
-                    } else if (day === 6) {
+                    } 
+                    // 正常假日：週六 10:00~18:00
+                    else if (day === 6) {
                         ['10:00~11:00', '11:00~12:00', '12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'].forEach(t => select.innerHTML += `<option value="${fullDateStr} ${t}">${dateStr} ${t}</option>`);
                     }
                 }
