@@ -660,7 +660,7 @@
             { id: 9, name: "微醺蘭姆鮮奶酪", price: 55, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
             { id: 5, name: "咖啡鮮奶酪", price: 55, image: "230236_0.jpg", desc: "嚴選阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
             { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" },
-            { id: 14, name: "烤布丁", price: 55, image: "12356211.png", desc: "滑嫩香濃，焦糖微苦，口感綿密。(宅配杯裝出貨)", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、新鮮雞蛋、天然香草籽醬" }
+            { id: 14, name: "烤布丁", price: 55, image: "12356211.png", desc: "滑嫩香濃，焦糖微苦，口感綿密。<span onclick='openImageModal(\"1663232.jpg\")' style='color: var(--c-primary); text-decoration: underline; cursor: pointer;'>(宅配不倒扣杯裝出貨)</span>", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、新鮮雞蛋、天然香草籽醬" }
         ];
         const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" }, "LINE50": { type: "minus", value: 50, name: "好友現折50" } };
 
@@ -1571,7 +1571,25 @@ if (delivery === '宅配' && shippingFee === 0) {
             btn.innerText = "開始查詢"; 
             btn.disabled = false;
         }
+        // ==========================================
+        // 圖片預覽彈出視窗功能
+        // ==========================================
+        function openImageModal(imgSrc) {
+            document.getElementById('modal-preview-img').src = imgSrc;
+            document.getElementById('image-modal-overlay').style.display = 'flex';
+        }
+
+        function closeImageModal() {
+            document.getElementById('image-modal-overlay').style.display = 'none';
+        }
         window.onload = init;
     </script>
+    <!-- 圖片預覽彈出視窗 -->
+    <div id="image-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; justify-content: center; align-items: center;" onclick="closeImageModal()">
+        <div style="position: relative; max-width: 90%; max-height: 85vh;" onclick="event.stopPropagation()">
+            <span onclick="closeImageModal()" style="position: absolute; top: -35px; right: 0; font-size: 2rem; cursor: pointer; color: #fff; line-height: 1;">×</span>
+            <img id="modal-preview-img" src="" alt="預覽圖片" style="max-width: 100%; max-height: 85vh; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: block;">
+        </div>
+    </div>
 </body>
 </html>
