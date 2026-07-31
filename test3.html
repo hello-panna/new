@@ -1166,25 +1166,31 @@ function renderBoxingUI() {
     document.getElementById('unboxed-items-list').innerHTML = unboxedHtml;
 
     // 3. 繪製已完成清單
-    const completedArea = document.getElementById('completed-boxes-area');
-    if (completedBoxes.length > 0) {
-        completedArea.style.display = 'block';
-        let boxesHtml = '';
-        completedBoxes.forEach((box, index) => {
-            let detailStr = box.items.map(i => `${i.name.replace('鮮奶酪','')}x${i.qty}`).join(', ');
-            boxesHtml += `
-            <div class="completed-box-card">
+const completedArea = document.getElementById('completed-boxes-area');
+if (completedBoxes.length > 0) {
+    completedArea.style.display = 'block';
+    let boxesHtml = '';
+    completedBoxes.forEach((box, index) => {
+        let detailStr = box.items.map(i => `${i.name.replace('鮮奶酪','')}x${i.qty}`).join(', ');
+        boxesHtml += `
+        <div class="completed-box-card" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                 <div>
                     <div class="completed-box-title">${box.label} 盒</div>
                     <div class="completed-box-items">${detailStr}</div>
                 </div>
                 <button class="unpack-btn" onclick="unpackBox(${index})">拆開退回</button>
-            </div>`;
-        });
-        document.getElementById('completed-boxes-list').innerHTML = boxesHtml;
-    } else {
-        completedArea.style.display = 'none';
-    }
+            </div>
+            <!-- 新增：單盒專屬備註輸入框 -->
+            <input type="text" class="form-input" placeholder="✎ 點此輸入本盒備註 (例：送禮用、給王小姐)" 
+                   value="${box.note || ''}" 
+                   onchange="updateBoxNote(${index}, this.value)" 
+                   style="padding: 6px 12px; font-size: 0.85rem; width: 100%; border: 1px dashed #EFEBE9; background: #fff; box-shadow: none;">
+        </div>`;
+    });
+    document.getElementById('completed-boxes-list').innerHTML = boxesHtml;
+} else {
+    completedArea.style.display = 'none';
 }
 
 // 增減目前盒子內的商品
@@ -1230,7 +1236,12 @@ function unpackBox(index) {
     });
     renderBoxingUI();
 }
-
+// 更新個別盒子的文字備註
+function updateBoxNote(index, text) {
+    if (completedBoxes[index]) {
+        completedBoxes[index].note = text.trim();
+    }
+}
 // ⚡ 一鍵自動裝盒
 function autoFillBoxes() {
     let unboxed = getUnboxedCounts();
@@ -1484,14 +1495,18 @@ function autoFillBoxes() {
                 if (flavorCounts.hasOwnProperty(p.id)) flavorCounts[p.id] += qty; 
             });
             // ==========================================
-// 插入此段：將裝盒結果加入備註或明細中
+// ==========================================
+// 插入此段：將裝盒結果與專屬備註加入明細中
 // ==========================================
 if (completedBoxes.length > 0) {
     let boxString = "\n[裝盒分配明細]\n";
     completedBoxes.forEach(box => {
         let itemsStr = box.items.map(i => `${i.name.replace('鮮奶酪','')}x${i.qty}`).join(', ');
-        boxString += `📦 ${box.label}盒：${itemsStr}\n`;
+        // 判斷客人有沒有填寫這盒的備註，有的話加上括號顯示
+        let noteStr = box.note ? ` (${box.note})` : ''; 
+        boxString += `📦 ${box.label}盒${noteStr}：${itemsStr}\n`;
     });
+    
     // 計算有沒有剩下的散裝
     let unboxed = getUnboxedCounts();
     let unboxedArr = [];
@@ -1502,8 +1517,9 @@ if (completedBoxes.length > 0) {
     
     // 把裝盒資訊加到傳給 LINE 跟後台的字串裡
     itemsDetailStr += boxString;
-    remarks = remarks ? remarks + "\n" + boxString : boxString; // 也加進客人的備註欄裡，讓後台人員一眼就看到
+    remarks = remarks ? remarks + "\n" + boxString : boxString; 
 }
+// ==========================================
 // ==========================================
             
             // === 新增：寫入後端紀錄與 LINE 顯示明細 (動態數量) ===
