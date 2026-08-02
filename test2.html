@@ -44,11 +44,11 @@
             min-height: 100vh;
             margin: 0 auto;
             position: relative;
-            padding-bottom: 250px; /* 預留懸浮島空間 */
+            padding-bottom: 250px;
             box-shadow: 0 0 40px rgba(0,0,0,0.06);
         }
 
-        /* Header */
+        /* Sticky Header */
         header {
             background: rgba(253, 251, 248, 0.95);
             backdrop-filter: blur(12px);
@@ -86,6 +86,17 @@
             text-align: center; font-weight: 500; margin-bottom: 16px;
         }
 
+        /* 影音與品牌卡片 */
+        .package-box {
+            background: #fff; border-radius: var(--radius-box); padding: 14px;
+            border: 1px solid var(--c-line); margin-bottom: 20px; text-align: center; box-shadow: var(--shadow-card);
+        }
+        .package-video, .package-img { width: 100%; border-radius: 10px; display: block; margin-bottom: 10px; }
+        .package-text { font-size: 0.88rem; color: var(--c-text); line-height: 1.6; }
+        .video-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .video-box { background: white; padding: 8px; border-radius: 12px; border: 1px solid var(--c-line); box-shadow: var(--shadow-card); }
+        .video-box video { width: 100%; border-radius: 8px; display: block; }
+
         /* 取件 Tab 切換 */
         .fulfillment-selector { display: flex; background: #EFEBE9; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; font-size: 0.9rem; font-weight: bold; color: var(--c-text-light); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
@@ -108,7 +119,7 @@
         .card-ingredients { font-size: 0.7rem; color: #8D6E63; background: #F8F6F4; padding: 6px; border-radius: 6px; margin-bottom: 10px; width: 100%; line-height: 1.3; text-align: justify; }
         .card-price { font-family: var(--font-title); font-size: 1.1rem; font-weight: 700; color: var(--c-primary); margin-bottom: 10px; margin-top: auto; }
 
-        /* 數量控制按鈕 */
+        /* 數量按鈕 */
         .add-btn { background: transparent; border: 1px solid var(--c-primary); color: var(--c-primary); padding: 7px 0; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 500; width: 100%; transition: all 0.2s; }
         .add-btn:active { background: var(--c-primary); color: #fff; }
         .qty-controller { display: flex; align-items: center; justify-content: space-between; width: 100%; background: #fff; border: 1px solid var(--c-primary); border-radius: 6px; padding: 3px 6px; }
@@ -122,7 +133,7 @@
         .form-input { width: 100%; padding: 12px; font-size: 0.95rem; border: 1px solid #E0E0E0; border-radius: 8px; outline: none; background: #FCFCFC; }
         .form-input:focus { border-color: var(--c-accent); background: white; }
 
-        /* 🌟 下方雙層懸浮島 (Bottom Floating Island) */
+        /* 下方雙層懸浮島 */
         .bottom-floating-island {
             position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
             width: 94%; max-width: 490px;
@@ -148,10 +159,9 @@
             background: var(--c-primary); color: white; border-color: var(--c-primary); font-weight: bold;
         }
 
-        /* 可折疊：6 孔托盤與預覽按鈕列 */
         .dock-box-tray {
             background: #FDFBF8; border: 1px dashed var(--c-primary-light);
-            border-radius: 14px; padding: 8px 12px; display: none; /* 預設隱藏 */
+            border-radius: 14px; padding: 8px 12px; display: none;
             align-items: center; justify-content: space-between;
             animation: fadeIn 0.3s ease-in-out;
         }
@@ -176,7 +186,6 @@
             transform: scale(1.1); box-shadow: 0 2px 6px rgba(140, 123, 117, 0.3);
         }
 
-        /* 下層：金額與結帳按鈕 */
         .dock-checkout-bar { display: flex; justify-content: space-between; align-items: center; padding-top: 2px; }
         .price-info { display: flex; flex-direction: column; }
         .price-subtag { font-size: 0.75rem; color: #888; display: flex; align-items: center; gap: 4px; }
@@ -184,7 +193,7 @@
         .btn-checkout { background: var(--c-primary); color: white; border: none; padding: 10px 22px; border-radius: 50px; font-size: 0.9rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(140, 123, 117, 0.3); transition: transform 0.2s; }
         .btn-checkout:active { transform: scale(0.96); }
 
-        /* 🌟 裝盒內容預覽 Modal */
+        /* Modal */
         #box-preview-modal, #receipt-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; padding: 20px;
@@ -210,7 +219,6 @@
             padding: 12px; border-radius: 50px; font-weight: bold; font-size: 0.95rem; margin-top: 15px; cursor: pointer;
         }
 
-        /* 小白單收據專用樣式 */
         .receipt-card { font-family: monospace; }
         .receipt-title { font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; text-align: center; color: var(--c-text); }
         .receipt-divider { border-bottom: 1px dashed #ccc; margin: 12px 0; }
@@ -220,7 +228,7 @@
 <body>
 
     <div id="app">
-        <!-- Sticky 頂部標頭 -->
+        <!-- Sticky Header -->
         <header>
             <img src="logo.jpg" alt="Logo" class="header-logo" onerror="this.style.display='none'">
             <span>hello好酪</span>
@@ -236,6 +244,32 @@
             <!-- 滿六杯溫馨提醒 Banner -->
             <div class="notice-banner">
                 🎁 貼心提醒：手作鮮奶酪<strong>滿 6 杯才裝精緻紙盒</strong> (未滿 6 杯為單杯防震包裝)
+            </div>
+
+            <!-- 🌟 1. 綿密口感影音區塊 -->
+            <div class="section-title">— 綿密口感 —</div>
+            <div class="package-box" style="padding: 10px;">
+                <video class="package-video" controls autoplay loop muted playsinline>
+                    <source src="420037fb-8f72-4541-9442-65f63c08cf93.mp4" type="video/mp4">
+                </video>
+                <div class="package-text">每一口，都是最純粹的溫柔。</div>
+            </div>
+
+            <!-- 🌟 2. 市集日常影音區塊 -->
+            <div class="section-title">— 市集日常 —</div>
+            <div class="video-row">
+                <div class="video-box"><video controls autoplay loop muted playsinline><source src="s1.mp4" type="video/mp4"></video></div>
+                <div class="video-box"><video controls autoplay loop muted playsinline><source src="s2.mp4" type="video/mp4"></video></div>
+            </div>
+
+            <!-- 🌟 3. 送禮提案區塊 -->
+            <div class="section-title">— 送禮提案 —</div>
+            <div class="package-box">
+                <img src="117902.jpg" alt="禮盒包裝" class="package-img" onerror="this.style.display='none'">
+                <div class="package-text">
+                    <strong>質感紙盒包裝 訂購滿六杯奶酪 (免費)</strong><br>
+                    為響應環保，我們提供免費的質感紙盒。<br>若有長途保鮮需求，歡迎於下方加購「魔鬼氈保冷袋」，讓手作的心意完美傳遞。
+                </div>
             </div>
 
             <!-- 取件方式 Tab 切換 -->
@@ -268,10 +302,10 @@
             </div>
         </div>
 
-        <!-- 🌟 底部懸浮島 (Bottom Floating Dock) -->
+        <!-- 懸浮島 -->
         <div class="bottom-floating-island">
             
-            <!-- 裝盒模式切換 (隨機混裝 vs 指定口味裝盒) -->
+            <!-- 裝盒模式切換 -->
             <div class="boxing-mode-bar">
                 <div class="mode-title">📦 包裝方式：</div>
                 <div class="mode-options">
@@ -280,7 +314,7 @@
                 </div>
             </div>
 
-            <!-- 折疊式：6 孔托盤與【裝盒內容預覽按鈕】 -->
+            <!-- 折疊式 6 孔托盤與預覽按鈕 -->
             <div class="dock-box-tray" id="dock-box-tray">
                 <div>
                     <div class="tray-status-text" id="box-status-text">禮盒裝配：0/6 杯</div>
@@ -296,7 +330,7 @@
                 </div>
             </div>
 
-            <!-- 下層：金額與結帳按鈕 -->
+            <!-- 下層金額與結帳 -->
             <div class="dock-checkout-bar">
                 <div class="price-info">
                     <div class="price-subtag">
@@ -310,14 +344,14 @@
         </div>
     </div>
 
-    <!-- 🌟 裝盒內容動態預覽 Modal -->
+    <!-- 🌟 裝盒內容預覽 Modal (含客製盒子代號/名稱輸入) -->
     <div id="box-preview-modal">
         <div class="modal-card">
-            <div class="modal-header">📦 目前裝盒內容預覽</div>
+            <div class="modal-header">📦 裝盒內容與客製代號</div>
             <div id="box-preview-list">
-                <!-- JS 動態生成每盒的內容 -->
+                <!-- JS 動態繪製與輸入框 -->
             </div>
-            <button class="btn-modal-close" onclick="closeBoxPreviewModal()">關閉預覽</button>
+            <button class="btn-modal-close" onclick="closeBoxPreviewModal()">完成並儲存裝盒設定</button>
         </div>
     </div>
 
@@ -363,7 +397,8 @@
 
         let cart = {}; 
         let fulfillment = 'pickup'; // 'pickup' | 'delivery'
-        let boxingMode = 'mixed';   // 'mixed' (隨機混裝) | 'custom' (指定口味裝盒)
+        let boxingMode = 'mixed';   // 'mixed' | 'custom'
+        let boxNotes = {};          // 保存顧客輸入的盒子備註：{ 'A': '給王小姐', 'B': '自留' }
 
         function init() {
             renderMenu();
@@ -423,7 +458,7 @@
             updateApp();
         }
 
-        // 🌟 計算裝盒分組邏輯 (每 6 杯為一盒)
+        // 裝盒算數分組
         function getBoxBreakdown() {
             let itemArray = [];
             for (let id in cart) {
@@ -441,7 +476,6 @@
                 let chunk = itemArray.splice(0, 6);
                 let label = String.fromCharCode(65 + currentBoxIndex); // A, B, C...
                 
-                // 計算這個 chunk 裡面各口味數量
                 let counts = {};
                 chunk.forEach(name => { counts[name] = (counts[name] || 0) + 1; });
 
@@ -468,7 +502,6 @@
                 }
             }
 
-            // 1. 運費計算 (滿 900 免運)
             let shippingFee = 0;
             if (fulfillment === 'delivery') {
                 if (productSubtotal >= 900 || totalCups === 0) shippingFee = 0;
@@ -480,12 +513,10 @@
 
             let grandTotal = productSubtotal + shippingFee;
 
-            // 2. 更新懸浮島數據
             document.getElementById('total-cups').innerText = totalCups;
             document.getElementById('final-total').innerText = grandTotal.toLocaleString();
             document.getElementById('shipping-tag').innerText = fulfillment === 'pickup' ? '自取$0' : (shippingFee === 0 ? '免運費' : `運費$${shippingFee}`);
 
-            // 3. 更新 6 孔裝盒托盤 UI
             const currentSlots = totalCups % 6;
             const fullBoxes = Math.floor(totalCups / 6);
             
@@ -509,20 +540,24 @@
             }
             dockSlotsGrid.innerHTML = slotsHtml;
 
-            // 4. 店員動態對話框
             const dialog = document.getElementById('clerk-dialog');
             if (totalCups === 0) {
                 dialog.innerText = "歡迎光臨！滿 6 杯即可享有質感禮盒包裝喔 🥰";
             } else if (totalCups < 6) {
                 dialog.innerText = `目前累積 ${totalCups} 杯，再選 ${6 - totalCups} 杯就能升級質感紙盒包裝囉！`;
             } else if (boxingMode === 'custom') {
-                dialog.innerText = `已開啟指定裝盒！點擊下方「預覽裝盒明細」可檢視每盒口味配比喔 👁️`;
+                dialog.innerText = `已開啟指定裝盒！點擊下方「預覽裝盒明細」可輸入各盒代號與備註喔 👁️`;
             } else {
                 dialog.innerText = `目前已滿 ${fullBoxes} 盒！由店家為您美美混裝手作甜點 ✨`;
             }
         }
 
-        // 🌟 開啟裝盒內容預覽 Modal
+        // 🌟 更新單盒備註/代號
+        function updateBoxNote(label, noteValue) {
+            boxNotes[label] = noteValue.trim();
+        }
+
+        // 🌟 開啟裝盒預覽 Modal (含客製代號輸入框)
         function openBoxPreviewModal() {
             const boxes = getBoxBreakdown();
             const listEl = document.getElementById('box-preview-list');
@@ -537,6 +572,8 @@
                         itemChips += `<span class="box-item-chip">${name} x ${box.items[name]}</span>`;
                     }
 
+                    const currentNote = boxNotes[box.label] || '';
+
                     if (box.isFull) {
                         html += `
                             <div class="box-group-card">
@@ -545,6 +582,11 @@
                                     <span style="color:var(--c-accent); font-size:0.8rem;">精緻紙盒裝</span>
                                 </div>
                                 <div>${itemChips}</div>
+                                <input type="text" class="form-input" 
+                                       placeholder="✎ 輸入本盒代號/備註 (例：送給王小姐、自留)" 
+                                       value="${currentNote}" 
+                                       oninput="updateBoxNote('${box.label}', this.value)" 
+                                       style="margin-top:10px; padding:8px 12px; font-size:0.85rem; background:#fff; border:1px dashed var(--c-primary-light);">
                             </div>
                         `;
                     } else {
@@ -555,6 +597,11 @@
                                     <span style="color:#888; font-size:0.8rem;">再選 ${6 - box.count} 杯滿盒</span>
                                 </div>
                                 <div>${itemChips}</div>
+                                <input type="text" class="form-input" 
+                                       placeholder="✎ 輸入散裝備註 (選填)" 
+                                       value="${currentNote}" 
+                                       oninput="updateBoxNote('${box.label}', this.value)" 
+                                       style="margin-top:10px; padding:8px 12px; font-size:0.85rem; background:#fff; border:1px dashed #FFCCBC;">
                             </div>
                         `;
                     }
@@ -597,16 +644,17 @@
                 return;
             }
 
-            // 附上裝盒明細到小白單
+            // 附上裝盒明細 (包含客製代號/備註) 到小白單
             if (boxingMode === 'custom') {
                 const boxes = getBoxBreakdown();
-                itemsHtml += `<div class="receipt-divider"></div><div style="font-weight:bold; margin-bottom:6px; color:var(--c-primary);">[裝盒分配明細]</div>`;
+                itemsHtml += `<div class="receipt-divider"></div><div style="font-weight:bold; margin-bottom:6px; color:var(--c-primary);">[裝盒分配與代號明細]</div>`;
                 boxes.forEach(box => {
                     let detailStr = Object.entries(box.items).map(([k, v]) => `${k.replace('鮮奶酪','')}x${v}`).join(', ');
+                    let noteStr = boxNotes[box.label] ? ` (${boxNotes[box.label]})` : '';
                     if (box.isFull) {
-                        itemsHtml += `<div class="receipt-row" style="font-size:0.8rem; color:#555;"><span>📦 ${box.label} 盒</span><span>${detailStr}</span></div>`;
+                        itemsHtml += `<div class="receipt-row" style="font-size:0.8rem; color:#555;"><span>📦 ${box.label} 盒${noteStr}</span><span>${detailStr}</span></div>`;
                     } else {
-                        itemsHtml += `<div class="receipt-row" style="font-size:0.8rem; color:#888;"><span>🛍️ 散裝 (${box.count}杯)</span><span>${detailStr}</span></div>`;
+                        itemsHtml += `<div class="receipt-row" style="font-size:0.8rem; color:#888;"><span>🛍️ 散裝${noteStr}</span><span>${detailStr}</span></div>`;
                     }
                 });
             }
@@ -627,7 +675,7 @@
         }
 
         function copyReceiptAndClose() {
-            alert("預訂資訊（包含裝盒明細）已複製！您可以直接貼上傳給官方 LINE 客服人員。");
+            alert("預訂資訊（包含各盒客製備註代號）已複製！您可以直接貼上傳給官方 LINE 客服人員。");
             document.getElementById('receipt-modal').style.display = 'none';
         }
 
