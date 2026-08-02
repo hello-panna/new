@@ -44,11 +44,11 @@
             min-height: 100vh;
             margin: 0 auto;
             position: relative;
-            padding-bottom: 230px; /* 預留底部雙層懸浮島的高度 */
+            padding-bottom: 240px; /* 預留懸浮島空間 */
             box-shadow: 0 0 40px rgba(0,0,0,0.06);
         }
 
-        /* 頂部 Header */
+        /* Sticky 頂部 Header */
         header {
             background: rgba(253, 251, 248, 0.95);
             backdrop-filter: blur(12px);
@@ -64,7 +64,7 @@
 
         /* 店員動態對話框 */
         .clerk-banner {
-            margin: 16px 0;
+            margin: 16px 0 12px;
             background: #FAF8F5;
             border: 1px solid var(--c-primary-light);
             border-radius: var(--radius-box);
@@ -79,12 +79,19 @@
         }
         .clerk-speech { font-size: 0.88rem; color: var(--c-text); font-weight: 500; line-height: 1.45; }
 
+        /* 滿六杯紙盒溫馨提醒 Banner */
+        .notice-banner {
+            background: #FFF8E1; border: 1px dashed #FFE082; color: #D84315;
+            padding: 10px 14px; border-radius: 12px; font-size: 0.82rem;
+            text-align: center; font-weight: 500; margin-bottom: 16px;
+        }
+
         /* 取件 Tab 切換 */
         .fulfillment-selector { display: flex; background: #EFEBE9; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; font-size: 0.9rem; font-weight: bold; color: var(--c-text-light); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
         .tab-btn.active { background: white; color: var(--c-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 
-        /* 菜單展示 Grid (含圖片) */
+        /* 菜單展示 Grid */
         .section-title { font-family: var(--font-title); font-size: 1.15rem; font-weight: 700; text-align: center; margin: 25px 0 15px; color: var(--c-text); letter-spacing: 1px; }
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
         .menu-card {
@@ -115,26 +122,46 @@
         .form-input { width: 100%; padding: 12px; font-size: 0.95rem; border: 1px solid #E0E0E0; border-radius: 8px; outline: none; background: #FCFCFC; }
         .form-input:focus { border-color: var(--c-accent); background: white; }
 
-        /* 🌟 下方雙層懸浮島 (Floating Dock with Box Visualizer) */
+        /* 🌟 底部懸浮島 (Bottom Floating Dock) */
         .bottom-floating-island {
             position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
             width: 94%; max-width: 490px;
             background: rgba(255, 255, 255, 0.97);
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-radius: 24px; padding: 12px 16px;
+            border-radius: 22px; padding: 12px 16px;
             box-shadow: var(--shadow-float); border: 1px solid rgba(255, 255, 255, 0.9); z-index: 999;
-            display: flex; flex-direction: column; gap: 10px;
+            display: flex; flex-direction: column; gap: 8px; transition: all 0.3s ease;
         }
 
-        /* 懸浮島上層：6 孔視覺化托盤 */
-        .dock-box-tray {
-            background: #FAF8F5; border: 1px dashed var(--c-primary-light);
-            border-radius: 16px; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between;
+        /* 裝盒模式切換按鈕組 */
+        .boxing-mode-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #FAF8F5; padding: 4px 8px; border-radius: 12px; border: 1px solid var(--c-line);
         }
-        .tray-status-text { font-size: 0.78rem; font-weight: 700; color: var(--c-primary); }
-        .dock-slots-grid { display: flex; gap: 6px; }
+        .mode-title { font-size: 0.78rem; font-weight: 700; color: var(--c-text); display: flex; align-items: center; gap: 4px; }
+        .mode-options { display: flex; gap: 4px; }
+        .mode-chip {
+            border: 1px solid #E0DCD9; background: white; color: #777;
+            padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .mode-chip.active {
+            background: var(--c-primary); color: white; border-color: var(--c-primary); font-weight: bold;
+        }
+
+        /* 可折疊：6 孔視覺化裝盒模組 */
+        .dock-box-tray {
+            background: #FDFBF8; border: 1px dashed var(--c-primary-light);
+            border-radius: 14px; padding: 8px 12px; display: none; /* 預設隱藏，選擇自訂才顯示 */
+            align-items: center; justify-content: space-between;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+        .tray-status-text { font-size: 0.75rem; font-weight: 700; color: var(--c-primary); }
+        .dock-slots-grid { display: flex; gap: 5px; }
         .dock-slot {
-            width: 28px; height: 28px; border-radius: 50%; background: #EFEBE9;
+            width: 26px; height: 26px; border-radius: 50%; background: #EFEBE9;
             border: 1px solid #E0DCD9; display: flex; align-items: center; justify-content: center;
             font-size: 0.65rem; font-weight: 700; color: #999; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -143,7 +170,7 @@
             transform: scale(1.1); box-shadow: 0 2px 6px rgba(140, 123, 117, 0.3);
         }
 
-        /* 懸浮島下層：金額與結帳按鈕 */
+        /* 下層：金額與結帳按鈕 */
         .dock-checkout-bar { display: flex; justify-content: space-between; align-items: center; padding-top: 2px; }
         .price-info { display: flex; flex-direction: column; }
         .price-subtag { font-size: 0.75rem; color: #888; display: flex; align-items: center; gap: 4px; }
@@ -169,7 +196,7 @@
 <body>
 
     <div id="app">
-        <!-- Sticky 頂部標頭 -->
+        <!-- Header -->
         <header>
             <img src="logo.jpg" alt="Logo" class="header-logo" onerror="this.style.display='none'">
             <span>hello好酪</span>
@@ -179,7 +206,12 @@
             <!-- 店員動態對話框 -->
             <div class="clerk-banner">
                 <div class="clerk-avatar">👩🏻‍🍳</div>
-                <div class="clerk-speech" id="clerk-dialog">歡迎光臨！今天想預訂什麼口味的手作鮮奶酪呢？</div>
+                <div class="clerk-speech" id="clerk-dialog">歡迎光臨！滿 6 杯即可享有精緻禮盒包裝喔 🥰</div>
+            </div>
+
+            <!-- 滿六杯溫馨提醒 Banner -->
+            <div class="notice-banner">
+                🎁 貼心提醒：手作鮮奶酪<strong>滿 6 杯才裝精緻紙盒</strong> (未滿 6 杯為單杯安全防震包裝)
             </div>
 
             <!-- 取件方式 Tab 切換 -->
@@ -188,10 +220,10 @@
                 <button class="tab-btn" onclick="setFulfillment('delivery')">🚚 冷藏宅配</button>
             </div>
 
-            <!-- 菜單區域 (完整圖片與資訊) -->
+            <!-- 菜單區域 -->
             <div class="section-title">— 手作甜點菜單 —</div>
             <div class="menu-grid" id="menu-grid">
-                <!-- JS 動態繪製菜單卡片 -->
+                <!-- JS 動態繪製菜單 -->
             </div>
 
             <!-- 訂購人資料 -->
@@ -212,10 +244,20 @@
             </div>
         </div>
 
-        <!-- 🌟 下方雙層懸浮島 (包含 6 孔裝盒托盤與結帳欄) -->
+        <!-- 🌟 底部懸浮島 (Bottom Floating Dock) -->
         <div class="bottom-floating-island">
-            <!-- 上層：6 孔禮盒動態托盤 -->
-            <div class="dock-box-tray">
+            
+            <!-- 裝盒選擇開關 (混裝 vs 指定裝盒) -->
+            <div class="boxing-mode-bar">
+                <div class="mode-title">📦 包裝方式：</div>
+                <div class="mode-options">
+                    <button class="mode-chip active" id="chip-mixed" onclick="setBoxingMode('mixed')">隨機混裝</button>
+                    <button class="mode-chip" id="chip-custom" onclick="setBoxingMode('custom')">指定口味裝盒</button>
+                </div>
+            </div>
+
+            <!-- 折疊式：6 孔視覺化托盤 (僅在指定口味裝盒時顯示) -->
+            <div class="dock-box-tray" id="dock-box-tray">
                 <div class="tray-status-text" id="box-status-text">禮盒裝配：0/6 杯</div>
                 <div class="dock-slots-grid" id="dock-slots-grid">
                     <div class="dock-slot">1</div>
@@ -241,7 +283,7 @@
         </div>
     </div>
 
-    <!-- 櫃檯點餐小白單 Modal -->
+    <!-- 櫃檯小白單 Modal -->
     <div id="receipt-modal">
         <div class="receipt-card">
             <div class="receipt-title">hello好酪 門市預訂單</div>
@@ -256,6 +298,7 @@
             <div class="receipt-row" style="font-weight:bold; font-size:1rem;"><span>應付總額</span><span id="r-total" style="color:var(--c-danger);">$0</span></div>
             <div class="receipt-divider"></div>
 
+            <div class="receipt-row"><span>包裝方式</span><span id="r-boxing-mode">隨機混裝</span></div>
             <div class="receipt-row"><span>訂購人</span><span id="r-name">-</span></div>
             <div class="receipt-row"><span>取件方式</span><span id="r-fulfillment">門市自取</span></div>
 
@@ -264,7 +307,7 @@
     </div>
 
     <script>
-        // 完整的 12 項菜單資料 (還原原圖片與成份)
+        // 菜單資料 (保留圖片與成份)
         const products = [
             { id: 1, name: "經典原味鮮奶酪", price: 50, image: "230242.jpg", desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。", ingredients: "成份 | 100%純鮮奶、法國鮮奶油、日本製上白糖、德國吉利丁", badge: "銷售第一" },
             { id: 2, name: "巧克力鮮奶酪", price: 55, image: "230240_0.jpg", desc: "選用法芙娜可可，可可香濃郁，大人小孩都愛。", ingredients: "成份 | 100%純鮮奶、法國鮮奶油、上白糖、吉利丁、法芙娜可可粉", badge: "銷售第二" },
@@ -280,8 +323,9 @@
             { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳口感。", ingredients: "材質 | 環保鋁箔保溫層、不織布提把" }
         ];
 
-        let cart = {}; // { id: qty }
+        let cart = {}; 
         let fulfillment = 'pickup'; // 'pickup' | 'delivery'
+        let boxingMode = 'mixed';   // 'mixed' (隨機混裝) | 'custom' (指定口味裝盒)
 
         function init() {
             renderMenu();
@@ -331,6 +375,21 @@
             updateApp();
         }
 
+        // 切換裝盒模式 (隨機混裝 vs 指定口味裝盒)
+        function setBoxingMode(mode) {
+            boxingMode = mode;
+            document.getElementById('chip-mixed').classList.toggle('active', mode === 'mixed');
+            document.getElementById('chip-custom').classList.toggle('active', mode === 'custom');
+            
+            const boxTray = document.getElementById('dock-box-tray');
+            if (mode === 'custom') {
+                boxTray.style.display = 'flex';
+            } else {
+                boxTray.style.display = 'none';
+            }
+            updateApp();
+        }
+
         function updateApp() {
             let totalCups = 0;
             let productSubtotal = 0;
@@ -339,7 +398,7 @@
                 let p = products.find(x => x.id == id);
                 if (p) {
                     productSubtotal += p.price * cart[id];
-                    if (id != 13) totalCups += cart[id]; // 保冷袋不列入奶酪杯數
+                    if (id != 13) totalCups += cart[id]; // 保冷袋不列入杯數
                 }
             }
 
@@ -355,20 +414,22 @@
 
             let grandTotal = productSubtotal + shippingFee;
 
-            // 2. 更新下方懸浮島數據
+            // 2. 更新懸浮島數據
             document.getElementById('total-cups').innerText = totalCups;
             document.getElementById('final-total').innerText = grandTotal.toLocaleString();
             document.getElementById('shipping-tag').innerText = fulfillment === 'pickup' ? '自取$0' : (shippingFee === 0 ? '免運費' : `運費$${shippingFee}`);
 
-            // 3. 🌟 更新下方懸浮島 6 孔禮盒托盤
+            // 3. 🌟 更新 6 孔裝盒托盤 UI
             const currentSlots = totalCups % 6;
             const fullBoxes = Math.floor(totalCups / 6);
             
             const boxStatusText = document.getElementById('box-status-text');
-            if (totalCups > 0 && currentSlots === 0) {
-                boxStatusText.innerText = `禮盒裝配：已滿 ${fullBoxes} 盒 (6/6)`;
+            if (totalCups < 6) {
+                boxStatusText.innerText = `還差 ${6 - totalCups} 杯湊滿精緻紙盒`;
+            } else if (currentSlots === 0) {
+                boxStatusText.innerText = `已完美滿裝 ${fullBoxes} 盒 (6/6)`;
             } else {
-                boxStatusText.innerText = `禮盒裝配：${fullBoxes > 0 ? `已裝 ${fullBoxes} 盒 / ` : ''}剩 ${currentSlots}/6 杯`;
+                boxStatusText.innerText = `已滿 ${fullBoxes} 盒，散裝剩 ${currentSlots}/6 杯`;
             }
 
             const dockSlotsGrid = document.getElementById('dock-slots-grid');
@@ -382,18 +443,18 @@
             }
             dockSlotsGrid.innerHTML = slotsHtml;
 
-            // 4. 更新店員對話框 (Clerk Dialog Prompt)
+            // 4. 店員動態對話框 (特別提醒 6 杯紙盒邏輯)
             const dialog = document.getElementById('clerk-dialog');
             if (totalCups === 0) {
-                dialog.innerText = "歡迎光臨！今天想預訂什麼口味的手作鮮奶酪呢？";
+                dialog.innerText = "歡迎光臨！滿 6 杯即可享有質感禮盒包裝喔 🥰";
+            } else if (totalCups < 6) {
+                dialog.innerText = `目前累積 ${totalCups} 杯，再選 ${6 - totalCups} 杯就能升級質感紙盒包裝囉！`;
             } else if (fulfillment === 'delivery' && totalCups % 6 !== 0) {
-                dialog.innerText = `宅配溫馨提醒：冷藏宅配以 6 杯為一整盒出貨，目前共有 ${totalCups} 杯，再選 ${6 - (totalCups % 6)} 杯就能完美包裝囉！`;
-            } else if (totalCups % 6 !== 0) {
-                dialog.innerText = `好選擇！再挑選 ${6 - (totalCups % 6)} 杯，就能湊滿一整盒免費獲得質感禮盒包裝喔！`;
-            } else if (productSubtotal < 900 && fulfillment === 'delivery') {
-                dialog.innerText = `目前已滿 ${fullBoxes} 盒！商品再滿 $${900 - productSubtotal} 元即可享冷藏宅配免運費！`;
+                dialog.innerText = `宅配溫馨提醒：冷藏宅配建議以 6 的倍數整盒出貨，目前剩 ${totalCups % 6} 杯散裝。`;
+            } else if (boxingMode === 'custom') {
+                dialog.innerText = `已開啟指定裝盒！系統會即時為您計算禮盒進度喔。`;
             } else {
-                dialog.innerText = `太棒的口味組合！系統已為您算好最佳優惠，請點選下方按鈕確認預訂喔 🥰`;
+                dialog.innerText = `目前已滿 ${fullBoxes} 盒！由店家為您美美混裝手作甜點 ✨`;
             }
         }
 
@@ -434,13 +495,14 @@
             document.getElementById('r-total').innerText = `$${grandTotal}`;
             document.getElementById('r-name').innerText = `${name} (${phone})`;
             document.getElementById('r-fulfillment').innerText = fulfillment === 'pickup' ? '門市自取' : '冷藏宅配';
+            document.getElementById('r-boxing-mode').innerText = boxingMode === 'custom' ? '指定口味裝盒' : '店家隨機混裝';
             document.getElementById('receipt-time').innerText = "點單時間：" + new Date().toLocaleString('zh-TW', {hour12: false});
 
             document.getElementById('receipt-modal').style.display = 'flex';
         }
 
         function copyReceiptAndClose() {
-            alert("預訂資訊已成功複製到剪貼簿！您可以直接貼上傳給官方 LINE 客服人員。");
+            alert("預訂資訊已成功複製！您可以貼上傳給官方 LINE 客服人員。");
             document.getElementById('receipt-modal').style.display = 'none';
         }
 
