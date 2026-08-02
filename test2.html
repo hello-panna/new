@@ -48,7 +48,7 @@
             box-shadow: 0 0 40px rgba(0,0,0,0.06);
         }
 
-        /* Header */
+        /* Sticky Header */
         header {
             background: rgba(253, 251, 248, 0.95);
             backdrop-filter: blur(12px);
@@ -62,7 +62,7 @@
 
         .container { padding: 0 16px; }
 
-        /* 三步驟進度條 */
+        /* 步驟指示器 */
         .step-indicator { display: flex; justify-content: space-between; margin: 20px 0 25px; position: relative; padding: 0 10px; }
         .step-indicator::before { content: ''; position: absolute; top: 16px; left: 35px; right: 35px; height: 2px; background: #EFEBE9; z-index: 1; }
         .step-item { display: flex; flex-direction: column; align-items: center; z-index: 2; width: 33%; cursor: pointer; }
@@ -76,7 +76,7 @@
         .step-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 店員對話框與 Banner */
+        /* 店員與提示 Banner */
         .clerk-banner {
             margin-bottom: 12px; background: #FAF8F5; border: 1px solid var(--c-primary-light);
             border-radius: var(--radius-box); padding: 12px 16px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-card);
@@ -94,8 +94,10 @@
         .video-box { background: white; padding: 8px; border-radius: 12px; border: 1px solid var(--c-line); box-shadow: var(--shadow-card); }
         .video-box video { width: 100%; border-radius: 8px; display: block; }
 
-        /* 菜單 Grid */
+        /* 分類標題 */
         .section-title { font-family: var(--font-title); font-size: 1.15rem; font-weight: 700; text-align: center; margin: 25px 0 15px; color: var(--c-text); letter-spacing: 1px; }
+
+        /* 菜單展示 Grid */
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
         .menu-card { background: #fff; border-radius: var(--radius-box); padding: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid var(--c-line); box-shadow: var(--shadow-card); position: relative; }
         .card-img-wrapper { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; overflow: hidden; margin-bottom: 10px; background: #f4f4f4; }
@@ -126,7 +128,7 @@
 
         .info-box { background: #FAF8F5; border-radius: 12px; padding: 14px; margin-bottom: 16px; font-size: 0.88rem; border: 1px solid #EFEBE9; }
 
-        /* 明細與結帳 */
+        /* 明細與付款選項 */
         .summary-box { background: white; border-radius: var(--radius-box); padding: 18px; border: 1px solid var(--c-line); margin-bottom: 20px; box-shadow: var(--shadow-card); }
         .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; color: #666; }
         .summary-row.total { border-top: 1px dashed #ddd; margin-top: 8px; padding-top: 12px; font-size: 1.15rem; font-weight: bold; color: var(--c-text); }
@@ -163,38 +165,16 @@
         .btn-action { background: var(--c-primary); color: white; border: none; padding: 10px 20px; border-radius: 50px; font-size: 0.9rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(140, 123, 117, 0.3); }
         .btn-action.secondary { background: #f0f0f0; color: #666; box-shadow: none; padding: 10px 14px; }
 
-        /* 🌟 裝盒小幫手 Modal 樣式 */
-        #box-preview-modal, #receipt-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: flex-end; }
-        .modal-card {
-            background: white; width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; padding: 24px 20px;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.25); max-height: 88vh; overflow-y: auto; position: relative;
-        }
-        .modal-header { font-family: var(--font-title); font-size: 1.25rem; font-weight: 700; color: var(--c-primary); text-align: center; margin-bottom: 16px; }
-
-        /* 視覺化打包紙盒區域 */
-        .box-visual-container { background: #FAF8F5; border: 2px dashed var(--c-primary-light); border-radius: 16px; padding: 14px; margin-bottom: 16px; text-align: center; }
-        .box-slots-row { display: flex; justify-content: center; gap: 8px; margin: 10px 0; }
-        .slot-bubble {
-            width: 42px; height: 42px; border-radius: 50%; background: #EFEBE9; border: 1px solid #E0DCD9;
-            display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; color: var(--c-text); transition: all 0.3s;
-        }
-        .slot-bubble.filled { background: var(--c-primary); color: white; border-color: var(--c-primary); transform: scale(1.06); box-shadow: 0 4px 10px rgba(140, 123, 117, 0.25); }
-
-        .btn-save-box { background: var(--c-accent); color: white; border: none; padding: 10px; border-radius: 50px; width: 100%; font-weight: bold; font-size: 0.95rem; margin-top: 8px; opacity: 0.5; pointer-events: none; transition: 0.2s; }
-        .btn-save-box.active { opacity: 1; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 12px rgba(175, 168, 139, 0.4); }
-
-        /* 已完成打包的盒子卡片 */
-        .completed-box-card { background: white; border: 1px solid var(--c-line); border-left: 4px solid var(--c-accent); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; box-shadow: var(--shadow-card); }
-        .completed-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .completed-box-title { font-weight: bold; color: var(--c-primary); font-size: 0.95rem; }
-        .btn-unpack { background: #FFF3F3; color: var(--c-danger); border: 1px solid var(--c-danger); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
-        .btn-unpack:active { background: var(--c-danger); color: white; }
-
-        /* 未裝盒商品行 */
-        .unboxed-item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #FAF8F5; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--c-line); }
-
+        /* Modal */
+        #box-preview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-card { background: white; width: 100%; max-width: 440px; border-radius: 20px; padding: 24px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); max-height: 85vh; overflow-y: auto; }
+        .modal-header { font-family: var(--font-title); font-size: 1.2rem; font-weight: 700; color: var(--c-primary); text-align: center; margin-bottom: 16px; }
+        .box-group-card { background: #FAF8F5; border: 1px solid var(--c-line); border-left: 4px solid var(--c-accent); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+        .box-group-title { font-weight: bold; color: var(--c-primary); font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .box-item-chip { display: inline-block; background: white; border: 1px solid #E0DCD9; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; color: var(--c-text); margin: 3px 4px 3px 0; font-weight: 500; }
         .btn-modal-close { background: var(--c-primary); color: white; border: none; width: 100%; padding: 12px; border-radius: 50px; font-weight: bold; font-size: 0.95rem; margin-top: 15px; cursor: pointer; }
 
+        /* 收據畫面 */
         #receipt-view { display: none; padding: 30px 16px; }
         .receipt-card { background: white; border-radius: 16px; padding: 24px 20px; border: 1px solid #e0e0e0; box-shadow: var(--shadow-card); font-family: monospace; }
         .receipt-row { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 6px; }
@@ -211,7 +191,7 @@
         </header>
 
         <div class="container" id="shop-view">
-            <!-- 進度條 -->
+            <!-- 三步驟進度條 -->
             <div class="step-indicator">
                 <div class="step-item active" id="indicator-1" onclick="if(currentStep > 1) goToStep(1)">
                     <div class="step-dot">1</div>
@@ -227,7 +207,7 @@
                 </div>
             </div>
 
-            <!-- 第一頁 -->
+            <!-- 第一頁：選購與裝盒 -->
             <div id="step-1" class="step-content active">
                 <div class="clerk-banner">
                     <div class="clerk-avatar">👩🏻‍🍳</div>
@@ -263,7 +243,7 @@
                 <div class="menu-grid" id="menu-grid"></div>
             </div>
 
-            <!-- 第二頁 -->
+            <!-- 第二頁：資料與日期 -->
             <div id="step-2" class="step-content">
                 <div class="section-title">— 取件與配送方式 —</div>
                 <div class="form-card">
@@ -344,7 +324,7 @@
                 </div>
             </div>
 
-            <!-- 第三頁 -->
+            <!-- 第三頁：付款結帳 -->
             <div id="step-3" class="step-content">
                 <div class="section-title">— 最終結帳明細 —</div>
                 <div class="summary-box" id="step3-summary"></div>
@@ -385,6 +365,7 @@
 
         <!-- 懸浮島 -->
         <div class="bottom-floating-island" id="checkout-bottom-bar">
+            <!-- 僅在 Step 1 顯示裝盒切換 -->
             <div class="boxing-mode-bar" id="boxing-mode-bar">
                 <div class="mode-title">📦 包裝方式：</div>
                 <div class="mode-options">
@@ -393,10 +374,11 @@
                 </div>
             </div>
 
+            <!-- 僅在 Step 1 自訂模式顯示 6 孔托盤 -->
             <div class="dock-box-tray" id="dock-box-tray">
                 <div>
                     <div class="tray-status-text" id="box-status-text">禮盒裝配：0/6 杯</div>
-                    <button class="btn-preview-boxes" onclick="openBoxPreviewModal()" style="margin-top:4px;">📦 裝盒小幫手</button>
+                    <button class="btn-preview-boxes" onclick="openBoxPreviewModal()" style="margin-top:4px;">👁️ 預覽裝盒明細</button>
                 </div>
                 <div class="dock-slots-grid" id="dock-slots-grid">
                     <div class="dock-slot">1</div>
@@ -408,6 +390,7 @@
                 </div>
             </div>
 
+            <!-- 下層：金額與步驟按鈕 -->
             <div class="dock-checkout-bar">
                 <div class="price-info">
                     <div class="price-subtag">
@@ -449,38 +432,12 @@
         </div>
     </div>
 
-    <!-- 🌟 互動式裝盒小幫手 Modal (支援拆開退回與即時未裝盒計算) -->
+    <!-- 裝盒預覽 Modal -->
     <div id="box-preview-modal">
         <div class="modal-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <div class="modal-header" style="margin-bottom:0;">📦 客製裝盒小幫手</div>
-                <button onclick="autoFillBoxes()" style="background:var(--c-primary); color:white; border:none; padding:5px 12px; border-radius:15px; font-size:0.75rem; cursor:pointer; font-weight:bold;">⚡ 一鍵自動裝盒</button>
-            </div>
-
-            <!-- 已完成打包的盒子清單 -->
-            <div id="completed-boxes-area" style="margin-bottom:14px; display:none;">
-                <div style="font-size:0.85rem; font-weight:bold; color:var(--c-primary); margin-bottom:8px;">✅ 已打包完成禮盒</div>
-                <div id="completed-boxes-list"></div>
-            </div>
-
-            <!-- 當前正在打包的 6 孔托盤區塊 -->
-            <div class="box-visual-container">
-                <div style="font-size:0.88rem; font-weight:bold; color:var(--c-primary);">正在打包第 <span id="current-box-letter">A</span> 盒</div>
-                <div class="box-slots-row" id="box-slots-row">
-                    <!-- 6 孔泡泡 -->
-                </div>
-                <div style="font-size:0.78rem; color:#888;" id="box-status-detail">請從下方選擇口味加入</div>
-                <button id="btn-save-box" class="btn-save-box" onclick="saveCurrentBox()">✅ 湊滿 6 杯了！封裝此盒</button>
-            </div>
-
-            <!-- 未裝盒商品挑選區 -->
-            <div style="font-size:0.88rem; font-weight:bold; color:var(--c-text); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                <span>未配裝口味清單</span>
-                <span id="unboxed-total-badge" style="font-size:0.8rem; color:var(--c-danger); font-weight:bold;">未配裝：0 杯</span>
-            </div>
-            <div id="unboxed-items-list"></div>
-
-            <button class="btn-modal-close" onclick="closeBoxPreviewModal()">完成並儲存裝盒設定</button>
+            <div class="modal-header">📦 裝盒內容與客製代號</div>
+            <div id="box-preview-list"></div>
+            <button class="btn-modal-close" onclick="closeBoxPreviewModal()">儲存並關閉預覽</button>
         </div>
     </div>
 
@@ -503,10 +460,7 @@
         let cart = {}; 
         let currentStep = 1;
         let boxingMode = 'mixed';
-        
-        /* 🌟 裝盒狀態資料庫 */
-        let completedBoxes = [];     // 已封裝的盒子: [{ label: 'A', items: [{id, name, qty}], note: '' }]
-        let currentBoxBuilding = []; // 目前正在擺放中的盒子: [{ id, name, qty }]
+        let boxNotes = {};
 
         function init() {
             renderMenu();
@@ -539,7 +493,6 @@
         }
 
         function changeQty(id, delta) {
-            completedBoxes = []; currentBoxBuilding = []; // 購物車數量變動，自動重置舊裝盒狀態
             const current = cart[id] || 0;
             const updated = current + delta;
             if (updated > 0) cart[id] = updated;
@@ -593,7 +546,9 @@
             window.scrollTo(0, 0);
         }
 
+        /* 日期產生器 (承襲原始購物車精準邏輯) */
         function updateDateSettings(mode) {
+            const selectEl = document.getElementById('pickup-slot-select');
             const pickupBox = document.getElementById('pickup-info-box');
             const deliveryBox = document.getElementById('delivery-info-box');
             const rcptSection = document.getElementById('recipient-section');
@@ -611,6 +566,7 @@
 
         function generateOptions(mode, startDays) {
             const select = document.getElementById('pickup-slot-select');
+            const hint = document.getElementById('date-hint');
             select.innerHTML = `<option value="" disabled selected>請選擇${mode === 'delivery' ? '出貨日期' : '自取時段'}...</option>`;
 
             const now = new Date(); let startDate = new Date(now); startDate.setDate(startDate.getDate() + startDays);
@@ -619,7 +575,7 @@
                 let day = current.getDay(); let month = current.getMonth() + 1; let date = current.getDate();
                 
                 let checkDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')}`;
-                if (checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") continue;
+                if (checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") continue; // 店休避開
                 
                 let dayStr = ['日','一','二','三','四','五','六'][day];
                 let dateStr = `${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')} (週${dayStr})`;
@@ -678,202 +634,23 @@
             updateApp();
         }
 
-        /* 🌟 計算未配裝的商品數量 */
-        function getUnboxedCounts() {
-            let counts = {};
+        function getBoxBreakdown() {
+            let itemArray = [];
             for (let id in cart) {
-                if (id != 13) counts[id] = { name: products.find(p => p.id == id).name, qty: cart[id] };
-            }
-            completedBoxes.forEach(box => {
-                box.items.forEach(item => { if (counts[item.id]) counts[item.id].qty -= item.qty; });
-            });
-            currentBoxBuilding.forEach(item => {
-                if (counts[item.id]) counts[item.id].qty -= item.qty;
-            });
-            return counts;
-        }
-
-        /* 🌟 繪製裝盒小幫手核心 UI */
-        function renderBoxingUI() {
-            const unboxed = getUnboxedCounts();
-            const currentCupsInBox = currentBoxBuilding.reduce((sum, item) => sum + item.qty, 0);
-            const boxLabel = String.fromCharCode(65 + completedBoxes.length); // A, B, C...
-
-            document.getElementById('current-box-letter').innerText = boxLabel;
-
-            // 1. 繪製 6 孔泡泡
-            let slotsHtml = '';
-            let filledItems = [];
-            currentBoxBuilding.forEach(item => {
-                let shortName = item.name.replace('鮮奶酪','').substring(0, 2);
-                for(let i=0; i<item.qty; i++) filledItems.push(shortName);
-            });
-
-            for (let i = 0; i < 6; i++) {
-                if (i < filledItems.length) {
-                    slotsHtml += `<div class="slot-bubble filled">${filledItems[i]}</div>`;
-                } else {
-                    slotsHtml += `<div class="slot-bubble">空</div>`;
-                }
-            }
-            document.getElementById('box-slots-row').innerHTML = slotsHtml;
-
-            document.getElementById('box-status-detail').innerText = `已放入 ${currentCupsInBox} 杯，還差 ${6 - currentCupsInBox} 杯滿盒`;
-            const saveBtn = document.getElementById('btn-save-box');
-            if (currentCupsInBox === 6) {
-                saveBtn.classList.add('active');
-                saveBtn.innerText = `✅ 滿 6 杯了！封裝第 ${boxLabel} 盒`;
-            } else {
-                saveBtn.classList.remove('active');
-                saveBtn.innerText = `請湊滿 6 杯`;
+                if (id == 13) continue;
+                let p = products.find(x => x.id == id);
+                for (let i = 0; i < cart[id]; i++) itemArray.push(p.name);
             }
 
-            // 2. 繪製未配裝商品清單與即時總數
-            let unboxedHtml = '';
-            let totalUnboxedCups = 0;
-
-            for (let id in unboxed) {
-                let item = unboxed[id];
-                totalUnboxedCups += item.qty;
-                let inCurrentBox = currentBoxBuilding.find(c => c.id == id)?.qty || 0;
-
-                if (item.qty > 0 || inCurrentBox > 0) {
-                    unboxedHtml += `
-                        <div class="unboxed-item-row">
-                            <div>
-                                <div style="font-weight:bold; font-size:0.9rem;">${item.name}</div>
-                                <div style="font-size:0.75rem; color:#888;">可選未裝: ${item.qty} 杯</div>
-                            </div>
-                            <div class="qty-controller" style="width: 100px;">
-                                <button class="btn-qty" onclick="modifyCurrentBox(${id}, -1)" ${inCurrentBox === 0 ? 'disabled style="opacity:0.3"' : ''}>-</button>
-                                <span class="qty-num">${inCurrentBox}</span>
-                                <button class="btn-qty" onclick="modifyCurrentBox(${id}, 1)" ${item.qty === 0 || currentCupsInBox >= 6 ? 'disabled style="opacity:0.3"' : ''}>+</button>
-                            </div>
-                        </div>`;
-                }
+            let boxes = []; let currentBoxIndex = 0;
+            while (itemArray.length > 0) {
+                let chunk = itemArray.splice(0, 6);
+                let label = String.fromCharCode(65 + currentBoxIndex);
+                let counts = {}; chunk.forEach(name => counts[name] = (counts[name] || 0) + 1);
+                boxes.push({ label: label, isFull: chunk.length === 6, count: chunk.length, items: counts });
+                currentBoxIndex++;
             }
-
-            document.getElementById('unboxed-total-badge').innerText = totalUnboxedCups > 0 ? `未配裝：${totalUnboxedCups} 杯` : `🎉 已全部裝盒完畢`;
-            if (!unboxedHtml) unboxedHtml = '<div style="text-align:center; color:#999; padding:15px;">目前所有商品皆已裝盒完畢 🎉</div>';
-            document.getElementById('unboxed-items-list').innerHTML = unboxedHtml;
-
-            // 3. 繪製已完成禮盒與【拆開退回】按鈕
-            const completedArea = document.getElementById('completed-boxes-area');
-            if (completedBoxes.length > 0) {
-                completedArea.style.display = 'block';
-                let boxesHtml = '';
-                completedBoxes.forEach((box, index) => {
-                    let detailStr = box.items.map(i => `${i.name.replace('鮮奶酪','')}x${i.qty}`).join(', ');
-                    boxesHtml += `
-                        <div class="completed-box-card">
-                            <div class="completed-box-header">
-                                <div class="completed-box-title">📦 ${box.label} 禮盒 (6/6)</div>
-                                <button class="btn-unpack" onclick="unpackBox(${index})">↺ 拆開退回</button>
-                            </div>
-                            <div style="font-size:0.82rem; color:#666; margin-bottom:6px;">${detailStr}</div>
-                            <input type="text" class="form-input" 
-                                   placeholder="✎ 點此輸入本盒代號 (例：送給王小姐)" 
-                                   value="${box.note || ''}" 
-                                   onchange="updateBoxNote(${index}, this.value)" 
-                                   style="padding:6px 10px; font-size:0.8rem; background:#fff; border:1px dashed #E0DCD9;">
-                        </div>`;
-                });
-                document.getElementById('completed-boxes-list').innerHTML = boxesHtml;
-            } else {
-                completedArea.style.display = 'none';
-            }
-        }
-
-        /* 增減目前盒子內的商品 */
-        function modifyCurrentBox(id, delta) {
-            let unboxed = getUnboxedCounts();
-            let currentCups = currentBoxBuilding.reduce((sum, item) => sum + item.qty, 0);
-
-            if (delta > 0 && currentCups >= 6) return;
-            if (delta > 0 && unboxed[id].qty <= 0) return;
-
-            let existing = currentBoxBuilding.find(item => item.id == id);
-            if (existing) {
-                existing.qty += delta;
-                if (existing.qty <= 0) currentBoxBuilding = currentBoxBuilding.filter(item => item.id != id);
-            } else if (delta > 0) {
-                currentBoxBuilding.push({ id: id, name: products.find(p => p.id == id).name, qty: 1 });
-            }
-            renderBoxingUI();
-        }
-
-        /* 儲存當前盒子 */
-        function saveCurrentBox() {
-            const currentCups = currentBoxBuilding.reduce((sum, item) => sum + item.qty, 0);
-            if (currentCups !== 6) return;
-
-            completedBoxes.push({
-                label: String.fromCharCode(65 + completedBoxes.length),
-                items: [...currentBoxBuilding],
-                note: ''
-            });
-            currentBoxBuilding = [];
-            renderBoxingUI();
-            updateApp();
-        }
-
-        /* 🌟 拆開退回盒子（將該盒數量秒速釋放回未配裝庫存） */
-        function unpackBox(index) {
-            completedBoxes.splice(index, 1);
-            // 重新命名剩餘盒子字母 (A, B, C...)
-            completedBoxes.forEach((box, i) => { box.label = String.fromCharCode(65 + i); });
-            renderBoxingUI();
-            updateApp();
-        }
-
-        /* 更新盒子備註 */
-        function updateBoxNote(index, text) {
-            if (completedBoxes[index]) completedBoxes[index].note = text.trim();
-        }
-
-        /* ⚡ 一鍵自動裝盒 */
-        function autoFillBoxes() {
-            let unboxed = getUnboxedCounts();
-            let flatArray = [];
-
-            for (let id in unboxed) {
-                for (let i = 0; i < unboxed[id].qty; i++) {
-                    flatArray.push({ id: id, name: unboxed[id].name });
-                }
-            }
-
-            if (currentBoxBuilding.length > 0) {
-                currentBoxBuilding.forEach(item => {
-                    for (let i = 0; i < item.qty; i++) flatArray.push({ id: item.id, name: item.name });
-                });
-                currentBoxBuilding = [];
-            }
-
-            while (flatArray.length >= 6) {
-                let chunk = flatArray.splice(0, 6);
-                let boxMap = {};
-                chunk.forEach(cup => {
-                    if (!boxMap[cup.id]) boxMap[cup.id] = { id: cup.id, name: cup.name, qty: 0 };
-                    boxMap[cup.id].qty += 1;
-                });
-
-                completedBoxes.push({
-                    label: String.fromCharCode(65 + completedBoxes.length),
-                    items: Object.values(boxMap),
-                    note: ''
-                });
-            }
-            renderBoxingUI();
-            updateApp();
-        }
-
-        function openBoxPreviewModal() {
-            renderBoxingUI();
-            document.getElementById('box-preview-modal').style.display = 'flex';
-        }
-
-        function closeBoxPreviewModal() {
-            document.getElementById('box-preview-modal').style.display = 'none';
+            return boxes;
         }
 
         function updateApp() {
@@ -888,7 +665,7 @@
 
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked')?.value || '自取';
             let shippingFee = 0;
-            if (fulfillment === 'delivery') {
+            if (delivery === '宅配') {
                 if (productSubtotal >= 900 || totalCups === 0) shippingFee = 0;
                 else {
                     let boxes = Math.ceil(totalCups / 6);
@@ -919,6 +696,42 @@
             dockSlotsGrid.innerHTML = slotsHtml;
         }
 
+        function updateBoxNote(label, noteValue) { boxNotes[label] = noteValue.trim(); }
+
+        function openBoxPreviewModal() {
+            const boxes = getBoxBreakdown();
+            const listEl = document.getElementById('box-preview-list');
+
+            if (boxes.length === 0) {
+                listEl.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">購物車內尚未加入甜點</div>';
+            } else {
+                let html = '';
+                boxes.forEach(box => {
+                    let itemChips = '';
+                    for (let name in box.items) itemChips += `<span class="box-item-chip">${name} x ${box.items[name]}</span>`;
+                    const currentNote = boxNotes[box.label] || '';
+
+                    if (box.isFull) {
+                        html += `<div class="box-group-card">
+                            <div class="box-group-title"><span>📦 ${box.label} 禮盒 (6/6)</span><span style="color:var(--c-accent); font-size:0.8rem;">精緻紙盒裝</span></div>
+                            <div>${itemChips}</div>
+                            <input type="text" class="form-input" placeholder="✎ 輸入本盒代號/備註 (例：送給王小姐)" value="${currentNote}" oninput="updateBoxNote('${box.label}', this.value)" style="margin-top:10px; padding:8px 12px; font-size:0.85rem; background:#fff;">
+                        </div>`;
+                    } else {
+                        html += `<div class="box-group-card" style="border-left-color:var(--c-danger);">
+                            <div class="box-group-title"><span style="color:var(--c-danger);">🛍️ 散裝防震裝 (${box.count}/6 杯)</span><span style="color:#888; font-size:0.8rem;">再選 ${6 - box.count} 杯滿盒</span></div>
+                            <div>${itemChips}</div>
+                            <input type="text" class="form-input" placeholder="✎ 輸入散裝備註 (選填)" value="${currentNote}" oninput="updateBoxNote('${box.label}', this.value)" style="margin-top:10px; padding:8px 12px; font-size:0.85rem; background:#fff;">
+                        </div>`;
+                    }
+                });
+                listEl.innerHTML = html;
+            }
+            document.getElementById('box-preview-modal').style.display = 'flex';
+        }
+
+        function closeBoxPreviewModal() { document.getElementById('box-preview-modal').style.display = 'none'; }
+
         function prepareStep3Summary() {
             let totalCups = 0; let productSubtotal = 0;
             let html = '';
@@ -933,23 +746,14 @@
                 }
             }
 
-            if (boxingMode === 'custom' && completedBoxes.length > 0) {
-                html += `<div style="border-top:1px dashed #eee; margin:8px 0; padding-top:8px; font-weight:bold; color:var(--c-primary); font-size:0.88rem;">[裝盒分配與客製代號]</div>`;
-                completedBoxes.forEach(box => {
-                    let detailStr = box.items.map(i => `${i.name.replace('鮮奶酪','')}x${i.qty}`).join(', ');
-                    let noteStr = box.note ? ` (${box.note})` : '';
+            if (boxingMode === 'custom') {
+                const boxes = getBoxBreakdown();
+                html += `<div style="border-top:1px dashed #eee; margin:8px 0; padding-top:8px; font-weight:bold; color:var(--c-primary); font-size:0.88rem;">[裝盒分配與客製備註]</div>`;
+                boxes.forEach(box => {
+                    let detailStr = Object.entries(box.items).map(([k, v]) => `${k.replace('鮮奶酪','')}x${v}`).join(', ');
+                    let noteStr = boxNotes[box.label] ? ` (${boxNotes[box.label]})` : '';
                     html += `<div class="summary-row" style="font-size:0.82rem; color:#666;"><span>• ${box.label} 盒${noteStr}</span><span>${detailStr}</span></div>`;
                 });
-
-                // 檢查是否有散裝
-                let unboxed = getUnboxedCounts();
-                let unboxedArr = [];
-                for (let id in unboxed) {
-                    if (unboxed[id].qty > 0) unboxedArr.push(`${unboxed[id].name.replace('鮮奶酪','')}x${unboxed[id].qty}`);
-                }
-                if (unboxedArr.length > 0) {
-                    html += `<div class="summary-row" style="font-size:0.82rem; color:#888;"><span>• 🛍️ 散裝單杯防震裝</span><span>${unboxedArr.join(', ')}</span></div>`;
-                }
             }
 
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
@@ -983,22 +787,14 @@
                 }
             }
 
-            if (boxingMode === 'custom' && completedBoxes.length > 0) {
+            if (boxingMode === 'custom') {
+                const boxes = getBoxBreakdown();
                 itemsHtml += `<div class="receipt-divider"></div><div style="font-weight:bold; margin-bottom:6px; color:var(--c-primary);">[裝盒明細]</div>`;
-                completedBoxes.forEach(box => {
-                    let detailStr = box.items.map(i => `${i.name.replace('鮮奶酪','')}x${i.qty}`).join(', ');
-                    let noteStr = box.note ? ` (${box.note})` : '';
+                boxes.forEach(box => {
+                    let detailStr = Object.entries(box.items).map(([k, v]) => `${k.replace('鮮奶酪','')}x${v}`).join(', ');
+                    let noteStr = boxNotes[box.label] ? ` (${boxNotes[box.label]})` : '';
                     itemsHtml += `<div class="receipt-row" style="font-size:0.8rem; color:#555;"><span>• ${box.label} 盒${noteStr}</span><span>${detailStr}</span></div>`;
                 });
-
-                let unboxed = getUnboxedCounts();
-                let unboxedArr = [];
-                for (let id in unboxed) {
-                    if (unboxed[id].qty > 0) unboxedArr.push(`${unboxed[id].name.replace('鮮奶酪','')}x${unboxed[id].qty}`);
-                }
-                if (unboxedArr.length > 0) {
-                    itemsHtml += `<div class="receipt-row" style="font-size:0.8rem; color:#888;"><span>• 🛍️ 散裝</span><span>${unboxedArr.join(', ')}</span></div>`;
-                }
             }
 
             let shippingFee = (delivery === '宅配' && productSubtotal < 900) ? 130 : 0;
@@ -1033,24 +829,18 @@
                 if (p) text += `• ${p.name} x ${cart[id]}\n`;
             }
 
-            if (boxingMode === 'custom' && completedBoxes.length > 0) {
+            if (boxingMode === 'custom') {
                 text += `\n[裝盒分配明細]\n`;
-                completedBoxes.forEach(box => {
-                    let detailStr = box.items.map(i => `${i.name.replace('鮮奶酪','')}x${i.qty}`).join(', ');
-                    let noteStr = box.note ? ` (${box.note})` : '';
+                const boxes = getBoxBreakdown();
+                boxes.forEach(box => {
+                    let detailStr = Object.entries(box.items).map(([k, v]) => `${k.replace('鮮奶酪','')}x${v}`).join(', ');
+                    let noteStr = boxNotes[box.label] ? ` (${boxNotes[box.label]})` : '';
                     text += `📦 ${box.label} 盒${noteStr}：${detailStr}\n`;
                 });
-
-                let unboxed = getUnboxedCounts();
-                let unboxedArr = [];
-                for (let id in unboxed) {
-                    if (unboxed[id].qty > 0) unboxedArr.push(`${unboxed[id].name.replace('鮮奶酪','')}x${unboxed[id].qty}`);
-                }
-                if (unboxedArr.length > 0) text += `🛍️ 散裝：${unboxedArr.join(', ')}\n`;
             }
 
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => alert("預訂單資訊（包含拆裝後的完整明細）已完整複製！您可以直接貼上傳給官方 LINE 客服人員。"));
+                navigator.clipboard.writeText(text).then(() => alert("預訂單資訊已完整複製！您可以直接貼上傳給官方 LINE 客服人員。"));
             } else {
                 alert("預訂資訊已生成，請截圖保存！");
             }
