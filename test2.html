@@ -170,8 +170,54 @@
         .modal-card { background: white; width: 100%; max-width: 440px; border-radius: 20px; padding: 24px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); max-height: 85vh; overflow-y: auto; }
         .modal-header { font-family: var(--font-title); font-size: 1.2rem; font-weight: 700; color: var(--c-primary); text-align: center; margin-bottom: 16px; }
         .box-group-card { background: #FAF8F5; border: 1px solid var(--c-line); border-left: 4px solid var(--c-accent); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-        .box-group-title { font-weight: bold; color: var(--c-primary); font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .box-item-chip { display: inline-block; background: white; border: 1px solid #E0DCD9; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; color: var(--c-text); margin: 3px 4px 3px 0; font-weight: 500; }
+        .box-group-title { font-weight: bold; color: var(--c-primary); font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* 拆回晶片與拆盒按鈕樣式 */
+        .box-item-chip { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            background: white; 
+            border: 1px solid #E0DCD9; 
+            padding: 4px 8px 4px 10px; 
+            border-radius: 20px; 
+            font-size: 0.8rem; 
+            color: var(--c-text); 
+            margin: 3px 4px 3px 0; 
+            font-weight: 500; 
+        }
+        .btn-chip-remove {
+            background: #F5EFEA;
+            color: #B05555;
+            border: 1px solid #EAD8D8;
+            border-radius: 12px;
+            padding: 1px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-chip-remove:hover {
+            background: var(--c-danger);
+            color: white;
+            border-color: var(--c-danger);
+        }
+        .btn-box-unbind {
+            background: #FFF5F5;
+            color: var(--c-danger);
+            border: 1px solid #F2C7C7;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-box-unbind:hover {
+            background: var(--c-danger);
+            color: white;
+        }
+
         .btn-modal-close { background: var(--c-primary); color: white; border: none; width: 100%; padding: 12px; border-radius: 50px; font-weight: bold; font-size: 0.95rem; margin-top: 15px; cursor: pointer; }
 
         /* 收據畫面 */
@@ -546,7 +592,7 @@
             window.scrollTo(0, 0);
         }
 
-        /* 日期產生器 (承襲原始購物車精準邏輯) */
+        /* 日期產生器 */
         function updateDateSettings(mode) {
             const selectEl = document.getElementById('pickup-slot-select');
             const pickupBox = document.getElementById('pickup-info-box');
@@ -639,15 +685,30 @@
             for (let id in cart) {
                 if (id == 13) continue;
                 let p = products.find(x => x.id == id);
-                for (let i = 0; i < cart[id]; i++) itemArray.push(p.name);
+                if (p) {
+                    for (let i = 0; i < cart[id]; i++) itemArray.push({ id: p.id, name: p.name });
+                }
             }
 
             let boxes = []; let currentBoxIndex = 0;
             while (itemArray.length > 0) {
                 let chunk = itemArray.splice(0, 6);
                 let label = String.fromCharCode(65 + currentBoxIndex);
-                let counts = {}; chunk.forEach(name => counts[name] = (counts[name] || 0) + 1);
-                boxes.push({ label: label, isFull: chunk.length === 6, count: chunk.length, items: counts });
+                
+                let itemsMap = {};
+                chunk.forEach(item => {
+                    if (!itemsMap[item.id]) {
+                        itemsMap[item.id] = { id: item.id, name: item.name, count: 0 };
+                    }
+                    itemsMap[item.id].count++;
+                });
+
+                boxes.push({
+                    label: label,
+                    isFull: chunk.length === 6,
+                    count: chunk.length,
+                    items: Object.values(itemsMap)
+                });
                 currentBoxIndex++;
             }
             return boxes;
@@ -698,6 +759,37 @@
 
         function updateBoxNote(label, noteValue) { boxNotes[label] = noteValue.trim(); }
 
+        /* 拆回功能：扣除單杯奶酪 */
+        function removeCupFromBox(id) {
+            if (cart[id] && cart[id] > 0) {
+                cart[id]--;
+                if (cart[id] === 0) delete cart[id];
+                renderMenu();
+                updateApp();
+                openBoxPreviewModal();
+            }
+        }
+
+        /* 拆回功能：拆解整盒奶酪 */
+        function unbindEntireBox(boxLabel) {
+            const boxes = getBoxBreakdown();
+            const targetBox = boxes.find(b => b.label === boxLabel);
+            if (!targetBox) return;
+
+            targetBox.items.forEach(item => {
+                if (cart[item.id]) {
+                    cart[item.id] -= item.count;
+                    if (cart[item.id] <= 0) delete cart[item.id];
+                }
+            });
+
+            delete boxNotes[boxLabel];
+
+            renderMenu();
+            updateApp();
+            openBoxPreviewModal();
+        }
+
         function openBoxPreviewModal() {
             const boxes = getBoxBreakdown();
             const listEl = document.getElementById('box-preview-list');
@@ -708,18 +800,37 @@
                 let html = '';
                 boxes.forEach(box => {
                     let itemChips = '';
-                    for (let name in box.items) itemChips += `<span class="box-item-chip">${name} x ${box.items[name]}</span>`;
+                    box.items.forEach(item => {
+                        itemChips += `<span class="box-item-chip">
+                            ${item.name} x ${item.count}
+                            <button class="btn-chip-remove" onclick="removeCupFromBox(${item.id})" title="拆回 1 杯">拆回 -1</button>
+                        </span>`;
+                    });
+
                     const currentNote = boxNotes[box.label] || '';
+                    const boxHeaderAction = `<button class="btn-box-unbind" onclick="unbindEntireBox('${box.label}')">✂️ 拆回整盒</button>`;
 
                     if (box.isFull) {
                         html += `<div class="box-group-card">
-                            <div class="box-group-title"><span>📦 ${box.label} 禮盒 (6/6)</span><span style="color:var(--c-accent); font-size:0.8rem;">精緻紙盒裝</span></div>
+                            <div class="box-group-title">
+                                <span>📦 ${box.label} 禮盒 (6/6)</span>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="color:var(--c-accent); font-size:0.8rem;">精緻紙盒裝</span>
+                                    ${boxHeaderAction}
+                                </div>
+                            </div>
                             <div>${itemChips}</div>
                             <input type="text" class="form-input" placeholder="✎ 輸入本盒代號/備註 (例：送給王小姐)" value="${currentNote}" oninput="updateBoxNote('${box.label}', this.value)" style="margin-top:10px; padding:8px 12px; font-size:0.85rem; background:#fff;">
                         </div>`;
                     } else {
                         html += `<div class="box-group-card" style="border-left-color:var(--c-danger);">
-                            <div class="box-group-title"><span style="color:var(--c-danger);">🛍️ 散裝防震裝 (${box.count}/6 杯)</span><span style="color:#888; font-size:0.8rem;">再選 ${6 - box.count} 杯滿盒</span></div>
+                            <div class="box-group-title">
+                                <span style="color:var(--c-danger);">🛍️ 散裝防震裝 (${box.count}/6 杯)</span>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="color:#888; font-size:0.8rem;">再選 ${6 - box.count} 杯滿盒</span>
+                                    ${boxHeaderAction}
+                                </div>
+                            </div>
                             <div>${itemChips}</div>
                             <input type="text" class="form-input" placeholder="✎ 輸入散裝備註 (選填)" value="${currentNote}" oninput="updateBoxNote('${box.label}', this.value)" style="margin-top:10px; padding:8px 12px; font-size:0.85rem; background:#fff;">
                         </div>`;
@@ -750,7 +861,7 @@
                 const boxes = getBoxBreakdown();
                 html += `<div style="border-top:1px dashed #eee; margin:8px 0; padding-top:8px; font-weight:bold; color:var(--c-primary); font-size:0.88rem;">[裝盒分配與客製備註]</div>`;
                 boxes.forEach(box => {
-                    let detailStr = Object.entries(box.items).map(([k, v]) => `${k.replace('鮮奶酪','')}x${v}`).join(', ');
+                    let detailStr = box.items.map(item => `${item.name.replace('鮮奶酪','')}x${item.count}`).join(', ');
                     let noteStr = boxNotes[box.label] ? ` (${boxNotes[box.label]})` : '';
                     html += `<div class="summary-row" style="font-size:0.82rem; color:#666;"><span>• ${box.label} 盒${noteStr}</span><span>${detailStr}</span></div>`;
                 });
@@ -791,7 +902,7 @@
                 const boxes = getBoxBreakdown();
                 itemsHtml += `<div class="receipt-divider"></div><div style="font-weight:bold; margin-bottom:6px; color:var(--c-primary);">[裝盒明細]</div>`;
                 boxes.forEach(box => {
-                    let detailStr = Object.entries(box.items).map(([k, v]) => `${k.replace('鮮奶酪','')}x${v}`).join(', ');
+                    let detailStr = box.items.map(item => `${item.name.replace('鮮奶酪','')}x${item.count}`).join(', ');
                     let noteStr = boxNotes[box.label] ? ` (${boxNotes[box.label]})` : '';
                     itemsHtml += `<div class="receipt-row" style="font-size:0.8rem; color:#555;"><span>• ${box.label} 盒${noteStr}</span><span>${detailStr}</span></div>`;
                 });
@@ -833,7 +944,7 @@
                 text += `\n[裝盒分配明細]\n`;
                 const boxes = getBoxBreakdown();
                 boxes.forEach(box => {
-                    let detailStr = Object.entries(box.items).map(([k, v]) => `${k.replace('鮮奶酪','')}x${v}`).join(', ');
+                    let detailStr = box.items.map(item => `${item.name.replace('鮮奶酪','')}x${item.count}`).join(', ');
                     let noteStr = boxNotes[box.label] ? ` (${boxNotes[box.label]})` : '';
                     text += `📦 ${box.label} 盒${noteStr}：${detailStr}\n`;
                 });
