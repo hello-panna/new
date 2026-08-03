@@ -456,6 +456,21 @@
                         <textarea id="cust-remarks" class="form-input" rows="2" placeholder="選填"></textarea>
                     </div>
                 </div>
+
+                <!-- 關於好酪與頁尾資訊移至此處 -->
+                <div class="section-header">關於好酪</div>
+                <div class="brand-story">
+                    <h3>三寶媽的溫柔堅持</h3>
+                    <p>「好酪」的故事，始於一個母親對孩子的愛。為了讓孩子吃到最純粹、無添加的點心，我開始鑽研奶酪的製作。</p>
+                    <p>從家庭廚房到考取國家證照，從投保產品責任險到完成食品登錄，每一步都是為了證明「媽媽手作」也能有職人的堅持。與您相遇的每一個笑容，都是我們前行的動力。</p>
+                </div>
+            
+                <div style="text-align: center; font-size: 0.75rem; color: #999; margin: 40px 0 100px 0; line-height: 1.8;">
+                    甲賀食品 | 統編: 94427773<br>彰化市中正路一段 403 號<br>客服專線: 0972-005078<br>食品登錄字號: N-194427773-00000-4<br>*已投保國泰產險產品責任險*<br><br>
+                    <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none; color:var(--c-success); font-weight:bold; display:inline-flex; align-items:center; gap:5px;"><span>💬 聯絡官方 LINE</span></a>
+                    <div style="color: var(--c-success);">ID: @817ytyld</div>
+                    <div style="margin-top: 20px;"><a href="javascript:void(0)" onclick="openRefundPolicy()" style="color: #bbb; text-decoration: underline;">退貨與退款政策</a></div>
+                </div>
             </div>
 
             <div id="step-2" class="step-content">
@@ -522,20 +537,6 @@
                             <span style="font-size: 1.05rem;">🇹🇼 TWQR 行動支付 (綠界金流)</span>
                         </label>
                     </div>
-                </div>
-            
-                <div class="section-header">關於好酪</div>
-                <div class="brand-story">
-                    <h3>三寶媽的溫柔堅持</h3>
-                    <p>「好酪」的故事，始於一個母親對孩子的愛。為了讓孩子吃到最純粹、無添加的點心，我開始鑽研奶酪的製作。</p>
-                    <p>從家庭廚房到考取國家證照，從投保產品責任險到完成食品登錄，每一步都是為了證明「媽媽手作」也能有職人的堅持。與您相遇的每一個笑容，都是我們前行的動力。</p>
-                </div>
-            
-                <div style="text-align: center; font-size: 0.75rem; color: #999; margin: 40px 0 100px 0; line-height: 1.8;">
-                    甲賀食品 | 統編: 94427773<br>彰化市中正路一段 403 號<br>客服專線: 0972-005078<br>食品登錄字號: N-194427773-00000-4<br>*已投保國泰產險產品責任險*<br><br>
-                    <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none; color:var(--c-success); font-weight:bold; display:inline-flex; align-items:center; gap:5px;"><span>💬 聯絡官方 LINE</span></a>
-                    <div style="color: var(--c-success);">ID: @817ytyld</div>
-                    <div style="margin-top: 20px;"><a href="javascript:void(0)" onclick="openRefundPolicy()" style="color: #bbb; text-decoration: underline;">退貨與退款政策</a></div>
                 </div>
             </div>
             
@@ -1045,7 +1046,7 @@
                 cartContainer.innerHTML += `
                 <div style="background: #fff; padding: 15px; border-radius: 12px; border: 2px dashed var(--c-primary); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(140, 123, 117, 0.1);">
                     <div>
-                        <div style="font-weight: bold; color: var(--c-primary); margin-bottom: 4px;">📦 自訂禮盒包裝</div>
+                        <div style="font-weight: bold; color: var(--c-primary); margin-bottom: 4px;">📦 自訂包裝(未填則混裝)</div>
                         <div style="font-size: 0.85rem;">${boxStatusMsg}</div>
                     </div>
                     <button onclick="openBoxingModal()" style="background: var(--c-primary); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">開始裝盒設定</button>
@@ -1199,7 +1200,7 @@
             } else {
                 completedArea.style.display = 'none';
             }
-        } // <--- 修復了這裡的結尾大括號！
+        } 
 
         // 增減目前盒子內的商品
         function modifyCurrentBox(id, delta) {
@@ -1757,7 +1758,7 @@
         }
         function fallbackCopy(text, msgType="帳號") {
             const textArea = document.createElement("textarea"); textArea.value = text; document.body.appendChild(textArea); textArea.select();
-            try { document.execCommand('copy'); alert(msgType + "已複製成功！"); } catch (err) { alert("複製失敗，請手手選取複製"); }
+            try { document.execCommand('copy'); alert(msgType + "已複製成功！"); } catch (err) { alert("複製失敗，請手動選取複製"); }
             document.body.removeChild(textArea);
         }
 
