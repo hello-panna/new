@@ -822,10 +822,13 @@
                 document.getElementById('pickup-info-box').style.display = 'block'; 
                 document.getElementById('delivery-info-box').style.display = 'none';
                 document.getElementById('recipient-section').style.display = 'none'; 
-                hint.innerText = cart.some(i => i.id === 12) ? "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。" : "提醒：最快可選擇兩天後門市自取 (週日、週一固定公休)";
+                // 修改處 1：將自取的提示文字改為「隔天」
+                hint.innerText = cart.some(i => i.id === 12) ? "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。" : "提醒：最快可選擇隔天門市自取 (週日、週一固定公休)";
             }
-            // 重點修改：將產生選項的天數從 1 (D+1) 改為 2 (D+2)
-            generateOptions(mode, 2);
+            
+            // 修改處 2：動態判定天數，宅配傳入 2 (D+2)，自取傳入 1 (D+1)
+            let daysToAdd = mode === 'delivery' ? 2 : 1;
+            generateOptions(mode, daysToAdd);
         }
 
         function generateOptions(mode, startDays) {
