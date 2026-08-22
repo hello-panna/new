@@ -266,6 +266,26 @@
         .cart-modal-close { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; cursor: pointer; color: #999; line-height: 1; }
         .clickable-cart { cursor: pointer; padding: 5px 10px; border-radius: 8px; transition: background 0.2s; margin-left: -10px; }
         .clickable-cart:active { background: rgba(140, 123, 117, 0.1); }
+        
+        /* --- 裝盒小幫手專屬樣式 --- */
+        #boxing-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2500; justify-content: center; align-items: flex-end; }
+        .boxing-modal-content { background: var(--c-bg); width: 100%; max-width: var(--max-w); max-height: 90vh; border-radius: 24px 24px 0 0; padding: 25px 20px; overflow-y: auto; position: relative; animation: slideUpModal 0.3s ease-out; display: flex; flex-direction: column; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); }
+        .boxing-header { font-family: var(--font-title); font-size: 1.2rem; font-weight: 700; color: var(--c-primary); text-align: center; margin-bottom: 15px; }
+        /* 6顆圓圈的視覺化盒子 */
+        .box-visual-container { background: #fff; border: 2px dashed var(--c-primary-light); border-radius: 16px; padding: 15px; margin-bottom: 15px; text-align: center; }
+        .box-slots { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+        .box-slot { width: 40px; height: 40px; border-radius: 50%; background: #F5F2EB; border: 1px solid #EFEBE9; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; color: var(--c-text); transition: all 0.3s; }
+        .box-slot.filled { background: var(--c-primary); color: #fff; border-color: var(--c-primary); box-shadow: 0 4px 10px rgba(140, 123, 117, 0.3); transform: scale(1.05); }
+        .boxing-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #fff; border-radius: 12px; margin-bottom: 8px; box-shadow: var(--shadow-card); }
+        .boxing-item-name { font-weight: 500; color: var(--c-text); font-size: 0.95rem; }
+        .boxing-item-remains { font-size: 0.8rem; color: #888; }
+        /* 已完成的盒子卡片 */
+        .completed-box-card { background: #FDFBF8; border: 1px solid var(--c-accent); border-left: 4px solid var(--c-accent); padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .completed-box-title { font-weight: bold; color: var(--c-accent); margin-bottom: 4px; }
+        .completed-box-items { font-size: 0.85rem; color: #666; }
+        .unpack-btn { background: #f0f0f0; border: none; color: #666; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; }
+        .btn-save-box { background: var(--c-accent); color: #fff; border: none; padding: 12px; border-radius: 50px; width: 100%; font-weight: bold; font-size: 1rem; margin-top: 10px; transition: 0.2s; opacity: 0.5; pointer-events: none; }
+        .btn-save-box.active { opacity: 1; pointer-events: auto; box-shadow: 0 4px 15px rgba(175, 168, 139, 0.4); }
     </style>
 </head>   
 <body>
@@ -310,10 +330,11 @@
             </div>
 
             <div id="step-1" class="step-content active">
-                <div class="announcement-banner">
-                    <strong>📢 門市現貨提醒 ＆ 線上預訂建議</strong>
-                    感謝大家對好酪的喜愛！近期因預訂單量較多且人手有限，門市現貨常常提早售罄。<br>強烈建議提早透過系統「線上預訂」，確保能為您保留最想品嚐的溫柔風味喔 🥰
-                </div>
+                <div class="announcement-banner" style="background-color: #FFF8E1; border-color: #FFCA28;">
+    <strong>🌕 中秋禮盒預訂活動開跑！</strong>
+    即日起至 2026/09/18，口味不限<strong style="color:var(--c-danger);">任選 6 杯即享中秋優惠價 300 元/盒</strong>。<br>
+    為回饋大家，單筆滿 2 盒 (12杯) 再加碼免費送「質感保冷袋」！提早線上預訂，鎖定最溫柔的秋日風味 🥰
+</div>
 
                 <div class="section-header first">綿密口感</div>
                 <div class="package-box" style="padding: 10px;">
@@ -327,11 +348,11 @@
                     <div class="video-box"><video controls autoplay loop muted playsinline style="width:100%; border-radius:6px; display:block;"><source src="s2.mp4" type="video/mp4"></video></div>
                 </div>
                 
-                <div class="section-header">送禮提案</div>
-                <div class="package-box">
-                    <img src="117902.jpg" alt="禮盒包裝" class="package-img">
-                    <div class="package-text"><strong>質感紙盒包裝 訂購滿六杯奶酪 (免費)</strong><br>為響應環保，我們提供免費的質感紙盒。<br>若有長途保鮮需求，歡迎於下方加購「魔鬼氈保冷袋」，讓手作的心意完美傳遞。</div>
-                </div>
+              <div class="section-header">中秋禮盒提案</div>
+<div class="package-box">
+    <img src="1787418241940.jpg" alt="中秋禮盒包裝" class="package-img">
+    <div class="package-text"><strong>🌕 中秋限定優惠：任選 6 杯只要 300 元</strong><br>即日起至 9/18，任選六杯自動享優惠價 300 元，並附贈中秋質感紙盒。<br>訂購滿 2 盒 (12杯) 加碼再送「保冷袋」，讓送禮心意完美保鮮。</div>
+</div>
 
                 <div class="section-header">選擇口味</div>
                 <div class="menu-grid" id="menu-list"></div>
@@ -433,8 +454,23 @@
                 <div class="section-header">特殊需求備註</div>
                 <div class="options-section">
                     <div class="form-group">
-                        <textarea id="cust-remarks" class="form-input" rows="2" placeholder="例：分開盒裝、原味各配幾盒等具體需求"></textarea>
+                        <textarea id="cust-remarks" class="form-input" rows="2" placeholder="選填"></textarea>
                     </div>
+                </div>
+
+                <!-- 關於好酪與頁尾資訊移至此處 -->
+                <div class="section-header">關於好酪</div>
+                <div class="brand-story">
+                    <h3>三寶媽的溫柔堅持</h3>
+                    <p>「好酪」的故事，始於一個母親對孩子的愛。為了讓孩子吃到最純粹、無添加的點心，我開始鑽研奶酪的製作。</p>
+                    <p>從家庭廚房到考取國家證照，從投保產品責任險到完成食品登錄，每一步都是為了證明「媽媽手作」也能有職人的堅持。與您相遇的每一個笑容，都是我們前行的動力。</p>
+                </div>
+            
+                <div style="text-align: center; font-size: 0.75rem; color: #999; margin: 40px 0 100px 0; line-height: 1.8;">
+                    甲賀食品 | 統編: 94427773<br>彰化市中正路一段 403 號<br>客服專線: 0972-005078<br>食品登錄字號: N-194427773-00000-4<br>*已投保國泰產險產品責任險*<br><br>
+                    <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none; color:var(--c-success); font-weight:bold; display:inline-flex; align-items:center; gap:5px;"><span>💬 聯絡官方 LINE</span></a>
+                    <div style="color: var(--c-success);">ID: @817ytyld</div>
+                    <div style="margin-top: 20px;"><a href="javascript:void(0)" onclick="openRefundPolicy()" style="color: #bbb; text-decoration: underline;">退貨與退款政策</a></div>
                 </div>
             </div>
 
@@ -502,20 +538,6 @@
                             <span style="font-size: 1.05rem;">🇹🇼 TWQR 行動支付 (綠界金流)</span>
                         </label>
                     </div>
-                </div>
-            
-                <div class="section-header">關於好酪</div>
-                <div class="brand-story">
-                    <h3>三寶媽的溫柔堅持</h3>
-                    <p>「好酪」的故事，始於一個母親對孩子的愛。為了讓孩子吃到最純粹、無添加的點心，我開始鑽研奶酪的製作。</p>
-                    <p>從家庭廚房到考取國家證照，從投保產品責任險到完成食品登錄，每一步都是為了證明「媽媽手作」也能有職人的堅持。與您相遇的每一個笑容，都是我們前行的動力。</p>
-                </div>
-            
-                <div style="text-align: center; font-size: 0.75rem; color: #999; margin: 40px 0 100px 0; line-height: 1.8;">
-                    甲賀食品 | 統編: 94427773<br>彰化市中正路一段 403 號<br>客服專線: 0972-005078<br>食品登錄字號: N-194427773-00000-4<br>*已投保國泰產險產品責任險*<br><br>
-                    <a href="https://lin.ee/UHEkfgW" target="_blank" style="text-decoration:none; color:var(--c-success); font-weight:bold; display:inline-flex; align-items:center; gap:5px;"><span>💬 聯絡官方 LINE</span></a>
-                    <div style="color: var(--c-success);">ID: @817ytyld</div>
-                    <div style="margin-top: 20px;"><a href="javascript:void(0)" onclick="openRefundPolicy()" style="color: #bbb; text-decoration: underline;">退貨與退款政策</a></div>
                 </div>
             </div>
             
@@ -603,6 +625,7 @@
             <button onclick="closeRefundPolicy()" style="display: block; width: 100%; margin-top: 25px; padding: 12px; background: var(--c-primary); color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer;">關閉</button>
         </div>
     </div>
+    
     <div id="order-query-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; padding: 20px;">
         <div style="background: #fff; width: 100%; max-width: 400px; padding: 30px; border-radius: 12px; position: relative; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-float);">
             <span onclick="closeOrderQuery()" style="position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #ccc;">×</span>
@@ -626,7 +649,9 @@
             <div id="query-result-area" style="margin-top: 20px; display: none;"></div>
         </div>
     </div>
+    
     <form id="ecpay-post-form" method="POST" action="https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5" style="display:none;"></form>
+    
     <div id="cart-modal-overlay" onclick="if(event.target===this) closeCartModal()">
         <div class="cart-modal-content">
             <span class="cart-modal-close" onclick="closeCartModal()">×</span>
@@ -637,6 +662,7 @@
             <button onclick="closeCartModal()" class="action-btn" style="width: 100%; margin-top: 20px; padding: 14px;">確認選購並繼續</button>
         </div>
     </div>
+
     <script>
         // ==========================================
         // 1. 核心設定變數與商品陣列
@@ -752,12 +778,14 @@
             renderMenu(); renderCart();
         }
         function updateItemQty(id, delta) {
+            completedBoxes = []; currentBoxBuilding = []; // 只要購物車數量變動，就重置裝盒狀態
             const index = cart.findIndex(item => item.id === id);
             cart[index].quantity += delta;
             if (cart[index].quantity <= 0) cart.splice(index, 1);
             renderMenu(); renderCart();
         }
         function changeQty(index, delta) {
+            completedBoxes = []; currentBoxBuilding = []; // 只要購物車數量變動，就重置裝盒狀態
             cart[index].quantity += delta;
             if (cart[index].quantity <= 0) cart.splice(index, 1);
             renderMenu(); renderCart();
@@ -787,7 +815,7 @@
                 document.getElementById('pickup-info-box').style.display = 'none'; 
                 document.getElementById('delivery-info-box').style.display = 'block'; 
                 document.getElementById('recipient-section').style.display = 'block'; 
-                hint.innerText = cart.some(i => i.id === 12) ? "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 出貨。" : "提醒：最快可選擇一天後出貨 (週六、日、一公休不出貨)";
+                hint.innerText = cart.some(i => i.id === 12) ? "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 出貨。" : "提醒：最快可選擇兩天後出貨 (週六、日、一公休不出貨)";
             } else {
                 document.getElementById('date-label').innerHTML = '預計到店取貨日 <span class="req-star">*</span>';
                 selectEl.style.display = 'block'; deliveryText.style.display = 'none';
@@ -795,9 +823,13 @@
                 document.getElementById('pickup-info-box').style.display = 'block'; 
                 document.getElementById('delivery-info-box').style.display = 'none';
                 document.getElementById('recipient-section').style.display = 'none'; 
-                hint.innerText = cart.some(i => i.id === 12) ? "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。" : "提醒：最快可選擇一天後門市自取 (週日、週一固定公休)";
+                // 修改處 1：將自取的提示文字改為「隔天」
+                hint.innerText = cart.some(i => i.id === 12) ? "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。" : "提醒：最快可選擇隔天門市自取 (週日、週一固定公休)";
             }
-            generateOptions(mode, 1);
+            
+            // 修改處 2：動態判定天數，宅配傳入 2 (D+2)，自取傳入 1 (D+1)
+            let daysToAdd = mode === 'delivery' ? 2 : 1;
+            generateOptions(mode, daysToAdd);
         }
 
         function generateOptions(mode, startDays) {
@@ -832,11 +864,12 @@
                 let current = new Date(startDate); current.setDate(startDate.getDate() + i);
                 let day = current.getDay(); let month = current.getMonth() + 1; let date = current.getDate();
                 
-                // === 新增：排除特定店休區間 (2026/07/05 ~ 2026/07/10) ===
+                // === 新增：排除特定店休區間 (2026/07/05 ~ 2026/07/10) 以及 2026/08/25 ===
                 let checkDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')}`;
-                if (checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") {
-                    continue; // 遇到這幾天直接跳過，不管自取或宅配都不產生選項
+                if ((checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") || checkDateStr === "2026/08/25") {
+                continue; // 遇到這幾天直接跳過，不管自取或宅配都不產生選項
                 }
+// =========================================================
                 // =========================================================
                 
                 let dayStr = ['日','一','二','三','四','五','六'][day];
@@ -890,54 +923,94 @@
         // 4. Step 2 功能：全自動金額累加與雲端點數驗證
         // ==========================================
         function calculateOrderTotals() {
-            currentRawTotal = 0; currentTotalCups = 0;
-            cart.forEach(item => {
-                currentRawTotal += item.price * item.quantity; 
-                // ID 13 是保冷袋，不列入總杯數計算
-                if (item.id !== 13) currentTotalCups += item.quantity;
-            });
+    currentRawTotal = 0; currentTotalCups = 0;
+    let pannaCottaList = []; // 用於中秋活動計算
 
-            // 1. 運費計算 (加入滿900免運邏輯)
-            const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
-            if (delivery === '宅配') {
-                if (currentRawTotal >= 900) {
-                    currentShippingFee = 0; // 商品合計滿900直接免運
-                } else {
-                    const boxes = currentTotalCups / 6; 
-                        if (boxes <= 2) currentShippingFee = 130; 
-                        else if (boxes <= 8) currentShippingFee = 170; 
-                        else currentShippingFee = 210; 
-                }
-            } else { 
-                currentShippingFee = 0; 
+    cart.forEach(item => {
+        currentRawTotal += item.price * item.quantity; 
+        // ID 13 是保冷袋，不列入總杯數計算
+        if (item.id !== 13) {
+            currentTotalCups += item.quantity;
+            // 將奶酪展開成單杯，方便排序與計算折扣
+            for (let i = 0; i < item.quantity; i++) {
+                pannaCottaList.push({ price: item.price, id: item.id });
             }
+        }
+    });
 
-            // 2. 先計算折扣碼與滿額活動 (以商品原價 currentRawTotal 來算)
-            let productFinalPrice = currentRawTotal;
-            currentDiscountAmount = 0;
-            currentDiscountName = "";
+    // 1. 運費計算 (加入滿900免運邏輯)
+    const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
+    if (delivery === '宅配') {
+        if (currentRawTotal >= 900) {
+            currentShippingFee = 0; // 商品合計滿900直接免運
+        } else {
+            const boxes = currentTotalCups / 6; 
+            if (boxes <= 2) currentShippingFee = 130; 
+            else if (boxes <= 8) currentShippingFee = 170; 
+            else currentShippingFee = 210; 
+        }
+    } else { 
+        currentShippingFee = 0; 
+    }
 
-            if (appliedCoupon) {
-                let originalForCoupon = productFinalPrice;
-                if (appliedCoupon.type === 'rate') { 
-                    productFinalPrice = Math.floor(productFinalPrice * appliedCoupon.value); 
-                } else if (appliedCoupon.type === 'minus') { 
-                    productFinalPrice = productFinalPrice - appliedCoupon.value; 
-                }
-                currentDiscountAmount += (originalForCoupon - productFinalPrice);
-                currentDiscountName += appliedCoupon.name;
-            } else {
-                let originalForPromo = productFinalPrice;
-                if (productFinalPrice >= 5000) { 
-                    productFinalPrice = Math.floor(productFinalPrice * 0.9); 
-                    currentDiscountAmount += (originalForPromo - productFinalPrice); 
-                    currentDiscountName += "滿額9折"; 
-                } else if (productFinalPrice >= 3000) { 
-                    productFinalPrice = Math.floor(productFinalPrice * 0.95); 
-                    currentDiscountAmount += (originalForPromo - productFinalPrice); 
-                    currentDiscountName += "滿額95折"; 
-                }
+    // --- 新增：中秋活動折扣計算 (任選6杯300元) ---
+    let midAutumnDiscount = 0;
+    const now = new Date();
+    const eventEndDate = new Date('2026/09/19 00:00:00'); // 到 9/18 23:59:59 結束
+
+    if (now < eventEndDate) {
+        // 將奶酪依價格由高至低排序 (讓客人優先折抵高價口味，最划算)
+        pannaCottaList.sort((a, b) => b.price - a.price);
+        let promoBoxCount = Math.floor(pannaCottaList.length / 6);
+
+        for (let i = 0; i < promoBoxCount; i++) {
+            let boxOriginalPrice = 0;
+            for (let j = 0; j < 6; j++) {
+                boxOriginalPrice += pannaCottaList[i * 6 + j].price;
             }
+            // 這盒原價如果超過 300，就產生折扣 (例如 55x6=330，折扣30元)
+            if (boxOriginalPrice > 300) {
+                midAutumnDiscount += (boxOriginalPrice - 300);
+            }
+        }
+    }
+
+    // 2. 先計算折扣碼與滿額活動
+    let productFinalPrice = currentRawTotal;
+    currentDiscountAmount = 0;
+    currentDiscountName = "";
+
+    // 套用中秋折扣
+    if (midAutumnDiscount > 0) {
+        productFinalPrice -= midAutumnDiscount;
+        currentDiscountAmount += midAutumnDiscount;
+        currentDiscountName = "中秋任選6杯300";
+    }
+
+    if (appliedCoupon) {
+        let originalForCoupon = productFinalPrice;
+        if (appliedCoupon.type === 'rate') { 
+            productFinalPrice = Math.floor(productFinalPrice * appliedCoupon.value); 
+        } else if (appliedCoupon.type === 'minus') { 
+            productFinalPrice = productFinalPrice - appliedCoupon.value; 
+        }
+        currentDiscountAmount += (originalForCoupon - productFinalPrice);
+        currentDiscountName = currentDiscountName ? currentDiscountName + " + " + appliedCoupon.name : appliedCoupon.name;
+    } else {
+        let originalForPromo = productFinalPrice;
+        if (productFinalPrice >= 5000) { 
+            productFinalPrice = Math.floor(productFinalPrice * 0.9); 
+            currentDiscountAmount += (originalForPromo - productFinalPrice); 
+            currentDiscountName = currentDiscountName ? currentDiscountName + " + 滿額9折" : "滿額9折"; 
+        } else if (productFinalPrice >= 3000) { 
+            productFinalPrice = Math.floor(productFinalPrice * 0.95); 
+            currentDiscountAmount += (originalForPromo - productFinalPrice); 
+            currentDiscountName = currentDiscountName ? currentDiscountName + " + 滿額95折" : "滿額95折"; 
+        }
+    }
+
+    // 3. 再進行會員點數折抵 (防呆檢查：點數不能超過「打折後的金額」)
+    // (保留您原本以下的程式碼...)
 
             // 3. 再進行會員點數折抵 (防呆檢查：點數不能超過「打折後的金額」)
             if (usedPoints > productFinalPrice) {
@@ -992,21 +1065,47 @@
                 }
             }
 
-            // === 升級 2：自取滿6杯免費紙盒提示 ===
-            if (delivery === '自取') {
-                if (currentTotalCups >= 6) {
-                    promoHtml += `<div style="background:#E3F2FD; color:#1565C0; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #90CAF9;">📦 已達 6 杯！自取將為您提供免費「質感紙盒」包裝</div>`;
-                } else if (currentTotalCups > 0) {
-                    let boxDiff = 6 - currentTotalCups;
+            // === 升級 2：中秋滿6杯優惠與紙盒提示 ===
+    const eventEndDate = new Date('2026/09/19 00:00:00');
+    if (new Date() < eventEndDate) {
+        let boxDiff = 6 - (currentTotalCups % 6);
+        if (currentTotalCups >= 6) {
+            promoHtml += `<div style="background:#FFF3E0; color:#E65100; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #FFB74D;">🌕 已達 6 杯！自動為您套用中秋優惠價 $300/盒，並附贈質感紙盒</div>`;
+        }
+        if (boxDiff > 0 && boxDiff < 6) {
+            promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">🌕 中秋限定：再挑選 ${boxDiff} 杯，即享優惠價 $300/盒 與免費紙盒！</div>`;
+        } else if (currentTotalCups === 0) {
+            promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">🌕 中秋限定：任選 6 杯即享專屬優惠價 $300/盒！</div>`;
+        }
+    } else {
+        // (活動結束後自動恢復原本的自取紙盒提示)
+        if (delivery === '自取') {
+            if (currentTotalCups >= 6) {
+                promoHtml += `<div style="background:#E3F2FD; color:#1565C0; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #90CAF9;">📦 已達 6 杯！自取將為您提供免費「質感紙盒」包裝</div>`;
+            } else if (currentTotalCups > 0) {
+                let boxDiff = 6 - (currentTotalCups % 6);
+                if (boxDiff < 6) {
                     promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">📦 門市自取專屬：再買 ${boxDiff} 杯，即可享有免費「質感紙盒」包裝！</div>`;
                 }
             }
-
-            if (cart.length === 0) { 
-                cartContainer.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">購物車內尚未加入商品</div>'; 
-                return; 
-            } else {
-                cartContainer.innerHTML = promoHtml; // 插入提示
+        }
+    }
+            
+            // === 加入客製化裝盒按鈕 ===
+            let pannaCottaTotal = cart.reduce((sum, item) => item.id !== 13 ? sum + item.quantity : sum, 0);
+            if (pannaCottaTotal >= 6) {
+                let boxedCups = completedBoxes.reduce((sum, box) => sum + 6, 0);
+                let unboxedNum = pannaCottaTotal - boxedCups;
+                let boxStatusMsg = unboxedNum > 0 ? `<span style="color:var(--c-danger);">尚有 ${unboxedNum} 杯未裝盒</span>` : `<span style="color:var(--c-success);">已全部裝盒完畢</span>`;
+                
+                cartContainer.innerHTML += `
+                <div style="background: #fff; padding: 15px; border-radius: 12px; border: 2px dashed var(--c-primary); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(140, 123, 117, 0.1);">
+                    <div>
+                        <div style="font-weight: bold; color: var(--c-primary); margin-bottom: 4px;">📦 自訂包裝(未填則混裝)</div>
+                        <div style="font-size: 0.85rem;">${boxStatusMsg}</div>
+                    </div>
+                    <button onclick="openBoxingModal()" style="background: var(--c-primary); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">開始裝盒設定</button>
+                </div>`;
             }
 
             cart.forEach((item, index) => {
@@ -1032,6 +1131,221 @@
             }
         }
         
+        // --- 裝盒狀態管理 ---
+        let completedBoxes = []; // 存放已包裝的盒子: [{ label: 'A', items: [{id, name, qty}] }]
+        let currentBoxBuilding = []; // 目前這盒正在挑選的商品
+
+        // 開啟裝盒介面
+        function openBoxingModal() {
+            document.getElementById('boxing-modal-overlay').style.display = 'flex';
+            renderBoxingUI();
+        }
+
+        function closeBoxingModal() {
+            document.getElementById('boxing-modal-overlay').style.display = 'none';
+            renderCart(); // 更新購物車畫面上的裝盒提示
+        }
+
+        // 取得「還沒裝盒」的商品剩餘數量
+        function getUnboxedCounts() {
+            let counts = {};
+            // 先載入購物車所有商品 (排除保冷袋 ID 13)
+            cart.forEach(item => {
+                if (item.id !== 13) counts[item.id] = { name: item.name, qty: item.quantity };
+            });
+            // 扣除已經封裝的
+            completedBoxes.forEach(box => {
+                box.items.forEach(item => { if (counts[item.id]) counts[item.id].qty -= item.qty; });
+            });
+            // 扣除目前正在裝的
+            currentBoxBuilding.forEach(item => {
+                if (counts[item.id]) counts[item.id].qty -= item.qty;
+            });
+            return counts;
+        }
+
+        // 繪製裝盒介面
+        function renderBoxingUI() {
+            const unboxed = getUnboxedCounts();
+            const currentCupsInBox = currentBoxBuilding.reduce((sum, item) => sum + item.qty, 0);
+            const boxLetter = String.fromCharCode(65 + completedBoxes.length); // A, B, C...
+            
+            document.getElementById('current-box-letter').innerText = boxLetter;
+
+            // 1. 繪製 6 個圓圈
+            let slotsHtml = '';
+            let filledDots = [];
+            currentBoxBuilding.forEach(item => {
+                // 取商品名稱前兩個字顯示在圓圈內
+                let shortName = item.name.replace('鮮奶酪','').substring(0,2);
+                for(let i=0; i<item.qty; i++) filledDots.push(shortName);
+            });
+            
+            for (let i = 0; i < 6; i++) {
+                if (i < filledDots.length) {
+                    slotsHtml += `<div class="box-slot filled">${filledDots[i]}</div>`;
+                } else {
+                    slotsHtml += `<div class="box-slot">空</div>`;
+                }
+            }
+            document.getElementById('box-slots').innerHTML = slotsHtml;
+
+            // 狀態文字與按鈕
+            document.getElementById('box-status-text').innerText = `已放入 ${currentCupsInBox} 杯，還差 ${6 - currentCupsInBox} 杯`;
+            const saveBtn = document.getElementById('btn-save-box');
+            if (currentCupsInBox === 6) {
+                saveBtn.classList.add('active');
+                saveBtn.innerText = `✅ 裝滿了！封裝 ${boxLetter} 盒`;
+            } else {
+                saveBtn.classList.remove('active');
+                saveBtn.innerText = `請湊滿 6 杯`;
+            }
+
+            // 2. 繪製未裝盒清單
+            let unboxedHtml = '';
+            let hasUnboxed = false;
+            for (let id in unboxed) {
+                let item = unboxed[id];
+                // 找出這項商品目前在 currentBoxBuilding 裡面放了幾個，用來顯示 '-' 按鈕
+                let inCurrentBoxQty = currentBoxBuilding.find(c => c.id == id)?.qty || 0;
+                
+                if (item.qty > 0 || inCurrentBoxQty > 0) {
+                    hasUnboxed = true;
+                    unboxedHtml += `
+                    <div class="boxing-item-row">
+                        <div>
+                            <div class="boxing-item-name">${item.name}</div>
+                            <div class="boxing-item-remains">剩餘未裝: ${item.qty}</div>
+                        </div>
+                        <div class="qty-control" style="background:#f9f9f9;">
+                            <button class="qty-btn" onclick="modifyCurrentBox(${id}, -1)" ${inCurrentBoxQty === 0 ? 'disabled style="opacity:0.3"' : ''}>-</button>
+                            <span style="width: 20px; text-align: center; font-weight: bold; color: var(--c-primary);">${inCurrentBoxQty}</span>
+                            <button class="qty-btn" onclick="modifyCurrentBox(${id}, 1)" ${item.qty === 0 || currentCupsInBox >= 6 ? 'disabled style="opacity:0.3"' : ''}>+</button>
+                        </div>
+                    </div>`;
+                }
+            }
+            if (!hasUnboxed) unboxedHtml = '<div style="text-align:center; color:#999; padding:20px 0;">目前所有商品皆已裝盒完畢 🎉</div>';
+            document.getElementById('unboxed-items-list').innerHTML = unboxedHtml;
+
+            // 3. 繪製已完成清單
+            const completedArea = document.getElementById('completed-boxes-area');
+            if (completedBoxes.length > 0) {
+                completedArea.style.display = 'block';
+                let boxesHtml = '';
+                completedBoxes.forEach((box, index) => {
+                    let detailStr = box.items.map(i => `${i.name.replace('鮮奶酪','')}x${i.qty}`).join(', ');
+                    boxesHtml += `
+                    <div class="completed-box-card" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                            <div>
+                                <div class="completed-box-title">${box.label} 盒</div>
+                                <div class="completed-box-items">${detailStr}</div>
+                            </div>
+                            <button class="unpack-btn" onclick="unpackBox(${index})">拆開退回</button>
+                        </div>
+                        <!-- 新增：單盒專屬備註輸入框 -->
+                        <input type="text" class="form-input" placeholder="✎ 點此輸入本盒備註 (例：送禮用、給王小姐)" 
+                               value="${box.note || ''}" 
+                               onchange="updateBoxNote(${index}, this.value)" 
+                               style="padding: 6px 12px; font-size: 0.85rem; width: 100%; border: 1px dashed #EFEBE9; background: #fff; box-shadow: none;">
+                    </div>`;
+                });
+                document.getElementById('completed-boxes-list').innerHTML = boxesHtml;
+            } else {
+                completedArea.style.display = 'none';
+            }
+        } 
+
+        // 增減目前盒子內的商品
+        function modifyCurrentBox(id, delta) {
+            let unboxed = getUnboxedCounts();
+            let currentCupsInBox = currentBoxBuilding.reduce((sum, item) => sum + item.qty, 0);
+            
+            // 防呆機制
+            if (delta > 0 && currentCupsInBox >= 6) return; // 已經滿6杯
+            if (delta > 0 && unboxed[id].qty <= 0) return; // 沒庫存了
+
+            let existingItem = currentBoxBuilding.find(item => item.id == id);
+            if (existingItem) {
+                existingItem.qty += delta;
+                if (existingItem.qty <= 0) {
+                    currentBoxBuilding = currentBoxBuilding.filter(item => item.id != id);
+                }
+            } else if (delta > 0) {
+                currentBoxBuilding.push({ id: id, name: cart.find(c => c.id == id).name, qty: 1 });
+            }
+            renderBoxingUI();
+        }
+
+        // 儲存當前盒子
+        function saveCurrentBox() {
+            const currentCupsInBox = currentBoxBuilding.reduce((sum, item) => sum + item.qty, 0);
+            if (currentCupsInBox !== 6) return;
+            
+            completedBoxes.push({
+                label: String.fromCharCode(65 + completedBoxes.length),
+                items: [...currentBoxBuilding]
+            });
+            currentBoxBuilding = []; // 清空準備裝下一盒
+            renderBoxingUI();
+        }
+
+        // 拆開盒子（退回商品）
+        function unpackBox(index) {
+            completedBoxes.splice(index, 1);
+            // 重新命名剩下的盒子 (A, B, C...)
+            completedBoxes.forEach((box, i) => {
+                box.label = String.fromCharCode(65 + i);
+            });
+            renderBoxingUI();
+        }
+        
+        // 更新個別盒子的文字備註
+        function updateBoxNote(index, text) {
+            if (completedBoxes[index]) {
+                completedBoxes[index].note = text.trim();
+            }
+        }
+        
+        // ⚡ 一鍵自動裝盒
+        function autoFillBoxes() {
+            let unboxed = getUnboxedCounts();
+            let flatArray = [];
+            
+            // 把所有還沒裝盒的商品全部攤平變成一杯一杯的陣列
+            for (let id in unboxed) {
+                for (let i = 0; i < unboxed[id].qty; i++) {
+                    flatArray.push({ id: id, name: unboxed[id].name });
+                }
+            }
+            
+            // 先把 currentBoxBuilding 退回
+            if(currentBoxBuilding.length > 0) {
+                currentBoxBuilding.forEach(item => {
+                    for(let i=0; i<item.qty; i++) flatArray.push({id: item.id, name: item.name});
+                });
+                currentBoxBuilding = [];
+            }
+
+            // 每 6 杯裝一盒
+            while (flatArray.length >= 6) {
+                let chunk = flatArray.splice(0, 6);
+                let boxItemsMap = {};
+                chunk.forEach(cup => {
+                    if(!boxItemsMap[cup.id]) boxItemsMap[cup.id] = { id: cup.id, name: cup.name, qty: 0 };
+                    boxItemsMap[cup.id].qty += 1;
+                });
+                
+                let newBoxItems = Object.values(boxItemsMap);
+                completedBoxes.push({
+                    label: String.fromCharCode(65 + completedBoxes.length),
+                    items: newBoxItems
+                });
+            }
+            renderBoxingUI();
+        }
+                
         function openCartModal() {
             document.getElementById('cart-modal-overlay').style.display = 'flex';
             // 將畫面上做好的 cart-list HTML 結構直接複製到視窗內
@@ -1073,9 +1387,6 @@
             document.getElementById('step2-summary').innerHTML = html;
         }
 
-        // ==========================================
-        // 替換：Step 3 最終結帳明細總覽產生器
-        // ==========================================
         // ==========================================
         // 替換：Step 3 最終結帳明細總覽產生器
         // ==========================================
@@ -1210,8 +1521,6 @@
             }
         }
 
-    
-
         function submitFinalOrder() {
             const name = document.getElementById('cust-name').value.trim(); 
             const phone = document.getElementById('cust-phone').value.trim(); 
@@ -1246,6 +1555,32 @@
                 itemsDetailStr += `• ${p.name} x ${qty}\n`; 
                 if (flavorCounts.hasOwnProperty(p.id)) flavorCounts[p.id] += qty; 
             });
+            
+            // ==========================================
+            // 插入此段：將裝盒結果與專屬備註加入明細中
+            // ==========================================
+            if (completedBoxes.length > 0) {
+                let boxString = "\n[裝盒分配明細]\n";
+                completedBoxes.forEach(box => {
+                    let itemsStr = box.items.map(i => `${i.name.replace('鮮奶酪','')}x${i.qty}`).join(', ');
+                    // 判斷客人有沒有填寫這盒的備註，有的話加上括號顯示
+                    let noteStr = box.note ? ` (${box.note})` : ''; 
+                    boxString += `📦 ${box.label}盒${noteStr}：${itemsStr}\n`;
+                });
+                
+                // 計算有沒有剩下的散裝
+                let unboxed = getUnboxedCounts();
+                let unboxedArr = [];
+                for (let id in unboxed) {
+                    if (unboxed[id].qty > 0) unboxedArr.push(`${unboxed[id].name.replace('鮮奶酪','')}x${unboxed[id].qty}`);
+                }
+                if (unboxedArr.length > 0) boxString += `🛍️ 散裝：${unboxedArr.join(', ')}\n`;
+                
+                // 把裝盒資訊加到傳給 LINE 跟後台的字串裡
+                itemsDetailStr += boxString;
+                remarks = remarks ? remarks + "\n" + boxString : boxString; 
+            }
+            // ==========================================
             
             // === 新增：寫入後端紀錄與 LINE 顯示明細 (動態數量) ===
             let freeBags = Math.floor(currentTotalCups / 12);
@@ -1424,11 +1759,11 @@
             document.getElementById('receipt-items').innerHTML = itemsHtml;
             document.getElementById('receipt-subtotal-text').innerText = "$" + rawTotal;
             // 判斷收據上的運費顯示
-if (delivery === '宅配' && shippingFee === 0) {
-    document.getElementById('receipt-shipping-val').innerHTML = '<span style="color:var(--c-danger); font-weight:bold;">免運費</span>';
-} else {
-    document.getElementById('receipt-shipping-val').innerText = "$" + shippingFee;
-}
+            if (delivery === '宅配' && shippingFee === 0) {
+                document.getElementById('receipt-shipping-val').innerHTML = '<span style="color:var(--c-danger); font-weight:bold;">免運費</span>';
+            } else {
+                document.getElementById('receipt-shipping-val').innerText = "$" + shippingFee;
+            }
             document.getElementById('receipt-total').innerText = "NT$ " + finalAllPrice;
 
             if (discountAmount > 0) {
@@ -1584,11 +1919,45 @@ if (delivery === '宅配' && shippingFee === 0) {
         }
         window.onload = init;
     </script>
+    
     <!-- 圖片預覽彈出視窗 -->
     <div id="image-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; justify-content: center; align-items: center;" onclick="closeImageModal()">
         <div style="position: relative; max-width: 90%; max-height: 85vh;" onclick="event.stopPropagation()">
             <span onclick="closeImageModal()" style="position: absolute; top: -35px; right: 0; font-size: 2rem; cursor: pointer; color: #fff; line-height: 1;">×</span>
             <img id="modal-preview-img" src="" alt="預覽圖片" style="max-width: 100%; max-height: 85vh; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: block;">
+        </div>
+    </div>
+    
+    <!-- 裝盒小幫手彈出視窗 -->
+    <div id="boxing-modal-overlay" onclick="if(event.target===this) closeBoxingModal()">
+        <div class="boxing-modal-content">
+            <span onclick="closeBoxingModal()" style="position: absolute; top: 15px; right: 20px; font-size: 1.8rem; cursor: pointer; color: #999; line-height: 1;">×</span>
+            <div class="boxing-header">📦 客製化裝盒小幫手</div>
+            
+            <!-- 已完成的盒子區域 -->
+            <div id="completed-boxes-area" style="margin-bottom: 15px; display: none;">
+                <div style="font-size: 0.9rem; color: var(--c-text); font-weight: bold; margin-bottom: 8px;">✅ 已打包完成</div>
+                <div id="completed-boxes-list"></div>
+            </div>
+
+            <!-- 正在裝配的盒子 -->
+            <div class="box-visual-container">
+                <div style="font-size: 0.9rem; font-weight: bold; color: var(--c-primary);">正在打包第 <span id="current-box-letter">A</span> 盒</div>
+                <div class="box-slots" id="box-slots">
+                    <!-- 6個圓圈由 JS 動態產生 -->
+                </div>
+                <div style="font-size: 0.8rem; color: #888;" id="box-status-text">請從下方選擇 6 杯口味</div>
+                <button id="btn-save-box" class="btn-save-box" onclick="saveCurrentBox()">✅ 裝滿了！封裝此盒</button>
+            </div>
+
+            <!-- 尚未裝盒的口味清單 -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
+                <div style="font-size: 0.9rem; color: var(--c-text); font-weight: bold;">未裝盒商品</div>
+                <button onclick="autoFillBoxes()" style="background:var(--c-primary); color:white; border:none; padding:4px 10px; border-radius:15px; font-size:0.8rem; cursor:pointer;">⚡ 一鍵自動裝盒</button>
+            </div>
+            <div id="unboxed-items-list"></div>
+
+            <button onclick="closeBoxingModal()" class="action-btn" style="width: 100%; margin-top: 20px;">確認並返回</button>
         </div>
     </div>
 </body>
