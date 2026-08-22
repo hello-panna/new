@@ -1066,18 +1066,40 @@
             }
 
             // === 升級 2：中秋滿6杯優惠與紙盒提示 ===
-    const eventEndDate = new Date('2026/09/20 00:00:00'); // 延長至 9/20 00:00 結束
-    if (new Date() < eventEndDate) {
-        let boxDiff = 6 - (currentTotalCups % 6);
-        if (currentTotalCups >= 6) {
-            promoHtml += `<div style="background:#FFF3E0; color:#E65100; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #FFB74D;">🌕 已達 6 杯！自動為您套用中秋優惠價 $300/盒，並附贈質感紙盒</div>`;
-        }
-        if (boxDiff > 0 && boxDiff < 6) {
-            promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">🌕 中秋限定：再挑選 ${boxDiff} 杯，即享優惠價 $300/盒 與免費紙盒！</div>`;
-        } else if (currentTotalCups === 0) {
-            promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">🌕 中秋限定：任選 6 杯即享專屬優惠價 $300/盒！</div>`;
-        }
-    } else {
+            const eventEndDate = new Date('2026/09/20 00:00:00'); // 延長至 9/20 00:00 結束
+            if (new Date() < eventEndDate) {
+                let boxDiff = 6 - (currentTotalCups % 6);
+                if (currentTotalCups >= 6) {
+                    promoHtml += `<div style="background:#FFF3E0; color:#E65100; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #FFB74D;">🌕 已達 6 杯！自動為您套用中秋優惠價 $300/盒，並附贈質感紙盒</div>`;
+                }
+                if (boxDiff > 0 && boxDiff < 6) {
+                    promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">🌕 中秋限定：再挑選 ${boxDiff} 杯，即享優惠價 $300/盒 與免費紙盒！</div>`;
+                } else if (currentTotalCups === 0) {
+                    promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">🌕 中秋限定：任選 6 杯即享專屬優惠價 $300/盒！</div>`;
+                }
+            } else {
+                // (活動結束後自動恢復原本的自取紙盒提示)
+                if (delivery === '自取') {
+                    if (currentTotalCups >= 6) {
+                        promoHtml += `<div style="background:#E3F2FD; color:#1565C0; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #90CAF9;">📦 已達 6 杯！自取將為您提供免費「質感紙盒」包裝</div>`;
+                    } else if (currentTotalCups > 0) {
+                        let boxDiff = 6 - (currentTotalCups % 6);
+                        if (boxDiff < 6) {
+                            promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">📦 門市自取專屬：再買 ${boxDiff} 杯，即可享有免費「質感紙盒」包裝！</div>`;
+                        }
+                    }
+                }
+            }
+
+            // --- 確保購物車狀態正確寫入畫面 (這段剛剛不小心被吃掉了) ---
+            if (cart.length === 0) { 
+                cartContainer.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">購物車內尚未加入商品</div>'; 
+                return; 
+            } else {
+                cartContainer.innerHTML = promoHtml; // 插入提示
+            }
+            
+            // === 加入客製化裝盒按鈕 ===
             
             // === 加入客製化裝盒按鈕 ===
             let pannaCottaTotal = cart.reduce((sum, item) => item.id !== 13 ? sum + item.quantity : sum, 0);
