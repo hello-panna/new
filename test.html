@@ -402,13 +402,13 @@
                     </div>
 
                     <div id="delivery-info-box" class="info-box" style="display:none;">
-                        <div style="font-weight:bold; color:#D84315;">🚚 運費說明 (新竹物流)</div>
-                        <div style="font-weight:bold; color:var(--c-danger); margin-top:5px; margin-bottom: 8px;">🎉 即日起單筆訂單合計滿 $900 享免運費！</div>
-                        <div>• 1-2 盒 (6-12入)：$130</div>
-                        <div>• 3-8 盒 (18-48入)：$170</div>
-                        <div>• 9 盒以上：$210</div>
-                        <div style="font-size:0.85rem; color:#D84315; margin-top:8px;">* 為確保運送安全，宅配請以「6的倍數」下單 (整盒出貨)。</div>
-                    </div>
+    <div style="font-weight:bold; color:#D84315;">🚚 運費說明 (新竹物流)</div>
+    <div style="font-weight:bold; color:var(--c-danger); margin-top:5px; margin-bottom: 8px;">🎉 即日起單筆訂單合計滿 $2000 享免運費！</div>
+    <div>• 1-2 盒 (6-12入)：$130</div>
+    <div>• 3-8 盒 (18-48入)：$170</div>
+    <div>• 9 盒以上：$210</div>
+    <div style="font-size:0.85rem; color:#D84315; margin-top:8px;">* 為確保運送安全，宅配請以「6的倍數」下單 (整盒出貨)。</div>
+</div>
 
                     <div id="recipient-section" style="display:none; margin-top:20px; padding:20px 15px; background:#FDFBF8; border:1px solid #EFEBE9; border-radius:8px;">
                         <div style="font-weight:bold; color:var(--c-primary); margin-bottom:12px; font-size: 1.05rem;">📦 收件人資訊</div>
@@ -938,11 +938,11 @@
         }
     });
 
-    // 1. 運費計算 (加入滿900免運邏輯)
+    // 1. 運費計算 (加入滿2000免運邏輯)
     const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
     if (delivery === '宅配') {
-        if (currentRawTotal >= 900) {
-            currentShippingFee = 0; // 商品合計滿900直接免運
+        if (currentRawTotal >= 2000) {
+            currentShippingFee = 0; // 商品合計滿2000直接免運
         } else {
             const boxes = currentTotalCups / 6; 
             if (boxes <= 2) currentShippingFee = 130; 
@@ -1542,9 +1542,9 @@
             // 將原本的 const 改為 let，允許我們在後面動態修改備註內容
             let remarks = document.getElementById('cust-remarks').value.trim(); 
             
-            // === 新增：自動偵測滿900宅配免運，並加註至備註欄 ===
-            if (delivery === '宅配' && currentRawTotal >= 900) {
-                const freeShippingMsg = "【滿900元宅配免運費】";
+            // === 新增：自動偵測滿2000宅配免運，並加註至備註欄 ===
+            if (delivery === '宅配' && currentRawTotal >= 2000) {
+                const freeShippingMsg = "【滿2000元宅配免運費】";
                 // 如果客人原本就有寫備註，就用斜線隔開；如果沒寫，就直接填入免運提示
                 remarks = remarks ? remarks + " / " + freeShippingMsg : freeShippingMsg;
             }
