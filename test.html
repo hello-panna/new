@@ -332,7 +332,7 @@
             <div id="step-1" class="step-content active">
                 <div class="announcement-banner" style="background-color: #FFF8E1; border-color: #FFCA28;">
     <strong>🌕 中秋禮盒預訂活動開跑！</strong>
-    即日起至 2026/09/18，口味不限<strong style="color:var(--c-danger);">任選 6 杯即享中秋優惠價 300 元/盒</strong>。<br>
+    即日起至 2026/09/19 23:59 前，口味不限<strong style="color:var(--c-danger);">任選 6 杯即享中秋優惠價 300 元/盒</strong>。<br>
     為回饋大家，單筆滿 2 盒 (12杯) 再加碼免費送「質感保冷袋」！提早線上預訂，鎖定最溫柔的秋日風味 🥰
 </div>
 
@@ -351,7 +351,7 @@
               <div class="section-header">中秋禮盒提案</div>
 <div class="package-box">
     <img src="1787418241940.jpg" alt="中秋禮盒包裝" class="package-img">
-    <div class="package-text"><strong>🌕 中秋限定優惠：任選 6 杯只要 300 元</strong><br>即日起至 9/18，任選六杯自動享優惠價 300 元，並附贈中秋質感紙盒。<br>訂購滿 2 盒 (12杯) 加碼再送「保冷袋」，讓送禮心意完美保鮮。</div>
+    <div class="package-text"><strong>🌕 中秋限定優惠：任選 6 杯只要 300 元</strong><br>即日起至 9/19，任選六杯自動享優惠價 300 元，並附贈中秋質感紙盒。<br>訂購滿 2 盒 (12杯) 加碼再送「保冷袋」，讓送禮心意完美保鮮。</div>
 </div>
 
                 <div class="section-header">選擇口味</div>
@@ -953,10 +953,10 @@
         currentShippingFee = 0; 
     }
 
-    // --- 新增：中秋活動折扣計算 (任選6杯300元) ---
+   // --- 新增：中秋活動折扣計算 (任選6杯300元) ---
     let midAutumnDiscount = 0;
     const now = new Date();
-    const eventEndDate = new Date('2026/09/19 00:00:00'); // 到 9/18 23:59:59 結束
+    const eventEndDate = new Date('2026/09/20 00:00:00'); // 延長至 9/20 00:00 結束
 
     if (now < eventEndDate) {
         // 將奶酪依價格由高至低排序 (讓客人優先折抵高價口味，最划算)
@@ -1066,7 +1066,7 @@
             }
 
             // === 升級 2：中秋滿6杯優惠與紙盒提示 ===
-    const eventEndDate = new Date('2026/09/19 00:00:00');
+    const eventEndDate = new Date('2026/09/20 00:00:00'); // 延長至 9/20 00:00 結束
     if (new Date() < eventEndDate) {
         let boxDiff = 6 - (currentTotalCups % 6);
         if (currentTotalCups >= 6) {
@@ -1078,18 +1078,6 @@
             promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">🌕 中秋限定：任選 6 杯即享專屬優惠價 $300/盒！</div>`;
         }
     } else {
-        // (活動結束後自動恢復原本的自取紙盒提示)
-        if (delivery === '自取') {
-            if (currentTotalCups >= 6) {
-                promoHtml += `<div style="background:#E3F2FD; color:#1565C0; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #90CAF9;">📦 已達 6 杯！自取將為您提供免費「質感紙盒」包裝</div>`;
-            } else if (currentTotalCups > 0) {
-                let boxDiff = 6 - (currentTotalCups % 6);
-                if (boxDiff < 6) {
-                    promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">📦 門市自取專屬：再買 ${boxDiff} 杯，即可享有免費「質感紙盒」包裝！</div>`;
-                }
-            }
-        }
-    }
             
             // === 加入客製化裝盒按鈕 ===
             let pannaCottaTotal = cart.reduce((sum, item) => item.id !== 13 ? sum + item.quantity : sum, 0);
