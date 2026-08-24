@@ -330,10 +330,11 @@
             </div>
 
             <div id="step-1" class="step-content active">
-                <div class="announcement-banner">
-                    <strong>📢 門市現貨提醒 ＆ 線上預訂建議</strong>
-                    感謝大家對好酪的喜愛！近期因預訂單量較多且人手有限，門市現貨常常提早售罄。<br>強烈建議提早透過系統「線上預訂」，確保能為您保留最想品嚐的溫柔風味喔 🥰
-                </div>
+                <div class="announcement-banner" style="background-color: #FFF8E1; border-color: #FFCA28;">
+    <strong>🌕 中秋禮盒預訂活動開跑！</strong>
+    即日起至 2026/09/19 23:59 前，口味不限<strong style="color:var(--c-danger);">任選 6 杯即享中秋優惠價 300 元/盒</strong>
+    單筆滿 2 盒 (12杯) 再加碼免費送「質感保冷袋」！提早線上預訂，鎖定最溫柔的秋日風味 🥰
+</div>
 
                 <div class="section-header first">綿密口感</div>
                 <div class="package-box" style="padding: 10px;">
@@ -347,11 +348,11 @@
                     <div class="video-box"><video controls autoplay loop muted playsinline style="width:100%; border-radius:6px; display:block;"><source src="s2.mp4" type="video/mp4"></video></div>
                 </div>
                 
-                <div class="section-header">送禮提案</div>
-                <div class="package-box">
-                    <img src="117902.jpg" alt="禮盒包裝" class="package-img">
-                    <div class="package-text"><strong>質感紙盒包裝 訂購滿六杯奶酪 (免費)</strong><br>為響應環保，我們提供免費的質感紙盒。<br>若有長途保鮮需求，歡迎於下方加購「魔鬼氈保冷袋」，讓手作的心意完美傳遞。</div>
-                </div>
+              <div class="section-header">中秋禮盒提案</div>
+<div class="package-box">
+    <img src="1787418241940.jpg" alt="中秋禮盒包裝" class="package-img">
+    <div class="package-text"><strong>🌕 中秋限定優惠：任選 6 杯只要 300 元</strong><br>即日起至 9/19，任選六杯自動享優惠價 300 元，並附贈中秋質感紙盒。<br>訂購滿 2 盒 (12杯) 加碼再送「保冷袋」，讓送禮心意完美保鮮。</div>
+</div>
 
                 <div class="section-header">選擇口味</div>
                 <div class="menu-grid" id="menu-list"></div>
@@ -401,13 +402,13 @@
                     </div>
 
                     <div id="delivery-info-box" class="info-box" style="display:none;">
-                        <div style="font-weight:bold; color:#D84315;">🚚 運費說明 (新竹物流)</div>
-                        <div style="font-weight:bold; color:var(--c-danger); margin-top:5px; margin-bottom: 8px;">🎉 即日起單筆訂單合計滿 $900 享免運費！</div>
-                        <div>• 1-2 盒 (6-12入)：$130</div>
-                        <div>• 3-8 盒 (18-48入)：$170</div>
-                        <div>• 9 盒以上：$210</div>
-                        <div style="font-size:0.85rem; color:#D84315; margin-top:8px;">* 為確保運送安全，宅配請以「6的倍數」下單 (整盒出貨)。</div>
-                    </div>
+    <div style="font-weight:bold; color:#D84315;">🚚 運費說明 (新竹物流)</div>
+    <div style="font-weight:bold; color:var(--c-danger); margin-top:5px; margin-bottom: 8px;">🎉 即日起單筆訂單合計滿 $2000 享免運費！</div>
+    <div>• 1-2 盒 (6-12入)：$130</div>
+    <div>• 3-8 盒 (18-48入)：$170</div>
+    <div>• 9 盒以上：$210</div>
+    <div style="font-size:0.85rem; color:#D84315; margin-top:8px;">* 為確保運送安全，宅配請以「6的倍數」下單 (整盒出貨)。</div>
+</div>
 
                     <div id="recipient-section" style="display:none; margin-top:20px; padding:20px 15px; background:#FDFBF8; border:1px solid #EFEBE9; border-radius:8px;">
                         <div style="font-weight:bold; color:var(--c-primary); margin-bottom:12px; font-size: 1.05rem;">📦 收件人資訊</div>
@@ -922,54 +923,94 @@
         // 4. Step 2 功能：全自動金額累加與雲端點數驗證
         // ==========================================
         function calculateOrderTotals() {
-            currentRawTotal = 0; currentTotalCups = 0;
-            cart.forEach(item => {
-                currentRawTotal += item.price * item.quantity; 
-                // ID 13 是保冷袋，不列入總杯數計算
-                if (item.id !== 13) currentTotalCups += item.quantity;
-            });
+    currentRawTotal = 0; currentTotalCups = 0;
+    let pannaCottaList = []; // 用於中秋活動計算
 
-            // 1. 運費計算 (加入滿900免運邏輯)
-            const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
-            if (delivery === '宅配') {
-                if (currentRawTotal >= 900) {
-                    currentShippingFee = 0; // 商品合計滿900直接免運
-                } else {
-                    const boxes = currentTotalCups / 6; 
-                        if (boxes <= 2) currentShippingFee = 130; 
-                        else if (boxes <= 8) currentShippingFee = 170; 
-                        else currentShippingFee = 210; 
-                }
-            } else { 
-                currentShippingFee = 0; 
+    cart.forEach(item => {
+        currentRawTotal += item.price * item.quantity; 
+        // ID 13 是保冷袋，不列入總杯數計算
+        if (item.id !== 13) {
+            currentTotalCups += item.quantity;
+            // 將奶酪展開成單杯，方便排序與計算折扣
+            for (let i = 0; i < item.quantity; i++) {
+                pannaCottaList.push({ price: item.price, id: item.id });
             }
+        }
+    });
 
-            // 2. 先計算折扣碼與滿額活動 (以商品原價 currentRawTotal 來算)
-            let productFinalPrice = currentRawTotal;
-            currentDiscountAmount = 0;
-            currentDiscountName = "";
+    // 1. 運費計算 (加入滿2000免運邏輯)
+    const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
+    if (delivery === '宅配') {
+        if (currentRawTotal >= 2000) {
+            currentShippingFee = 0; // 商品合計滿2000直接免運
+        } else {
+            const boxes = currentTotalCups / 6; 
+            if (boxes <= 2) currentShippingFee = 130; 
+            else if (boxes <= 8) currentShippingFee = 170; 
+            else currentShippingFee = 210; 
+        }
+    } else { 
+        currentShippingFee = 0; 
+    }
 
-            if (appliedCoupon) {
-                let originalForCoupon = productFinalPrice;
-                if (appliedCoupon.type === 'rate') { 
-                    productFinalPrice = Math.floor(productFinalPrice * appliedCoupon.value); 
-                } else if (appliedCoupon.type === 'minus') { 
-                    productFinalPrice = productFinalPrice - appliedCoupon.value; 
-                }
-                currentDiscountAmount += (originalForCoupon - productFinalPrice);
-                currentDiscountName += appliedCoupon.name;
-            } else {
-                let originalForPromo = productFinalPrice;
-                if (productFinalPrice >= 5000) { 
-                    productFinalPrice = Math.floor(productFinalPrice * 0.9); 
-                    currentDiscountAmount += (originalForPromo - productFinalPrice); 
-                    currentDiscountName += "滿額9折"; 
-                } else if (productFinalPrice >= 3000) { 
-                    productFinalPrice = Math.floor(productFinalPrice * 0.95); 
-                    currentDiscountAmount += (originalForPromo - productFinalPrice); 
-                    currentDiscountName += "滿額95折"; 
-                }
+   // --- 新增：中秋活動折扣計算 (任選6杯300元) ---
+    let midAutumnDiscount = 0;
+    const now = new Date();
+    const eventEndDate = new Date('2026/09/20 00:00:00'); // 延長至 9/20 00:00 結束
+
+    if (now < eventEndDate) {
+        // 將奶酪依價格由高至低排序 (讓客人優先折抵高價口味，最划算)
+        pannaCottaList.sort((a, b) => b.price - a.price);
+        let promoBoxCount = Math.floor(pannaCottaList.length / 6);
+
+        for (let i = 0; i < promoBoxCount; i++) {
+            let boxOriginalPrice = 0;
+            for (let j = 0; j < 6; j++) {
+                boxOriginalPrice += pannaCottaList[i * 6 + j].price;
             }
+            // 這盒原價如果超過 300，就產生折扣 (例如 55x6=330，折扣30元)
+            if (boxOriginalPrice > 300) {
+                midAutumnDiscount += (boxOriginalPrice - 300);
+            }
+        }
+    }
+
+    // 2. 先計算折扣碼與滿額活動
+    let productFinalPrice = currentRawTotal;
+    currentDiscountAmount = 0;
+    currentDiscountName = "";
+
+    // 套用中秋折扣
+    if (midAutumnDiscount > 0) {
+        productFinalPrice -= midAutumnDiscount;
+        currentDiscountAmount += midAutumnDiscount;
+        currentDiscountName = "中秋任選6杯300";
+    }
+
+    if (appliedCoupon) {
+        let originalForCoupon = productFinalPrice;
+        if (appliedCoupon.type === 'rate') { 
+            productFinalPrice = Math.floor(productFinalPrice * appliedCoupon.value); 
+        } else if (appliedCoupon.type === 'minus') { 
+            productFinalPrice = productFinalPrice - appliedCoupon.value; 
+        }
+        currentDiscountAmount += (originalForCoupon - productFinalPrice);
+        currentDiscountName = currentDiscountName ? currentDiscountName + " + " + appliedCoupon.name : appliedCoupon.name;
+    } else {
+        let originalForPromo = productFinalPrice;
+        if (productFinalPrice >= 5000) { 
+            productFinalPrice = Math.floor(productFinalPrice * 0.9); 
+            currentDiscountAmount += (originalForPromo - productFinalPrice); 
+            currentDiscountName = currentDiscountName ? currentDiscountName + " + 滿額9折" : "滿額9折"; 
+        } else if (productFinalPrice >= 3000) { 
+            productFinalPrice = Math.floor(productFinalPrice * 0.95); 
+            currentDiscountAmount += (originalForPromo - productFinalPrice); 
+            currentDiscountName = currentDiscountName ? currentDiscountName + " + 滿額95折" : "滿額95折"; 
+        }
+    }
+
+    // 3. 再進行會員點數折抵 (防呆檢查：點數不能超過「打折後的金額」)
+    // (保留您原本以下的程式碼...)
 
             // 3. 再進行會員點數折抵 (防呆檢查：點數不能超過「打折後的金額」)
             if (usedPoints > productFinalPrice) {
@@ -1024,22 +1065,41 @@
                 }
             }
 
-            // === 升級 2：自取滿6杯免費紙盒提示 ===
-            if (delivery === '自取') {
+            // === 升級 2：中秋滿6杯優惠與紙盒提示 ===
+            const eventEndDate = new Date('2026/09/20 00:00:00'); // 延長至 9/20 00:00 結束
+            if (new Date() < eventEndDate) {
+                let boxDiff = 6 - (currentTotalCups % 6);
                 if (currentTotalCups >= 6) {
-                    promoHtml += `<div style="background:#E3F2FD; color:#1565C0; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #90CAF9;">📦 已達 6 杯！自取將為您提供免費「質感紙盒」包裝</div>`;
-                } else if (currentTotalCups > 0) {
-                    let boxDiff = 6 - currentTotalCups;
-                    promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">📦 門市自取專屬：再買 ${boxDiff} 杯，即可享有免費「質感紙盒」包裝！</div>`;
+                    promoHtml += `<div style="background:#FFF3E0; color:#E65100; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #FFB74D;">🌕 已達 6 杯！自動為您套用中秋優惠價 $300/盒，並附贈質感紙盒</div>`;
+                }
+                if (boxDiff > 0 && boxDiff < 6) {
+                    promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">🌕 中秋限定：再挑選 ${boxDiff} 杯，即享優惠價 $300/盒 與免費紙盒！</div>`;
+                } else if (currentTotalCups === 0) {
+                    promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">🌕 中秋限定：任選 6 杯即享專屬優惠價 $300/盒！</div>`;
+                }
+            } else {
+                // (活動結束後自動恢復原本的自取紙盒提示)
+                if (delivery === '自取') {
+                    if (currentTotalCups >= 6) {
+                        promoHtml += `<div style="background:#E3F2FD; color:#1565C0; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #90CAF9;">📦 已達 6 杯！自取將為您提供免費「質感紙盒」包裝</div>`;
+                    } else if (currentTotalCups > 0) {
+                        let boxDiff = 6 - (currentTotalCups % 6);
+                        if (boxDiff < 6) {
+                            promoHtml += `<div style="background:#F3E5F5; color:#6A1B9A; padding:10px; border-radius:8px; margin-bottom:15px; text-align:center; font-size:0.9rem; font-weight:bold; border: 1px dashed #CE93D8;">📦 門市自取專屬：再買 ${boxDiff} 杯，即可享有免費「質感紙盒」包裝！</div>`;
+                        }
+                    }
                 }
             }
 
+            // --- 確保購物車狀態正確寫入畫面 (這段剛剛不小心被吃掉了) ---
             if (cart.length === 0) { 
                 cartContainer.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">購物車內尚未加入商品</div>'; 
                 return; 
             } else {
                 cartContainer.innerHTML = promoHtml; // 插入提示
             }
+            
+            // === 加入客製化裝盒按鈕 ===
             
             // === 加入客製化裝盒按鈕 ===
             let pannaCottaTotal = cart.reduce((sum, item) => item.id !== 13 ? sum + item.quantity : sum, 0);
@@ -1482,9 +1542,9 @@
             // 將原本的 const 改為 let，允許我們在後面動態修改備註內容
             let remarks = document.getElementById('cust-remarks').value.trim(); 
             
-            // === 新增：自動偵測滿900宅配免運，並加註至備註欄 ===
-            if (delivery === '宅配' && currentRawTotal >= 900) {
-                const freeShippingMsg = "【滿900元宅配免運費】";
+            // === 新增：自動偵測滿2000宅配免運，並加註至備註欄 ===
+            if (delivery === '宅配' && currentRawTotal >= 2000) {
+                const freeShippingMsg = "【滿2000元宅配免運費】";
                 // 如果客人原本就有寫備註，就用斜線隔開；如果沒寫，就直接填入免運提示
                 remarks = remarks ? remarks + " / " + freeShippingMsg : freeShippingMsg;
             }
