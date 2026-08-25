@@ -333,7 +333,7 @@
                 <div class="announcement-banner" style="background-color: #FFF8E1; border-color: #FFCA28;">
     <strong>🌕 中秋禮盒預訂活動開跑！</strong>
     即日起至 2026/09/19 23:59 前，口味不限<strong style="color:var(--c-danger);">任選 6 杯即享中秋優惠價 300 元/盒</strong>
-    單筆滿 2 盒 (12杯) 再加碼免費送「質感保冷袋」！<br>提早線上預訂，鎖定最溫柔的秋日風味 🥰
+    單筆滿 2 盒 (12杯) 再加碼免費送「質感保冷袋」！提早線上預訂，鎖定最溫柔的秋日風味 🥰
 </div>
 
                 <div class="section-header first">綿密口感</div>
@@ -351,7 +351,7 @@
               <div class="section-header">中秋禮盒提案</div>
 <div class="package-box">
     <img src="1787418241940.jpg" alt="中秋禮盒包裝" class="package-img">
-    <div class="package-text"><strong>🌕 中秋限定優惠：任選 6 杯只要 300 元</strong><br>即日起至 9/19，任選六杯自動享優惠價 300 元，<br>並附贈中秋限定腰封紙盒。<br>訂購滿 2 盒 (12杯) 加碼再送「保冷袋」，讓送禮心意完美保鮮。</div>
+    <div class="package-text"><strong>🌕 中秋限定優惠：任選 6 杯只要 300 元</strong><br>即日起至 9/19，任選六杯自動享優惠價 300 元，並附贈中秋質感紙盒。<br>訂購滿 2 盒 (12杯) 加碼再送「保冷袋」，讓送禮心意完美保鮮。</div>
 </div>
 
                 <div class="section-header">選擇口味</div>
@@ -808,6 +808,12 @@
             const hint = document.getElementById('date-hint');
             const addressRow = document.getElementById('address-row');
             
+            // --- 核心防呆 1：保存客人原本選好的日期，避免畫面重整時被清空 ---
+            let currentSelectedDate = selectEl.value; 
+            
+            // 算出目前購物車內的總杯數 (排除 ID 13 的保冷袋)
+            let totalCups = cart.reduce((sum, item) => item.id !== 13 ? sum + item.quantity : sum, 0);
+
             if (mode === 'delivery') {
                 document.getElementById('date-label').innerHTML = '預計出貨日 <span class="req-star">*</span>';
                 selectEl.style.display = 'block'; deliveryText.style.display = 'none';
@@ -816,6 +822,7 @@
                 document.getElementById('delivery-info-box').style.display = 'block'; 
                 document.getElementById('recipient-section').style.display = 'block'; 
                 hint.innerText = cart.some(i => i.id === 12) ? "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 出貨。" : "提醒：最快可選擇兩天後出貨 (週六、日、一公休不出貨)";
+                generateOptions(mode, 2);
             } else {
                 document.getElementById('date-label').innerHTML = '預計到店取貨日 <span class="req-star">*</span>';
                 selectEl.style.display = 'block'; deliveryText.style.display = 'none';
@@ -823,13 +830,26 @@
                 document.getElementById('pickup-info-box').style.display = 'block'; 
                 document.getElementById('delivery-info-box').style.display = 'none';
                 document.getElementById('recipient-section').style.display = 'none'; 
-                // 修改處 1：將自取的提示文字改為「隔天」
-                hint.innerText = cart.some(i => i.id === 12) ? "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。" : "提醒：最快可選擇隔天門市自取 (週日、週一固定公休)";
+                
+                // --- 核心防呆 2：判斷總杯數大於 18 杯時，強制改為 D+2 並顯示提示 ---
+                let daysToAdd = 1;
+                if (cart.some(i => i.id === 12)) {
+                    hint.innerText = "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。";
+                } else if (totalCups > 18) {
+                    daysToAdd = 2; // 超過 18 杯改為 D+2
+                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>超過 18 杯</strong> (需較長備料時間)，最快取貨日改為<strong>兩天後</strong> (週日、一公休)";
+                } else {
+                    hint.innerText = "提醒：最快可選擇隔天門市自取 (週日、週一固定公休)";
+                }
+                
+                generateOptions(mode, daysToAdd);
             }
             
-            // 修改處 2：動態判定天數，宅配傳入 2 (D+2)，自取傳入 1 (D+1)
-            let daysToAdd = mode === 'delivery' ? 2 : 1;
-            generateOptions(mode, daysToAdd);
+            // --- 核心防呆 3：如果客人剛剛選的日期在新的選項中還存在，就自動幫他選回去 ---
+            let optionsArray = Array.from(selectEl.options).map(opt => opt.value);
+            if (currentSelectedDate && optionsArray.includes(currentSelectedDate)) {
+                selectEl.value = currentSelectedDate;
+            }
         }
 
         function generateOptions(mode, startDays) {
@@ -1046,6 +1066,11 @@
 
         function renderCart() {
             calculateOrderTotals();
+
+            // --- 新增：確保客人按「+」或「-」增減數量時，能即時刷新 D+1 或 D+2 的日期與提示 ---
+            const currentMode = document.querySelector('input[name="deliveryMethod"]:checked').value === '宅配' ? 'delivery' : 'pickup';
+            updateDateSettings(currentMode);
+            
             const cartContainer = document.getElementById('cart-list');
             cartContainer.innerHTML = '';
 
