@@ -831,13 +831,13 @@
                 document.getElementById('delivery-info-box').style.display = 'none';
                 document.getElementById('recipient-section').style.display = 'none'; 
                 
-                // --- 核心防呆 2：判斷總杯數大於 12 杯時，強制改為 D+2 並顯示提示 ---
+                // --- 核心防呆 2：判斷總杯數大於 18 杯時，強制改為 D+2 並顯示提示 ---
                 let daysToAdd = 1;
                 if (cart.some(i => i.id === 12)) {
                     hint.innerText = "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。";
-                } else if (totalCups > 12) {
-                    daysToAdd = 2; // 超過 12 杯改為 D+2
-                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>超過 12 杯</strong> (需較長備料時間)，最快取貨日改為<strong>兩天後</strong> (週日、一公休)";
+                } else if (totalCups > 18) {
+                    daysToAdd = 2; // 超過 18 杯改為 D+2
+                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>超過 18 杯</strong> (需較長備料時間)，最快取貨日改為<strong>兩天後</strong> (週日、一公休)";
                 } else {
                     hint.innerText = "提醒：最快可選擇隔天門市自取 (週日、週一固定公休)";
                 }
