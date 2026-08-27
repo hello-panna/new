@@ -333,7 +333,7 @@
                 <div class="announcement-banner" style="background-color: #FFF8E1; border-color: #FFCA28;">
     <strong>🌕 中秋禮盒預訂活動開跑！</strong>
     即日起至 2026/09/19 23:59 前，口味不限<strong style="color:var(--c-danger);">任選 6 杯即享中秋優惠價 300 元/盒</strong>
-    單筆滿 2 盒 (12杯) 再加碼免費送「質感保冷袋」！提早線上預訂，鎖定最溫柔的秋日風味 🥰
+    單筆滿 2 盒 再免費送「質感保冷袋」！<br>提早線上預訂，鎖定最溫柔的秋日風味 🥰
 </div>
 
                 <div class="section-header first">綿密口感</div>
@@ -351,7 +351,7 @@
               <div class="section-header">中秋禮盒提案</div>
 <div class="package-box">
     <img src="1787418241940.jpg" alt="中秋禮盒包裝" class="package-img">
-    <div class="package-text"><strong>🌕 中秋限定優惠：任選 6 杯只要 300 元</strong><br>即日起至 9/19，任選六杯自動享優惠價 300 元，並附贈中秋質感紙盒。<br>訂購滿 2 盒 (12杯) 加碼再送「保冷袋」，讓送禮心意完美保鮮。</div>
+    <div class="package-text"><strong>🌕 中秋限定優惠：任選 6 杯只要 300 元</strong><br>09/19 前，任選六杯享優惠價 300 元，<br>並附贈中秋限定腰封紙盒。<br>訂購滿 2 盒 (12杯) 加碼再送「保冷袋」，讓送禮心意完美保鮮。</div>
 </div>
 
                 <div class="section-header">選擇口味</div>
@@ -682,7 +682,7 @@
             { id: 3, name: "芝麻鮮奶酪", price: 55, image: "230239_0.jpg", desc: "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣薌園黑芝麻" },
             { id: 4, name: "抹茶鮮奶酪", price: 55, image: "230234_0.jpg", desc: "抹茶香氣醇厚，微苦甜平衡，綿密不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉" },
             { id: 6, name: "泰式奶茶鮮奶酪", price: 55, image: "230235_0.jpg", desc: "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、泰國紅標紅茶" },
-            { id: 8, name: "芋香紫薯鮮奶酪", price: 55, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯" },
+            { id: 8, name: "芋香紫薯鮮奶酪", price: 55, image: "230237_0.jpg", desc: "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、芋頭&紫心甘薯粉" },
             { id: 9, name: "微醺蘭姆鮮奶酪", price: 55, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
             { id: 5, name: "咖啡鮮奶酪", price: 55, image: "230236_0.jpg", desc: "嚴選阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
             { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" },
@@ -813,6 +813,8 @@
             
             // 算出目前購物車內的總杯數 (排除 ID 13 的保冷袋)
             let totalCups = cart.reduce((sum, item) => item.id !== 13 ? sum + item.quantity : sum, 0);
+            // 檢查購物車內是否包含「烤布丁」(ID 為 14)
+            const hasPudding = cart.some(i => i.id === 14); 
 
             if (mode === 'delivery') {
                 document.getElementById('date-label').innerHTML = '預計出貨日 <span class="req-star">*</span>';
@@ -821,8 +823,22 @@
                 document.getElementById('pickup-info-box').style.display = 'none'; 
                 document.getElementById('delivery-info-box').style.display = 'block'; 
                 document.getElementById('recipient-section').style.display = 'block'; 
-                hint.innerText = cart.some(i => i.id === 12) ? "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 出貨。" : "提醒：最快可選擇兩天後出貨 (週六、日、一公休不出貨)";
-                generateOptions(mode, 2);
+                
+                // --- 宅配日期動態邏輯 ---
+                let daysToAdd = 1; // 預設改為 D+1
+                if (cart.some(i => i.id === 12)) {
+                    hint.innerText = "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 出貨。";
+                } else if (hasPudding) {
+                    daysToAdd = 2; // 有烤布丁強制 D+2
+                    hint.innerHTML = "⚠️ 提醒：因訂單包含<strong>烤布丁</strong> (製作工序較長)，最快出貨日改為<strong>兩天後</strong> (週六至週一不出貨)";
+                } else if (totalCups > 18) {
+                    daysToAdd = 2; // 超過 18 杯強制 D+2
+                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>超過 18 杯</strong> (需較長備料時間)，最快出貨日改為<strong>兩天後</strong> (週六至週一不出貨)";
+                } else {
+                    hint.innerText = "提醒：最快可選擇隔天出貨 (週六、日、一公休不出貨)";
+                }
+                
+                generateOptions(mode, daysToAdd);
             } else {
                 document.getElementById('date-label').innerHTML = '預計到店取貨日 <span class="req-star">*</span>';
                 selectEl.style.display = 'block'; deliveryText.style.display = 'none';
@@ -831,7 +847,7 @@
                 document.getElementById('delivery-info-box').style.display = 'none';
                 document.getElementById('recipient-section').style.display = 'none'; 
                 
-                // --- 核心防呆 2：判斷總杯數大於 18 杯時，強制改為 D+2 並顯示提示 ---
+                // --- 自取日期動態邏輯 (維持不變) ---
                 let daysToAdd = 1;
                 if (cart.some(i => i.id === 12)) {
                     hint.innerText = "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。";
