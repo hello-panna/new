@@ -672,7 +672,7 @@
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/IfptidsAV8xmFSsDt3hTOWf6Otwr6TA10i3P1REVpFRrJLhS5KeOxPoyflT4zplF";
         
         const FORM_FIELDS = { orderContent: "entry.1214769536", name: "entry.537178649", phone: "entry.1240845794", email: "entry.586707224", payment: "entry.36879241", delivery: "entry.2126181854", address: "entry.1346414492", date: "entry.1111858266", cups: "entry.1482122773", subtotal: "entry.1558685102", shipping: "entry.1750953999", totalPrice: "entry.816848611", remarks: "entry.370850133", orderId: "entry.846286532", discountAmount: "entry.1977990591", couponCode: "entry.562394796" };
-        const FLAVOR_MAPPING = { 1: "entry.1878923092", 2: "entry.1221947009", 3: "entry.513696828", 4: "entry.629066213", 5: "entry.56980633", 6: "entry.2021049410", 7: "entry.1968820040", 8: "entry.73334113", 9: "entry.93299315", 10: "entry.799869452", 13: "entry.849234818" , 14: "entry.450635103" };
+        const FLAVOR_MAPPING = { 1: "entry.1878923092", 2: "entry.1221947009", 3: "entry.513696828", 4: "entry.629066213", 5: "entry.56980633", 6: "entry.2021049410", 7: "entry.1968820040", 8: "entry.73334113", 9: "entry.93299315", 10: "entry.799869452", 13: "entry.849234818" , 14: "entry.450635103", 15: "entry.1931520079" };
 
         const menuData = [
             { id: 1, name: "經典原味鮮奶酪", price: 50, image: "230242.jpg", desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁", badge: "銷售第一", badgeColor: "#D84315" },
@@ -686,7 +686,17 @@
             { id: 9, name: "微醺蘭姆鮮奶酪", price: 55, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
             { id: 5, name: "咖啡鮮奶酪", price: 55, image: "230236_0.jpg", desc: "嚴選阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
             { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" },
-            { id: 14, name: "烤布丁", price: 55, image: "12356211.jpg", desc: "滑嫩香濃，焦糖微苦，口感綿密。<span onclick='openImageModal(\"1663232.jpg\")' style='color: var(--c-primary); text-decoration: underline; cursor: pointer;'>(宅配不倒扣杯裝出貨)</span>", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、新鮮雞蛋、天然香草籽醬" }
+            { id: 14, name: "烤布丁", price: 55, image: "12356211.jpg", desc: "滑嫩香濃，焦糖微苦，口感綿密。<span onclick='openImageModal(\"1663232.jpg\")' style='color: var(--c-primary); text-decoration: underline; cursor: pointer;'>(宅配不倒扣杯裝出貨)</span>", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、新鮮雞蛋、天然香草籽醬" }, // <--- 這裡必須要有逗號！
+            { 
+                id: 15, 
+                name: "黃金蕎麥鮮奶酪", 
+                price: (new Date() < new Date('2026/09/04 00:00:00')) ? 50 : 55, 
+                image: "2026082701.jpg", 
+                desc: "嚴選黃金蕎麥，獨特焙炒穀香與濃郁奶香完美融合。", 
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、黃金蕎麥",
+                badge: (new Date() < new Date('2026/09/04 00:00:00')) ? "嘗鮮優惠" : "", 
+                badgeColor: "#F57F17" 
+            }
         ];
         const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" }, "LINE50": { type: "minus", value: 50, name: "好友現折50" } };
 
