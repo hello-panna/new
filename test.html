@@ -686,19 +686,17 @@
             { id: 9, name: "微醺蘭姆鮮奶酪", price: 55, image: "230233_0.jpg", desc: "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM" },
             { id: 5, name: "咖啡鮮奶酪", price: 55, image: "230236_0.jpg", desc: "嚴選阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold" },
             { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" },
-            { id: 14, name: "烤布丁", price: 55, image: "12356211.jpg", desc: "滑嫩香濃，焦糖微苦，口感綿密。<span onclick='openImageModal(\"1663232.jpg\")' style='color: var(--c-primary); text-decoration: underline; cursor: pointer;'>(宅配不倒扣杯裝出貨)</span>", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、新鮮雞蛋、天然香草籽醬" }
+            { id: 14, name: "烤布丁", price: 55, image: "12356211.jpg", desc: "滑嫩香濃，焦糖微苦，口感綿密。<span onclick='openImageModal(\"1663232.jpg\")' style='color: var(--c-primary); text-decoration: underline; cursor: pointer;'>(宅配不倒扣杯裝出貨)</span>", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、新鮮雞蛋、天然香草籽醬" }, // <--- 這裡必須要有逗號！
             { 
-        id: 15, 
-        name: "黃金蕎麥鮮奶酪", 
-        // 判斷時間：如果在 2026/09/04 之前，價格為 50，之後自動變 55
-        price: (new Date() < new Date('2026/09/04 00:00:00')) ? 50 : 55, 
-        image: "2026082701.jpg", 
-        desc: "嚴選黃金蕎麥，獨特焙炒穀香與濃郁奶香完美融合。", 
-        ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、黃金蕎麥",
-        // 時間到後自動隱藏「嘗鮮優惠」的標籤
-        badge: (new Date() < new Date('2026/09/04 00:00:00')) ? "嘗鮮優惠" : "", 
-        badgeColor: "#F57F17" 
-    }
+                id: 15, 
+                name: "黃金蕎麥鮮奶酪", 
+                price: (new Date() < new Date('2026/09/04 00:00:00')) ? 50 : 55, 
+                image: "2026082701.jpg", 
+                desc: "嚴選黃金蕎麥，獨特焙炒穀香與濃郁奶香完美融合。", 
+                ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、黃金蕎麥",
+                badge: (new Date() < new Date('2026/09/04 00:00:00')) ? "嘗鮮優惠" : "", 
+                badgeColor: "#F57F17" 
+            }
         ];
         const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" }, "LINE50": { type: "minus", value: 50, name: "好友現折50" } };
 
