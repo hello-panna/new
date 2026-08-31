@@ -1042,17 +1042,6 @@
         }
         currentDiscountAmount += (originalForCoupon - productFinalPrice);
         currentDiscountName = currentDiscountName ? currentDiscountName + " + " + appliedCoupon.name : appliedCoupon.name;
-    } else {
-        let originalForPromo = productFinalPrice;
-        if (productFinalPrice >= 5000) { 
-            productFinalPrice = Math.floor(productFinalPrice * 0.9); 
-            currentDiscountAmount += (originalForPromo - productFinalPrice); 
-            currentDiscountName = currentDiscountName ? currentDiscountName + " + 滿額9折" : "滿額9折"; 
-        } else if (productFinalPrice >= 3000) { 
-            productFinalPrice = Math.floor(productFinalPrice * 0.95); 
-            currentDiscountAmount += (originalForPromo - productFinalPrice); 
-            currentDiscountName = currentDiscountName ? currentDiscountName + " + 滿額95折" : "滿額95折"; 
-        }
     }
 
     // 3. 再進行會員點數折抵 (防呆檢查：點數不能超過「打折後的金額」)
