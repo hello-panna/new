@@ -286,6 +286,18 @@
         .unpack-btn { background: #f0f0f0; border: none; color: #666; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; }
         .btn-save-box { background: var(--c-accent); color: #fff; border: none; padding: 12px; border-radius: 50px; width: 100%; font-weight: bold; font-size: 1rem; margin-top: 10px; transition: 0.2s; opacity: 0.5; pointer-events: none; }
         .btn-save-box.active { opacity: 1; pointer-events: auto; box-shadow: 0 4px 15px rgba(175, 168, 139, 0.4); }
+
+        /* --- 2026/09 官網結帳 UX 優化 --- */
+        .quick-order-card { background: linear-gradient(145deg, #fff 0%, #FAF7F2 100%); border: 1px solid var(--c-line); border-radius: 16px; padding: 16px; margin: -8px 0 24px; box-shadow: var(--shadow-card); }
+        .quick-order-title { font-family: var(--font-title); font-weight: 700; color: var(--c-text); text-align: center; margin-bottom: 10px; }
+        .quick-order-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .quick-order-btn { border: 1px solid var(--c-primary); background: var(--c-primary); color: #fff; padding: 11px 10px; border-radius: 999px; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
+        .quick-order-btn.secondary { background: #fff; color: var(--c-primary); }
+        .field-help { margin-top: 7px; font-size: 0.78rem; line-height: 1.5; color: #8f817a; }
+        .payment-help { margin-top: 12px; padding: 11px 13px; background: #FAF8F5; border-radius: 8px; font-size: 0.82rem; line-height: 1.55; color: #746761; }
+        .action-btn:disabled, .coupon-btn:disabled, .points-verify-btn:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; transform: none; }
+        #menu-list { scroll-margin-top: 92px; }
+        @supports (bottom: env(safe-area-inset-bottom)) { .bottom-bar { bottom: max(12px, env(safe-area-inset-bottom)); } }
     </style>
 </head>   
 <body>
@@ -336,6 +348,14 @@
     單筆滿 2 盒 再免費送「質感保冷袋」！<br>提早線上預訂，鎖定最溫柔的秋日風味 🥰
 </div>
 
+                <div class="quick-order-card">
+                    <div class="quick-order-title">想直接下單？</div>
+                    <div class="quick-order-actions">
+                        <button type="button" class="quick-order-btn" onclick="scrollToMenu()">立即選購口味</button>
+                        <button type="button" class="quick-order-btn secondary" onclick="openCartModal()">查看購物車</button>
+                    </div>
+                </div>
+
                 <div class="section-header first">綿密口感</div>
                 <div class="package-box" style="padding: 10px;">
                     <video class="package-img" controls autoplay loop muted playsinline style="margin-bottom:0; border-radius: 6px;"><source src="420037fb-8f72-4541-9442-65f63c08cf93.mp4" type="video/mp4"></video>
@@ -373,6 +393,7 @@
                     <div class="form-group" style="margin-top:15px;">
                         <label class="form-label" style="color:var(--c-danger);">Email <span class="opt-label">(填寫可驗證點數餘額、享有 1 杯累積 1 點)</span></label>
                         <input type="email" id="cust-email" class="form-input" placeholder="填寫 Email">
+                        <div class="field-help">不填 Email 仍可下單；查詢會員點數、累積點數與使用點數折抵時需填寫 Email。</div>
                     </div>
                 </div>
 
@@ -394,7 +415,7 @@
                         <div style="font-weight:bold; color:var(--c-primary); margin-bottom: 5px;">📍 門市自取</div>
                         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
                             <span>彰化市中正路一段 403 號</span>
-                            <a href="http://maps.google.com/?q=彰化市中正路一段403號" target="_blank" style="background:var(--c-accent); color:white; padding:4px 12px; border-radius:20px; text-decoration:none; font-size:0.85rem; display:inline-flex; align-items:center; gap:4px; margin-left:10px;">🗺️ Google 導航</a>
+                            <a href="https://maps.google.com/?q=彰化市中正路一段403號" target="_blank" style="background:var(--c-accent); color:white; padding:4px 12px; border-radius:20px; text-decoration:none; font-size:0.85rem; display:inline-flex; align-items:center; gap:4px; margin-left:10px;">🗺️ Google 導航</a>
                         </div>
                         <img src="101842.jpg" alt="門市照片" style="width: 100%; border-radius: 8px; margin-top: 15px; margin-bottom: 5px; display: block;">
                         <div style="margin-top:15px; font-weight:bold; color:var(--c-primary);">⏰ 開放時段</div>
@@ -431,7 +452,7 @@
                                     <option value="" disabled selected>選擇縣市</option>
                                     <option value="基隆市">基隆市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option>
                                     <option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="苗栗縣">苗栗縣</option><option value="台中市">台中市</option>
-                                    <option value="彰化市">彰化市</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option>
+                                    <option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option>
                                     <option value="嘉義市">嘉義市</option><option value="嘉義縣">嘉義縣</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option>
                                     <option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option>
                                     <option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option><option value="連江縣">連江縣</option>
@@ -488,7 +509,7 @@
                         <span id="member-points-balance" style="font-size: 0.9rem; color: var(--c-primary); font-weight: 700;"></span>
                     </div>
                     
-                    <button type="button" class="points-verify-btn" onclick="checkMemberPoints()">使用手機與姓名查詢我的點數</button>
+                    <button type="button" class="points-verify-btn" onclick="checkMemberPoints()">使用姓名、手機與 Email 驗證點數</button>
                     
                     <div id="points-input-area" class="points-inner-box" style="display: none;">
                         <div style="font-size: 0.85rem; color: #888; margin-bottom: 10px;">本次欲折抵點數 (1點 = 1元)</div>
@@ -531,13 +552,14 @@
                         </label>
                         <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
                             <input type="radio" name="paymentMethod" value="LinePay" class="radio-input">
-                            <span style="font-size: 1.05rem;">📱 LINE Pay 條碼快速支付 (自主輸入金額)</span>
+                            <span style="font-size: 1.05rem;">📱 LINE Pay（自行輸入金額・人工核款）</span>
                         </label>
                         <label class="radio-label" style="text-align: left; padding: 14px 20px; display: flex; align-items: center; gap: 12px;">
                             <input type="radio" name="paymentMethod" value="TWQR" class="radio-input">
                             <span style="font-size: 1.05rem;">🇹🇼 TWQR 行動支付 (綠界金流)</span>
                         </label>
                     </div>
+                    <div id="linepay-payment-help" class="payment-help" style="display:none;">LINE Pay 採付款連結方式，請依結帳頁顯示的應付總額自行輸入金額；付款後由好酪人工核對入帳。</div>
                 </div>
             </div>
             
@@ -639,11 +661,7 @@
                 <label class="form-label">手機號碼 <span class="req-star">*</span></label>
                 <input type="tel" id="query-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric">
             </div>
-            <div class="form-group" style="margin-bottom:25px;">
-                <label class="form-label">Email <span class="req-star">*</span></label>
-                <input type="email" id="query-email" class="form-input" placeholder="您訂購時填寫的 Email">
-            </div>
-            
+            <div class="field-help" style="margin: -2px 0 22px; text-align:center;">使用「訂購人姓名＋手機號碼」即可查詢，不需要 Email。</div>
             <button id="btn-do-query" onclick="executeOrderQuery()" style="display: block; width: 100%; padding: 14px; background: var(--c-primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; letter-spacing: 1px;">開始查詢</button>
             
             <div id="query-result-area" style="margin-top: 20px; display: none;"></div>
@@ -698,7 +716,7 @@
                 badgeColor: "#F57F17" 
             }
         ];
-        const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" }, "LINE50": { type: "minus", value: 50, name: "好友現折50" } };
+        const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" } };
 
         // 狀態管理
         let cart = []; let currentStep = 1; let appliedCoupon = null; let initiateCheckoutFired = false; 
@@ -712,6 +730,8 @@
         // ==========================================
         function init() {
             logVisit(); renderMenu(); updateDateSettings('pickup'); renderCart();
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(el => el.addEventListener('change', updatePaymentHelp));
+            updatePaymentHelp();
         }
         
         function logVisit() {
@@ -723,6 +743,50 @@
             if (!initiateCheckoutFired && cart.length > 0) {
                 if(typeof fbq !== 'undefined') { fbq('track', 'InitiateCheckout'); initiateCheckoutFired = true; }
             }
+        }
+
+
+        function scrollToMenu() {
+            const target = document.getElementById('menu-list');
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+
+        function updatePaymentHelp() {
+            const help = document.getElementById('linepay-payment-help');
+            const selected = document.querySelector('input[name="paymentMethod"]:checked');
+            if (help) help.style.display = selected && selected.value === 'LinePay' ? 'block' : 'none';
+        }
+
+        async function getTaiwanOrderId() {
+            const response = await fetch(TRAFFIC_SCRIPT_URL + '?action=getTaiwanOrderId&_=' + Date.now(), { cache: 'no-store' });
+            if (!response.ok) throw new Error('無法取得台灣時間訂單編號');
+            const data = await response.json();
+            if (!data.success || !/^\d{14}$/.test(String(data.orderId || ''))) throw new Error('台灣時間訂單編號格式異常');
+            return String(data.orderId);
+        }
+
+        function resetMemberVerification() {
+            const balanceEl = document.getElementById('member-points-balance');
+            const inputArea = document.getElementById('points-input-area');
+            const pointsMsg = document.getElementById('points-msg');
+            const useInput = document.getElementById('use-points-input');
+            const hadVerifiedState = memberMaxPoints !== 0 || usedPoints !== 0 || (balanceEl && balanceEl.innerText.trim() !== '') || (inputArea && inputArea.style.display === 'block');
+            if (!hadVerifiedState) return;
+            memberMaxPoints = 0; usedPoints = 0;
+            if (balanceEl) balanceEl.innerText = '';
+            if (inputArea) inputArea.style.display = 'none';
+            if (useInput) useInput.value = '';
+            if (pointsMsg) { pointsMsg.innerText = '會員資料已變更，若要使用點數請重新驗證。'; pointsMsg.style.color = 'var(--c-danger)'; }
+            renderCart();
+        }
+
+        function resetCouponOnPhoneChange() {
+            if (!appliedCoupon) return;
+            appliedCoupon = null;
+            const msg = document.getElementById('coupon-msg');
+            if (msg) { msg.innerText = '手機號碼已變更，折扣資格請重新驗證。'; msg.style.color = 'var(--c-danger)'; }
+            renderCart();
         }
 
         function handleNextClick() {
@@ -811,6 +875,10 @@
         }
         document.getElementById('cust-name').addEventListener('input', function() { if(document.getElementById('same-as-cust').checked) document.getElementById('rcpt-name').value = this.value; });
         document.getElementById('cust-phone').addEventListener('input', function() { if(document.getElementById('same-as-cust').checked) document.getElementById('rcpt-phone').value = this.value; });
+
+        document.getElementById('cust-name').addEventListener('input', resetMemberVerification);
+        document.getElementById('cust-email').addEventListener('input', resetMemberVerification);
+        document.getElementById('cust-phone').addEventListener('input', function() { resetMemberVerification(); resetCouponOnPhoneChange(); });
 
         function updateDateSettings(mode) {
             const selectEl = document.getElementById('pickup-slot-select');
@@ -951,6 +1019,7 @@
             
             if(!name || !phone) { alert("請填寫訂購人姓名與手機號碼"); return; }
             if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) { alert("手機號碼格式不正確！\n請輸入開頭為 09 的 10 碼數字"); return; }
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert("Email 格式不正確，請確認後再繼續"); return; }
             
             if (delivery === '宅配') {
                 const rName = document.getElementById('rcpt-name').value.trim();
@@ -959,7 +1028,7 @@
                 const detailAddr = document.getElementById('cust-addr-detail').value.trim();
                 if (!rName || !rPhone || !city || !detailAddr) { alert("冷藏宅配訂單請填寫完整的收件人與配送地址資訊"); return; }
                 if (!/^09\d{8}$/.test(rPhone.replace(/-/g, ''))) { alert("收件人手機號碼格式錯誤"); return; }
-                if (currentTotalCups % 6 !== 0) { alert(`為了長途低溫運送防震，宅配奶酪總數必須為 6 的倍數。\n目前購物車內共有：${currentTotalCups} 杯`); return; }
+                if (currentTotalCups < 6 || currentTotalCups % 6 !== 0) { alert(`為了長途低溫運送防震，宅配奶酪至少需 6 杯，且總數必須為 6 的倍數。\n目前購物車內共有：${currentTotalCups} 杯`); return; }
             }
             if(!slot) { alert(delivery === '自取' ? "請選擇到店取貨時段" : "請選擇預計出貨日期"); return; }
             goToStep(2);
@@ -1040,19 +1109,9 @@
         } else if (appliedCoupon.type === 'minus') { 
             productFinalPrice = productFinalPrice - appliedCoupon.value; 
         }
-        currentDiscountAmount += (originalForCoupon - productFinalPrice);
+        productFinalPrice = Math.max(0, productFinalPrice);
+        currentDiscountAmount += Math.max(0, originalForCoupon - productFinalPrice);
         currentDiscountName = currentDiscountName ? currentDiscountName + " + " + appliedCoupon.name : appliedCoupon.name;
-    } else {
-        let originalForPromo = productFinalPrice;
-        if (productFinalPrice >= 5000) { 
-            productFinalPrice = Math.floor(productFinalPrice * 0.9); 
-            currentDiscountAmount += (originalForPromo - productFinalPrice); 
-            currentDiscountName = currentDiscountName ? currentDiscountName + " + 滿額9折" : "滿額9折"; 
-        } else if (productFinalPrice >= 3000) { 
-            productFinalPrice = Math.floor(productFinalPrice * 0.95); 
-            currentDiscountAmount += (originalForPromo - productFinalPrice); 
-            currentDiscountName = currentDiscountName ? currentDiscountName + " + 滿額95折" : "滿額95折"; 
-        }
     }
 
     // 3. 再進行會員點數折抵 (防呆檢查：點數不能超過「打折後的金額」)
@@ -1504,7 +1563,7 @@
             
             btn.innerText = "正在連線雲端資料庫..."; btn.disabled = true; msgArea.innerText = "";
             try {
-                const response = await fetch(TRAFFIC_SCRIPT_URL + "?action=checkPoints&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(name));
+                const response = await fetch(TRAFFIC_SCRIPT_URL + "?action=checkPoints&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name));
                 const data = await response.json();
                 btn.innerText = "查詢我的點數"; btn.disabled = false;
 
@@ -1518,10 +1577,14 @@
                         inputArea.style.display = "none"; msgArea.innerText = "您的會員帳戶點數餘額為 0 點，本次購買完成後將自動累積點數！"; msgArea.style.color = "#888";
                     }
                 } else {
-                    inputArea.style.display = "none"; document.getElementById('member-points-balance').innerText = "";
+                    memberMaxPoints = 0; usedPoints = 0;
+                    inputArea.style.display = "none"; document.getElementById('use-points-input').value = ""; document.getElementById('member-points-balance').innerText = "";
                     msgArea.innerText = data.msg || "查無您的會員紀錄，下單完成後系統會依此信箱自動創立新會員。"; msgArea.style.color = data.msg && data.msg.includes("綁定其他") ? "var(--c-danger)" : "#888";
                 }
-            } catch(e) { btn.innerText = "查詢我的點數"; btn.disabled = false; msgArea.innerText = "連線失敗，請確認行動網路環境。"; }
+            } catch(e) {
+                memberMaxPoints = 0; usedPoints = 0; inputArea.style.display = "none"; document.getElementById('use-points-input').value = ""; document.getElementById('member-points-balance').innerText = "";
+                btn.innerText = "查詢我的點數"; btn.disabled = false; msgArea.innerText = "連線失敗，請確認行動網路環境。";
+            }
             renderCart();
         }
 
@@ -1582,13 +1645,30 @@
             }
         }
 
-        function submitFinalOrder() {
+        async function submitFinalOrder() {
             const name = document.getElementById('cust-name').value.trim(); 
             const phone = document.getElementById('cust-phone').value.trim(); 
             const email = document.getElementById('cust-email').value.trim();
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value; 
             const payment = document.querySelector('input[name="paymentMethod"]:checked').value;
             const finalDateStr = document.getElementById('pickup-slot-select').value; 
+
+            // 最終送單前再次驗證，避免第 2/3 步修改購物車後繞過第一步防呆
+            calculateOrderTotals();
+            if (cart.length === 0) { alert("購物車目前沒有商品"); return; }
+            if (!name || !phone) { alert("請返回第一步填寫訂購人姓名與手機號碼"); goToStep(1); return; }
+            if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) { alert("手機號碼格式不正確"); goToStep(1); return; }
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert("Email 格式不正確"); goToStep(1); return; }
+            if (!finalDateStr) { alert(delivery === '宅配' ? "請重新選擇預計出貨日期" : "請重新選擇到店取貨時段"); goToStep(1); return; }
+            if (delivery === '宅配') {
+                const rNameCheck = document.getElementById('rcpt-name').value.trim();
+                const rPhoneCheck = document.getElementById('rcpt-phone').value.trim();
+                const cityCheck = document.getElementById('cust-city').value;
+                const addrCheck = document.getElementById('cust-addr-detail').value.trim();
+                if (!rNameCheck || !rPhoneCheck || !cityCheck || !addrCheck) { alert("冷藏宅配訂單請填寫完整收件人與地址資訊"); goToStep(1); return; }
+                if (!/^09\d{8}$/.test(rPhoneCheck.replace(/-/g, ''))) { alert("收件人手機號碼格式錯誤"); goToStep(1); return; }
+                if (currentTotalCups < 6 || currentTotalCups % 6 !== 0) { alert(`宅配奶酪至少需 6 杯，且總數必須為 6 的倍數。\n目前共有 ${currentTotalCups} 杯`); goToStep(1); return; }
+            }
             
             // 將原本的 const 改為 let，允許我們在後面動態修改備註內容
             let remarks = document.getElementById('cust-remarks').value.trim(); 
@@ -1651,8 +1731,13 @@
                 if (flavorCounts.hasOwnProperty(13)) flavorCounts[13] += freeBags;
             }
             
-            const now = new Date();
-            const orderId = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
+            let orderId = '';
+            try {
+                orderId = await getTaiwanOrderId();
+            } catch (e) {
+                alert("目前無法取得台灣時間訂單編號，為避免產生錯誤單號，本次訂單尚未送出。請確認網路後再試一次。");
+                return;
+            }
             let earnedPoints = email ? currentTotalCups : 0; 
 
             let fullOrderInfo = orderDetails + ` [共${currentTotalCups}杯]`;
@@ -1676,7 +1761,9 @@
             else if (payment === 'LinePay') payMethodName = 'LINE Pay 條碼快速支付 (自主輸入金額)';
             else if (payment === 'TWQR') payMethodName = 'TWQR 行動支付 (綠界金流)';
             
-            let confirmMsg = `【訂單確認】\n---------------------\n[購買明細]\n${itemsDetailStr}奶酪數量：${currentTotalCups} 杯\n---------------------\n應付總額：$${currentFinalTotal}\n取貨方式：${delivery}\n付款方式：${payMethodName}\n\n請確認以上資訊無誤，點擊「確定」送出訂單。`;
+            let confirmMsg = `【訂單確認】\n---------------------\n[購買明細]\n${itemsDetailStr}奶酪數量：${currentTotalCups} 杯\n---------------------\n應付總額：$${currentFinalTotal}\n訂購人：${name} / ${phone}\n取貨方式：${delivery}\n日期：${finalDateStr}\n付款方式：${payMethodName}`;
+            if (delivery === '宅配') confirmMsg += `\n收件人：${rcptName} / ${rcptPhone}\n宅配地址：${uiAddress}`;
+            confirmMsg += `\n\n請確認以上資訊無誤，點擊「確定」送出訂單。`;
             if (!confirm(confirmMsg)) return; 
 
             document.getElementById('loading-overlay').style.display = 'flex';
@@ -1893,19 +1980,21 @@
             document.getElementById('query-result-area').innerHTML = '';
             document.getElementById('query-name').value = '';
             document.getElementById('query-phone').value = '';
-            document.getElementById('query-email').value = '';
         }
 
         async function executeOrderQuery() {
             const name = document.getElementById('query-name').value.trim();
             const phone = document.getElementById('query-phone').value.trim();
-            const email = document.getElementById('query-email').value.trim();
             const resultArea = document.getElementById('query-result-area');
             const btn = document.getElementById('btn-do-query');
 
-            if (!name || !phone || !email) {
-                alert("請完整填寫姓名、手機號碼與 Email 以進行驗證！"); 
-                return; 
+            if (!name || !phone) {
+                alert("請填寫訂購人姓名與手機號碼！");
+                return;
+            }
+            if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) {
+                alert("手機號碼格式不正確，請輸入 09 開頭的 10 碼手機號碼");
+                return;
             }
 
             btn.innerText = "系統查詢中..."; 
