@@ -1563,7 +1563,7 @@
             
             btn.innerText = "正在連線雲端資料庫..."; btn.disabled = true; msgArea.innerText = "";
             try {
-                const response = await fetch(TRAFFIC_SCRIPT_URL + "?action=checkPoints&phone=" + encodeURIComponent(phone) + "&name=" + encodeURIComponent(name));
+                const response = await fetch(TRAFFIC_SCRIPT_URL + "?action=checkPoints&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email) + "&name=" + encodeURIComponent(name));
                 const data = await response.json();
                 btn.innerText = "查詢我的點數"; btn.disabled = false;
 
