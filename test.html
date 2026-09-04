@@ -298,6 +298,29 @@
         .action-btn:disabled, .coupon-btn:disabled, .points-verify-btn:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; transform: none; }
         #menu-list { scroll-margin-top: 92px; }
         @supports (bottom: env(safe-area-inset-bottom)) { .bottom-bar { bottom: max(12px, env(safe-area-inset-bottom)); } }
+        /* 預約外送：沿用網站配色，限制地圖層級以免遮住結帳列。 */
+        .delivery-method-options { flex-wrap: wrap; gap: 8px; }
+        .delivery-method-options .radio-label { padding: 12px 6px; flex: 1 1 90px; white-space: nowrap; }
+        #scheduled-info-box { background: #f1f5ed; padding: 16px; }
+        #scheduled-map { height: 300px; width: 100%; z-index: 0; border-radius: 8px; background: #e9ece5; border: 1px solid #d8dfd1; }
+        .scheduled-map-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+        .scheduled-map-actions button { font: inherit; font-size: 0.85rem; color: var(--c-text); background: white; border: 1px solid var(--c-primary-light); border-radius: 7px; padding: 10px 12px; cursor: pointer; }
+        .scheduled-map-actions button:disabled { opacity: 0.5; cursor: wait; }
+        .scheduled-status { margin: 12px 0 4px; padding: 12px; border-radius: 8px; font-size: 0.9rem; background: #f2f0eb; }
+        .scheduled-status[data-state="valid"] { background: #e7f1e6; color: #345b33; }
+        .scheduled-status[data-state="invalid"] { background: #fbe8e5; color: #a03c30; }
+        .scheduled-notice { margin-top: 10px; font-size: 0.85rem; color: #8b563c; }
+        .scheduled-confirm { display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; font-size: 0.9rem; cursor: pointer; }
+        .scheduled-confirm input { flex: 0 0 auto; width: 20px; height: 20px; margin-top: 4px; accent-color: #637b63; }
+        .scheduled-pin { border: 3px solid white; border-radius: 50%; background: #456b43; box-shadow: 0 1px 7px #5558; }
+        .scheduled-pin span { display: block; width: 6px; height: 6px; margin: 8px; border-radius: 50%; background: white; }
+        .scheduled-pin.outside { background: #ae4334; }
+        .scheduled-summary { margin: 14px 0; padding: 14px; background: #f1f5ed; border-radius: 8px; overflow-wrap: anywhere; font-size: 0.9rem; }
+        .scheduled-summary div { margin-top: 6px; }
+        #scheduled-location-section a, .scheduled-summary a { color: #496748; text-decoration: underline; }
+        #scheduled-map .leaflet-control-attribution { font-size: 10px; }
+        [hidden] { display: none !important; }
+
     </style>
 </head>   
 <body>
@@ -400,7 +423,7 @@
                 <div class="section-header">取件與配送</div>
                 <div class="options-section">
                     <div class="form-label" style="margin-top:0;">取貨方式 <span class="req-star">*</span></div>
-                    <div class="radio-group" style="margin-bottom:20px;">
+                    <div class="radio-group delivery-method-options" style="margin-bottom:20px;">
                         <label class="radio-label">
                             <input type="radio" name="deliveryMethod" value="自取" class="radio-input" checked onchange="updateDateSettings('pickup'); renderCart();">
                             <span>自取</span>
@@ -408,6 +431,10 @@
                         <label class="radio-label">
                             <input type="radio" name="deliveryMethod" value="宅配" class="radio-input" onchange="updateDateSettings('delivery'); renderCart();">
                             <span>冷藏宅配</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="deliveryMethod" value="預約外送" class="radio-input" onchange="updateDateSettings('scheduled'); renderCart();">
+                            <span>預約外送</span>
                         </label>
                     </div>
 
@@ -430,6 +457,12 @@
     <div>• 9 盒以上：$210</div>
     <div style="font-size:0.85rem; color:#D84315; margin-top:8px;">* 為確保運送安全，宅配請以「6的倍數」下單 (整盒出貨)。</div>
 </div>
+
+                    <div id="scheduled-info-box" class="info-box" style="display:none;">
+                        <div style="font-weight:bold; color:var(--c-primary);">預約外送 · 彰化市區</div>
+                        <p>以彰化火車站為中心，直線距離 <strong>2.5 公里內</strong>提供外送。綠色圓圈是服務範圍。</p>
+                        <p class="scheduled-notice">奶酪與布丁可混搭，合計至少 12 杯（2 盒）免外送費。保冷袋不計入杯數。</p>
+                    </div>
 
                     <div id="recipient-section" style="display:none; margin-top:20px; padding:20px 15px; background:#FDFBF8; border:1px solid #EFEBE9; border-radius:8px;">
                         <div style="font-weight:bold; color:var(--c-primary); margin-bottom:12px; font-size: 1.05rem;">📦 收件人資訊</div>
@@ -460,6 +493,33 @@
                                 <input type="text" id="cust-addr-detail" class="form-input" placeholder="詳細行政區、路段與門牌">
                             </div>
                         </div>
+                        <div id="scheduled-location-section" style="display:none;">
+                            <label class="form-label">外送收貨位置 <span class="req-star">*</span></label>
+                            <p class="field-help">直接點選地圖或拖曳圖釘。也可以先定位，再微調到收貨入口。</p>
+                            <div class="scheduled-map-actions">
+                                <button type="button" id="scheduled-locate" onclick="locateScheduledDelivery()">使用目前位置</button>
+                                <button type="button" onclick="showScheduledRange()">查看服務範圍</button>
+                            </div>
+                            <div id="scheduled-map-loading" role="status" aria-live="polite"></div>
+                            <button type="button" id="scheduled-map-retry" class="add-btn" hidden onclick="initScheduledMap()">重新載入地圖</button>
+                            <div id="scheduled-map" aria-label="外送位置地圖，可點選收貨位置"></div>
+                            <p id="scheduled-map-error" class="scheduled-notice" hidden>部分地圖未載入，請確認街道可辨識後再選點；可重新整理頁面再試。</p>
+                            <div class="scheduled-map-actions">
+                                <button type="button" onclick="useScheduledMapCenter()">以地圖中心選點</button>
+                            </div>
+                            <p id="scheduled-gps-status" class="field-help" role="status" aria-live="polite"></p>
+                            <div id="scheduled-location-status" class="scheduled-status" data-state="waiting" role="status" aria-live="polite">尚未選擇收貨位置。請點選地圖，或按「使用目前位置」。</div>
+                            <div id="scheduled-coordinates" class="field-help"></div>
+                            <a id="scheduled-map-link" href="https://www.google.com/maps" target="_blank" rel="noopener" hidden>在 Google 地圖查看此位置</a>
+                            <label class="form-label" for="scheduled-address" style="margin-top:16px;">外送完整地址 <span class="req-star">*</span></label>
+                            <input type="text" id="scheduled-address" class="form-input" maxlength="200" autocomplete="street-address" placeholder="縣市、路段、巷弄、門牌、樓層" oninput="resetScheduledConfirmation()">
+                            <label class="scheduled-confirm">
+                                <input type="checkbox" id="scheduled-location-confirm" disabled>
+                                <span>我已確認圖釘是實際收貨入口，且與上方地址相符。</span>
+                            </label>
+                            <p class="field-help">定位只在按下按鈕後取得；送出訂單時，會將確認的收貨位置提供給店家安排配送。</p>
+                        </div>
+
                     </div>
 
                     <div class="form-group" style="margin-top:20px;">
@@ -612,6 +672,7 @@
                 <div class="receipt-row" style="margin-top: 5px;"><span>取貨方式</span><span id="receipt-delivery"></span></div>
                 <div class="receipt-row"><span>日期</span><span id="receipt-date"></span></div>
                 <div class="receipt-row" id="receipt-address-row" style="display:none;"><span>地址</span><span id="receipt-address" style="text-align:right; max-width:60%;"></span></div>
+<div class="receipt-row" id="receipt-map-row" style="display:none;"><span>外送位置</span><a id="receipt-map-link" target="_blank" rel="noopener">Google 地圖導航</a></div>
                 <div class="receipt-row" id="receipt-remarks-row" style="display:none; flex-direction:column; align-items:flex-start;"><span style="color:#999; font-size:0.85rem; margin-bottom: 5px;">備註</span><span id="receipt-remarks" style="color:var(--c-text); font-weight:bold;"></span></div>
             </div>
 
@@ -718,6 +779,259 @@
         ];
         const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" } };
 
+        // 中心參考：https://zh.wikipedia.org/zh-hant/彰化車站
+        // 地圖文件：https://leafletjs.com/examples/quick-start/
+        // 圖磚規範：https://operations.osmfoundation.org/policies/tiles/
+        const SCHEDULED_DELIVERY = Object.freeze({
+            center: Object.freeze({ lat: 24.0815, lng: 120.538333 }),
+            radiusMeters: 2500, minCups: 12, cupIds: Object.freeze([1,2,3,4,5,6,7,8,9,10,14,15]),
+            tileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+        });
+        let scheduledMap = null, scheduledMarker = null, scheduledCircle = null;
+        let scheduledPoint = null, scheduledLocationRevision = 0, scheduledLeafletLoad = null;
+
+        function getDeliveryMode() {
+            const value = document.querySelector('input[name="deliveryMethod"]:checked').value;
+            return value === '宅配' ? 'delivery' : value === '預約外送' ? 'scheduled' : 'pickup';
+        }
+
+        function scheduledDistanceMeters(lat, lng) {
+            if (typeof lat !== 'number' || typeof lng !== 'number' ||
+                !Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return NaN;
+            const radians = Math.PI / 180;
+            const a = Math.sin((lat - SCHEDULED_DELIVERY.center.lat) * radians / 2) ** 2 +
+                Math.cos(lat * radians) * Math.cos(SCHEDULED_DELIVERY.center.lat * radians) *
+                Math.sin((lng - SCHEDULED_DELIVERY.center.lng) * radians / 2) ** 2;
+            return 6371000 * 2 * Math.atan2(Math.sqrt(Math.min(1, a)), Math.sqrt(Math.max(0, 1 - a)));
+        }
+
+        function scheduledMapUrl(point) {
+            return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(point.lat + ',' + point.lng);
+        }
+
+        function resetScheduledConfirmation() {
+            document.getElementById('scheduled-location-confirm').checked = false;
+        }
+
+        function updateScheduledPointStatus() {
+            const status = document.getElementById('scheduled-location-status');
+            const checkbox = document.getElementById('scheduled-location-confirm');
+            const link = document.getElementById('scheduled-map-link');
+            if (!scheduledPoint) {
+                status.textContent = '尚未選擇收貨位置。請點選地圖，或按「使用目前位置」。';
+                status.dataset.state = 'waiting'; checkbox.disabled = true; link.hidden = true;
+                return;
+            }
+            const distance = scheduledDistanceMeters(scheduledPoint.lat, scheduledPoint.lng);
+            const inRange = Number.isFinite(distance) && distance <= SCHEDULED_DELIVERY.radiusMeters;
+            const kilometers = (inRange ? distance / 1000 : Math.ceil(distance) / 1000).toFixed(3);
+            status.textContent = inRange
+                ? `範圍內｜距彰化火車站約 ${kilometers} 公里。請確認圖釘與下方收貨地址相符。`
+                : `超出範圍｜距彰化火車站約 ${kilometers} 公里，超過 2.5 公里無法預約外送。請改選自取或冷藏宅配。`;
+            status.dataset.state = inRange ? 'valid' : 'invalid';
+            checkbox.disabled = !inRange;
+            if (!inRange) checkbox.checked = false;
+            link.href = scheduledMapUrl(scheduledPoint); link.hidden = false;
+            document.getElementById('scheduled-coordinates').textContent =
+                `定位座標：${scheduledPoint.lat.toFixed(6)}, ${scheduledPoint.lng.toFixed(6)}`;
+            if (scheduledMarker) {
+                scheduledMarker.getElement()?.classList.toggle('outside', !inRange);
+                scheduledMarker.bindTooltip(inRange ? '收貨位置（可拖曳）' : '超出配送範圍');
+            }
+        }
+
+        function setScheduledPoint(lat, lng, source = 'map') {
+            if (!Number.isFinite(scheduledDistanceMeters(lat, lng))) return false;
+            scheduledLocationRevision++;
+            scheduledPoint = { lat, lng, source };
+            resetScheduledConfirmation();
+            const locateButton = document.getElementById('scheduled-locate');
+            locateButton.disabled = false; locateButton.textContent = '使用目前位置';
+            if (source !== 'gps') document.getElementById('scheduled-gps-status').textContent = '';
+            if (scheduledMap) {
+                if (!scheduledMarker) {
+                    scheduledMarker = L.marker([lat, lng], {
+                        draggable: true, title: '收貨位置，可拖曳調整',
+                        icon: L.divIcon({ className: 'scheduled-pin', html: '<span></span>', iconSize: [28, 28], iconAnchor: [14, 14] })
+                    }).addTo(scheduledMap);
+                    scheduledMarker.on('dragstart', () => {
+                        // 拖曳開始就使舊確認及尚未返回的 GPS 結果失效。
+                        scheduledLocationRevision++; resetScheduledConfirmation();
+                    });
+                    scheduledMarker.on('dragend', () => {
+                        const point = scheduledMarker.getLatLng(); setScheduledPoint(point.lat, point.lng, 'drag');
+                    });
+                } else scheduledMarker.setLatLng([lat, lng]);
+            }
+            updateScheduledPointStatus();
+            return true;
+        }
+
+        function loadScheduledLeaflet() {
+            if (window.L) return Promise.resolve();
+            if (scheduledLeafletLoad) return scheduledLeafletLoad;
+            scheduledLeafletLoad = new Promise((resolve, reject) => {
+                if (!document.getElementById('scheduled-leaflet-css')) {
+                    const css = document.createElement('link');
+                    css.id = 'scheduled-leaflet-css'; css.rel = 'stylesheet';
+                    css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                    css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+                    css.crossOrigin = ''; document.head.appendChild(css);
+                }
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+                script.crossOrigin = '';
+                const timeout = setTimeout(() => { script.remove(); reject(new Error('地圖載入逾時')); }, 15000);
+                script.onload = () => { clearTimeout(timeout); window.L ? resolve() : reject(new Error('地圖載入失敗')); };
+                script.onerror = () => { clearTimeout(timeout); script.remove(); reject(new Error('地圖載入失敗')); };
+                document.head.appendChild(script);
+            }).catch(error => { scheduledLeafletLoad = null; throw error; });
+            return scheduledLeafletLoad;
+        }
+
+        async function initScheduledMap() {
+            const loading = document.getElementById('scheduled-map-loading');
+            if (scheduledMap) {
+                setTimeout(() => scheduledMap.invalidateSize(), 0); return true;
+            }
+            loading.textContent = '地圖載入中…';
+            try {
+                await loadScheduledLeaflet();
+                if (!scheduledMap) {
+                    const center = SCHEDULED_DELIVERY.center;
+                    scheduledMap = L.map('scheduled-map', { scrollWheelZoom: false }).setView([center.lat, center.lng], 13);
+                    L.tileLayer(SCHEDULED_DELIVERY.tileUrl, {
+                        maxZoom: 19, referrerPolicy: 'strict-origin-when-cross-origin',
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+                    }).on('tileerror', () => {
+                        document.getElementById('scheduled-map-error').hidden = false;
+                    }).addTo(scheduledMap);
+                    scheduledCircle = L.circle([center.lat, center.lng], {
+                        radius: SCHEDULED_DELIVERY.radiusMeters, color: '#637b63', fillColor: '#95ad87',
+                        fillOpacity: 0.14, weight: 2, interactive: false
+                    }).addTo(scheduledMap);
+                    L.circleMarker([center.lat, center.lng], { radius: 5, color: '#594a42', fillOpacity: 1, interactive: false })
+                        .addTo(scheduledMap).bindTooltip('彰化火車站', { permanent: true, direction: 'top' });
+                    scheduledMap.on('click', event => setScheduledPoint(event.latlng.lat, event.latlng.lng));
+                    // 顯示車站中心，不把它自動當成收貨位置。
+                    if (scheduledPoint) setScheduledPoint(scheduledPoint.lat, scheduledPoint.lng, scheduledPoint.source);
+                }
+                loading.textContent = '';
+                document.getElementById('scheduled-map-retry').hidden = true;
+                setTimeout(() => {
+                    scheduledMap.invalidateSize();
+                    if (!scheduledPoint) scheduledMap.fitBounds(scheduledCircle.getBounds(), { padding: [12, 12] });
+                }, 0);
+                return true;
+            } catch (error) {
+                loading.textContent = '地圖暫時無法載入，請檢查網路後重試。';
+                document.getElementById('scheduled-map-retry').hidden = false;
+                return false;
+            }
+        }
+
+        async function locateScheduledDelivery() {
+            const message = document.getElementById('scheduled-gps-status');
+            const button = document.getElementById('scheduled-locate');
+            const revision = ++scheduledLocationRevision;
+            button.disabled = true; button.textContent = '定位中…'; resetScheduledConfirmation();
+            const finish = () => { button.disabled = false; button.textContent = '使用目前位置'; };
+            if (!window.isSecureContext || !navigator.geolocation) {
+                message.textContent = '此瀏覽器無法使用目前位置，請在地圖上手動選點。'; finish(); return;
+            }
+            if (!await initScheduledMap()) { finish(); return; }
+            if (revision !== scheduledLocationRevision || getDeliveryMode() !== 'scheduled') return;
+            message.textContent = '請允許瀏覽器取得位置；若不允許，也可直接在地圖選點。';
+            navigator.geolocation.getCurrentPosition(position => {
+                if (revision !== scheduledLocationRevision || getDeliveryMode() !== 'scheduled') return;
+                const { latitude, longitude, accuracy } = position.coords;
+                if (!setScheduledPoint(latitude, longitude, 'gps')) {
+                    message.textContent = '取得的位置無效，請在地圖上手動選點。'; finish(); return;
+                }
+                scheduledMap.setView([latitude, longitude], 16);
+                message.textContent = Number.isFinite(accuracy)
+                    ? `目前位置誤差約 ${Math.ceil(accuracy)} 公尺。請將圖釘調整到實際收貨入口，再確認位置。`
+                    : '請將圖釘調整到實際收貨入口，再確認位置。';
+                finish();
+            }, error => {
+                if (revision !== scheduledLocationRevision || getDeliveryMode() !== 'scheduled') return;
+                message.textContent = error.code === 1 ? '未允許定位，請在地圖上手動選擇收貨位置。'
+                    : error.code === 3 ? '定位逾時，請重試或在地圖上手動選點。' : '目前無法取得位置，請在地圖上手動選點。';
+                finish();
+            }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
+        }
+
+        function useScheduledMapCenter() {
+            if (!scheduledMap) return;
+            const center = scheduledMap.getCenter(); setScheduledPoint(center.lat, center.lng, 'map-center');
+        }
+
+        function showScheduledRange() {
+            if (scheduledMap && scheduledCircle) scheduledMap.fitBounds(scheduledCircle.getBounds(), { padding: [12, 12] });
+        }
+
+        function getScheduledValidationError() {
+            if (cart.reduce((sum, item) => sum + (SCHEDULED_DELIVERY.cupIds.includes(Number(item.id)) ? item.quantity : 0), 0) < SCHEDULED_DELIVERY.minCups) return '預約外送至少需 12 杯奶酪或布丁（可混搭），保冷袋不計入。';
+            if (!document.getElementById('rcpt-name').value.trim()) return '請填寫外送收件人姓名。';
+            if (!/^09\d{8}$/.test(document.getElementById('rcpt-phone').value.trim())) return '請填寫正確的收件人手機號碼。';
+            if (!document.getElementById('scheduled-address').value.trim()) return '請填寫完整外送地址、門牌與樓層。';
+            if (!scheduledPoint) return '請先在地圖選擇實際收貨位置。';
+            const distance = scheduledDistanceMeters(scheduledPoint.lat, scheduledPoint.lng);
+            if (!Number.isFinite(distance)) return '收貨位置無效，請重新選點。';
+            // 以未四捨五入的距離判斷；邊界 2500 公尺包含在內。
+            if (distance > SCHEDULED_DELIVERY.radiusMeters) return '收貨位置超出彰化火車站 2.5 公里，請改選自取或冷藏宅配。';
+            if (!document.getElementById('scheduled-location-confirm').checked) return '請確認圖釘與收貨地址相符，並勾選位置確認。';
+            return '';
+        }
+
+        // 後續接 code.gs 時，應傳送本物件，後端必須重新計算距離，不能信任 distanceMeters。
+        function getScheduledDeliveryDetails() {
+            const error = getScheduledValidationError();
+            if (error) throw new Error(error);
+            return {
+                recipientName: document.getElementById('rcpt-name').value.trim(),
+                recipientPhone: document.getElementById('rcpt-phone').value.trim(),
+                address: document.getElementById('scheduled-address').value.trim(),
+                latitude: scheduledPoint.lat, longitude: scheduledPoint.lng,
+                distanceMeters: scheduledDistanceMeters(scheduledPoint.lat, scheduledPoint.lng),
+                mapUrl: scheduledMapUrl(scheduledPoint),
+                requestedSlot: document.getElementById('pickup-slot-select').value,
+                locationConfirmed: true
+            };
+        }
+
+        function scheduledEscapeHTML(value) {
+            return String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+        }
+
+        function scheduledSummaryHTML() {
+            const error = getScheduledValidationError();
+            if (error) return '<div class="scheduled-status" data-state="invalid">' + scheduledEscapeHTML(error) + '</div>';
+            const detail = getScheduledDeliveryDetails();
+            return `<div class="scheduled-summary"><strong>預約外送資料</strong>
+                <div>收件人：${scheduledEscapeHTML(detail.recipientName)} / ${scheduledEscapeHTML(detail.recipientPhone)}</div>
+                <div>收貨地址：${scheduledEscapeHTML(detail.address)}</div>
+                <div>希望送達：${scheduledEscapeHTML(detail.requestedSlot)}</div>
+                <div>距彰化火車站：約 ${(detail.distanceMeters / 1000).toFixed(3)} 公里</div>
+                <a href="${detail.mapUrl}" target="_blank" rel="noopener">在 Google 地圖查看收貨位置</a>
+                <div>滿 12 杯免外送費；請於選定時段留意收件電話。</div></div>`;
+        }
+
+        let scheduledSubmitting = false, scheduledAttempt = null;
+        async function submitFinalOrder() {
+            if (scheduledSubmitting) return;
+            const scheduled = getDeliveryMode() === 'scheduled';
+            if (scheduled) scheduledSubmitting = true;
+            try { return await submitFinalOrderCore(); }
+            finally { if (scheduled) scheduledSubmitting = false; }
+        }
+        function scheduledRequestId() {
+            if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+            const bytes = new Uint8Array(16); crypto.getRandomValues(bytes);
+            return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         // 狀態管理
         let cart = []; let currentStep = 1; let appliedCoupon = null; let initiateCheckoutFired = false; 
         let memberMaxPoints = 0; let usedPoints = 0;
@@ -817,6 +1131,7 @@
             }
             
             currentStep = step; window.scrollTo(0, 0);
+            if (step === 1 && getDeliveryMode() === 'scheduled') initScheduledMap();
         }
 
         // ==========================================
@@ -885,6 +1200,14 @@
             const deliveryText = document.getElementById('delivery-date-text');
             const hint = document.getElementById('date-hint');
             const addressRow = document.getElementById('address-row');
+            document.getElementById('scheduled-info-box').style.display = mode === 'scheduled' ? 'block' : 'none';
+            document.getElementById('scheduled-location-section').style.display = mode === 'scheduled' ? 'block' : 'none';
+            if (mode === 'scheduled') initScheduledMap();
+            else {
+                scheduledLocationRevision++;
+                document.getElementById('scheduled-locate').disabled = false;
+                document.getElementById('scheduled-locate').textContent = '使用目前位置';
+            }
             
             // --- 核心防呆 1：保存客人原本選好的日期，避免畫面重整時被清空 ---
             let currentSelectedDate = selectEl.value; 
@@ -939,6 +1262,14 @@
                 generateOptions(mode, daysToAdd);
             }
             
+            if (mode === 'scheduled') {
+                document.getElementById('pickup-info-box').style.display = 'none';
+                document.getElementById('recipient-section').style.display = 'block';
+                document.getElementById('date-label').innerHTML = '預約外送時段 <span class="req-star">*</span>';
+                const days = hasPudding || totalCups > 18 ? 2 : 1;
+                hint.textContent = `最快可預約${days === 2 ? '兩天後' : '隔天'}外送；週二至週五 12:00–18:00、週六 10:00–18:00，週日及週一公休。`;
+                generateOptions('scheduled', days);
+            }
             // --- 核心防呆 3：如果客人剛剛選的日期在新的選項中還存在，就自動幫他選回去 ---
             let optionsArray = Array.from(selectEl.options).map(opt => opt.value);
             if (currentSelectedDate && optionsArray.includes(currentSelectedDate)) {
@@ -949,11 +1280,12 @@
         function generateOptions(mode, startDays) {
             const select = document.getElementById('pickup-slot-select');
             const hint = document.getElementById('date-hint');
-            select.innerHTML = `<option value="" disabled selected>請選擇${mode === 'delivery' ? '出貨日期' : '自取時段'}...</option>`;
+            select.innerHTML = `<option value="" disabled selected>請選擇${mode === 'delivery' ? '出貨日期' : mode === 'scheduled' ? '外送時段' : '自取時段'}...</option>`;
             
             const hasStrawberry = cart.some(item => item.id === 11);
             const hasDubai = cart.some(item => item.id === 12);
 
+            if (mode === 'scheduled' && (hasStrawberry || hasDubai)) { select.innerHTML = '<option value="">此限定商品尚未開放預約外送</option>'; return; }
             if (hasStrawberry && hasDubai) {
                 select.innerHTML = '<option value="" disabled selected>日期衝突：草莓與杜拜巧克力取貨日不同</option>';
                 hint.innerText = "❌ 錯誤：草莓限 2/14 前，杜拜為 2/25-26，請分開兩筆訂單結帳。"; hint.style.color = "var(--c-danger)";
@@ -973,7 +1305,7 @@
                 return;
             }
 
-            const now = new Date(); let startDate = new Date(now); startDate.setDate(startDate.getDate() + startDays);
+            const now = mode === 'scheduled' ? new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' })) : new Date(); let startDate = new Date(now); startDate.setDate(startDate.getDate() + startDays);
             for(let i=0; i<60; i++) {
                 let current = new Date(startDate); current.setDate(startDate.getDate() + i);
                 let day = current.getDay(); let month = current.getMonth() + 1; let date = current.getDate();
@@ -992,7 +1324,7 @@
 
                 if (mode === 'delivery' && day >= 2 && day <= 5) {
                     select.innerHTML += `<option value="${fullDateStr} 宅配出貨">${dateStr} 宅配出貨</option>`;
-                } else if (mode === 'pickup') {
+                } else if (mode === 'pickup' || mode === 'scheduled') {
                     // === 新增特例：2026/06/19 破例提早開放 10:00~18:00 ===
                     if (checkDateStr === "2026/06/19") {
                         ['10:00~11:00', '11:00~12:00', '12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'].forEach(t => select.innerHTML += `<option value="${fullDateStr} ${t}">🌟 ${dateStr} ${t}</option>`);
@@ -1030,7 +1362,8 @@
                 if (!/^09\d{8}$/.test(rPhone.replace(/-/g, ''))) { alert("收件人手機號碼格式錯誤"); return; }
                 if (currentTotalCups < 6 || currentTotalCups % 6 !== 0) { alert(`為了長途低溫運送防震，宅配奶酪至少需 6 杯，且總數必須為 6 的倍數。\n目前購物車內共有：${currentTotalCups} 杯`); return; }
             }
-            if(!slot) { alert(delivery === '自取' ? "請選擇到店取貨時段" : "請選擇預計出貨日期"); return; }
+            if (delivery === '預約外送') { const error = getScheduledValidationError(); if (error) { alert(error); return; } }
+            if(!slot) { alert(delivery === '自取' ? "請選擇到店取貨時段" : (delivery === '預約外送' ? "請選擇預約外送時段" : "請選擇預計出貨日期")); return; }
             goToStep(2);
         }
 
@@ -1153,7 +1486,7 @@
             calculateOrderTotals();
 
             // --- 新增：確保客人按「+」或「-」增減數量時，能即時刷新 D+1 或 D+2 的日期與提示 ---
-            const currentMode = document.querySelector('input[name="deliveryMethod"]:checked').value === '宅配' ? 'delivery' : 'pickup';
+            const currentMode = getDeliveryMode();
             updateDateSettings(currentMode);
             
             const cartContainer = document.getElementById('cart-list');
@@ -1504,6 +1837,7 @@
                 html += `<div class="summary-row"><span>低溫運費小計</span><span>${feeDisplay}</span></div>`;
             }
 
+            if (delivery === '預約外送') html += '<div class="summary-row"><span>預約外送費（滿12杯）</span><span>$0</span></div>' + scheduledSummaryHTML();
             document.getElementById('step2-summary').innerHTML = html;
         }
 
@@ -1548,6 +1882,7 @@
                 html += `</div>`;
             }
             
+            if (delivery === '預約外送') html += '<div class="summary-row"><span>預約外送費（滿12杯）</span><span>$0</span></div>' + scheduledSummaryHTML();
             document.getElementById('step3-summary').innerHTML = html;
         }
 
@@ -1645,7 +1980,7 @@
             }
         }
 
-        async function submitFinalOrder() {
+        async function submitFinalOrderCore() {
             const name = document.getElementById('cust-name').value.trim(); 
             const phone = document.getElementById('cust-phone').value.trim(); 
             const email = document.getElementById('cust-email').value.trim();
@@ -1659,7 +1994,7 @@
             if (!name || !phone) { alert("請返回第一步填寫訂購人姓名與手機號碼"); goToStep(1); return; }
             if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) { alert("手機號碼格式不正確"); goToStep(1); return; }
             if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert("Email 格式不正確"); goToStep(1); return; }
-            if (!finalDateStr) { alert(delivery === '宅配' ? "請重新選擇預計出貨日期" : "請重新選擇到店取貨時段"); goToStep(1); return; }
+            if (!finalDateStr) { alert(delivery === '宅配' ? "請重新選擇預計出貨日期" : (delivery === '預約外送' ? "請重新選擇外送時段" : "請重新選擇到店取貨時段")); goToStep(1); return; }
             if (delivery === '宅配') {
                 const rNameCheck = document.getElementById('rcpt-name').value.trim();
                 const rPhoneCheck = document.getElementById('rcpt-phone').value.trim();
@@ -1670,6 +2005,24 @@
                 if (currentTotalCups < 6 || currentTotalCups % 6 !== 0) { alert(`宅配奶酪至少需 6 杯，且總數必須為 6 的倍數。\n目前共有 ${currentTotalCups} 杯`); goToStep(1); return; }
             }
             
+            if (delivery === '預約外送') {
+                const error = getScheduledValidationError();
+                if (error) { alert(error); goToStep(1); return; }
+                const validSlots = Array.from(document.getElementById('pickup-slot-select').options).filter(o => !o.disabled).map(o => o.value);
+                if (!validSlots.includes(finalDateStr)) { alert('請重新選擇外送時段'); goToStep(1); return; }
+            }
+            if (delivery === '預約外送') {
+                try {
+                    const controller = new AbortController();
+                    const timer = setTimeout(() => controller.abort(), 15000);
+                    let response;
+                    try { response = await fetch(TRAFFIC_SCRIPT_URL + '?action=getScheduledDeliveryConfig', {cache:'no-store',signal:controller.signal}); }
+                    finally { clearTimeout(timer); }
+                    const config = await response.json();
+                    if (!response.ok || config.success !== true || config.version !== 1 || config.minCups !== SCHEDULED_DELIVERY.minCups || config.radiusMeters !== SCHEDULED_DELIVERY.radiusMeters || config.latitude !== SCHEDULED_DELIVERY.center.lat || config.longitude !== SCHEDULED_DELIVERY.center.lng) throw new Error('外送設定尚未完成');
+                } catch (error) { alert('預約外送目前無法連線或尚未開放，本次訂單尚未送出，請稍後再試。'); return; }
+            }
+            const scheduledDetails = delivery === '預約外送' ? getScheduledDeliveryDetails() : null;
             // 將原本的 const 改為 let，允許我們在後面動態修改備註內容
             let remarks = document.getElementById('cust-remarks').value.trim(); 
             
@@ -1687,6 +2040,11 @@
                 backendAddress = `收件人：${rcptName} (${rcptPhone}) / 地址：${uiAddress}`;
             }
 
+            if (scheduledDetails) {
+                rcptName = scheduledDetails.recipientName; rcptPhone = scheduledDetails.recipientPhone;
+                uiAddress = scheduledDetails.address;
+                backendAddress = `收件人：${rcptName} (${rcptPhone}) / 地址：${uiAddress}`;
+            }
             let flavorCounts = {}; for (let id in FLAVOR_MAPPING) flavorCounts[id] = 0;
             let orderDetails = ""; let itemsDetailStr = "";
             
@@ -1731,9 +2089,14 @@
                 if (flavorCounts.hasOwnProperty(13)) flavorCounts[13] += freeBags;
             }
             
+            const attemptFingerprint = scheduledDetails ? JSON.stringify([cart, name, phone, email, payment, finalDateStr, remarks, scheduledDetails, usedPoints, currentDiscountAmount, currentFinalTotal]) : '';
+            if (scheduledDetails && (!scheduledAttempt || scheduledAttempt.fingerprint !== attemptFingerprint)) {
+                scheduledAttempt = { fingerprint: attemptFingerprint, requestId: scheduledRequestId(), orderId: '' };
+            }
             let orderId = '';
             try {
-                orderId = await getTaiwanOrderId();
+                orderId = scheduledDetails && scheduledAttempt.orderId ? scheduledAttempt.orderId : await getTaiwanOrderId();
+                if (scheduledDetails) scheduledAttempt.orderId = orderId;
             } catch (e) {
                 alert("目前無法取得台灣時間訂單編號，為避免產生錯誤單號，本次訂單尚未送出。請確認網路後再試一次。");
                 return;
@@ -1762,14 +2125,17 @@
             else if (payment === 'TWQR') payMethodName = 'TWQR 行動支付 (綠界金流)';
             
             let confirmMsg = `【訂單確認】\n---------------------\n[購買明細]\n${itemsDetailStr}奶酪數量：${currentTotalCups} 杯\n---------------------\n應付總額：$${currentFinalTotal}\n訂購人：${name} / ${phone}\n取貨方式：${delivery}\n日期：${finalDateStr}\n付款方式：${payMethodName}`;
-            if (delivery === '宅配') confirmMsg += `\n收件人：${rcptName} / ${rcptPhone}\n宅配地址：${uiAddress}`;
+            if (delivery === '宅配' || scheduledDetails) confirmMsg += `\n收件人：${rcptName} / ${rcptPhone}\n收貨地址：${uiAddress}`;
+            if (scheduledDetails) confirmMsg += `\n外送距離：約 ${(scheduledDetails.distanceMeters / 1000).toFixed(3)} 公里（免外送費）`;
             confirmMsg += `\n\n請確認以上資訊無誤，點擊「確定」送出訂單。`;
             if (!confirm(confirmMsg)) return; 
 
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('btn-next').disabled = true;
 
-            fetch(GOOGLE_FORM_URL, { method: "POST", body: formData, mode: "no-cors" }).then(async () => {
+            // 外送直接由後端驗證後寫單，不能先送 Google 表單（no-cors 無法確認是否成功）。
+            const formSubmission = scheduledDetails ? Promise.resolve() : fetch(GOOGLE_FORM_URL, { method: "POST", body: formData, mode: "no-cors" });
+            return formSubmission.then(async () => {
                 
                 if (TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
                     
@@ -1788,13 +2154,15 @@
                     }
                     
                     const backendOrderData = { items: finalCartForBackend, originalTotal: currentRawTotal, discountPoints: usedPoints, otherDiscount: currentDiscountAmount - usedPoints, paymentMethod: payment, receivedAmount: currentFinalTotal, changeAmount: 0, phone: phone, email: email, name: name, delivery: delivery, address: backendAddress, date: finalDateStr, shippingFee: currentShippingFee, finalTotal: currentFinalTotal, remarks: remarks, totalCups: currentTotalCups, couponCode: appliedCoupon ? appliedCoupon.code : "" };
+                    if (scheduledDetails) backendOrderData.scheduledDelivery = scheduledDetails;
                     try {
-                        document.getElementById('loading-text').innerText = "系統已登記訂單！正在為您準備結帳收據...";
+                        document.getElementById('loading-text').innerText = scheduledDetails ? '正在確認外送範圍並建立訂單…' : '系統已登記訂單！正在為您準備結帳收據...';
 
-                        const response = await fetch(TRAFFIC_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "createEcpayOrder", phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, orderId: orderId, orderData: backendOrderData, paymentMethod: payment }) });
+                        const response = await fetch(TRAFFIC_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "createEcpayOrder", requestId: scheduledDetails ? scheduledAttempt.requestId : undefined, phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, orderId: orderId, orderData: backendOrderData, paymentMethod: payment }) });
                         const rawText = await response.text();
                         let result; try { result = JSON.parse(rawText); } catch(jsonErr) { result = { success: false, msg: "後端回傳格式非標準 JSON" }; }
                         
+                        if (scheduledDetails && result.success && result.scheduledDeliveryVerified !== true) throw new Error('外送訂單未取得後端範圍驗證');
                         if (result.success) {
                             if (result.ecpayParams && payment !== 'LinePay') {
                                 const ecpayForm = document.getElementById('ecpay-post-form'); ecpayForm.innerHTML = ''; 
@@ -1813,11 +2181,17 @@
                             document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('btn-next').disabled = false;
                         }
                     } catch (e) {
+                        if (scheduledDetails) {
+                            alert('外送訂單尚未取得伺服器確認，請先用姓名、手機查單或聯絡客服確認。若重試，請保留目前頁面及相同訂單內容。單號：' + orderId);
+                            document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('btn-next').disabled = false;
+                            return;
+                        }
                         alert("中央伺服器同步線路異常，但您的訂單已透過防漏管道安全送出！請點擊確定查看您的訂單明細與付款條碼。");
                         showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
                         document.getElementById('loading-overlay').style.display = 'none';
                     }
                 } else {
+                    if (scheduledDetails) { alert('外送訂單尚未送出，後端連線設定不完整'); document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('btn-next').disabled = false; return; }
                     showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
                     document.getElementById('loading-overlay').style.display = 'none';
                 }
@@ -1847,7 +2221,10 @@
             const paymentContainer = document.getElementById('dynamic-payment-info');
             const ecpayReady = document.getElementById('ecpay-post-form').children.length > 0;
 
-            if(payment === 'LinePay') {
+            if (delivery === '預約外送' && finalAllPrice === 0) {
+                document.getElementById('receipt-payment-method').innerText = '已全額折抵，無須另行付款';
+                paymentContainer.innerHTML = '<div class="scheduled-summary">本單應付 $0，無須操作付款。店家將確認您的外送安排。</div>';
+            } else if(payment === 'LinePay') {
                 paymentContainer.innerHTML = `
                     <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px; text-align:center; box-shadow: 0 4px 15px rgba(216, 124, 124, 0.25);">
                         <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請完成付款</div>
@@ -1883,13 +2260,16 @@
 
             document.getElementById('receipt-name').innerText = name; document.getElementById('receipt-phone').innerText = phone;
             document.getElementById('receipt-delivery').innerText = delivery; document.getElementById('receipt-date').innerText = dateStr;
-            if(delivery === '宅配') {
+            if(delivery === '宅配' || delivery === '預約外送') {
                 document.getElementById('receipt-rcpt-name-row').style.display = 'flex'; document.getElementById('receipt-rcpt-name').innerText = rcptName;
                 document.getElementById('receipt-rcpt-phone-row').style.display = 'flex'; document.getElementById('receipt-rcpt-phone').innerText = rcptPhone;
                 document.getElementById('receipt-address-row').style.display = 'flex'; document.getElementById('receipt-address').innerText = uiAddress;
             } else {
                 document.getElementById('receipt-rcpt-name-row').style.display = 'none'; document.getElementById('receipt-rcpt-phone-row').style.display = 'none'; document.getElementById('receipt-address-row').style.display = 'none';
             }
+            const mapRow = document.getElementById('receipt-map-row');
+            mapRow.style.display = delivery === '預約外送' && scheduledPoint ? 'flex' : 'none';
+            if (delivery === '預約外送' && scheduledPoint) document.getElementById('receipt-map-link').href = scheduledMapUrl(scheduledPoint);
             if(remarks) { document.getElementById('receipt-remarks-row').style.display = 'flex'; document.getElementById('receipt-remarks').innerText = remarks; } 
             else { document.getElementById('receipt-remarks-row').style.display = 'none'; }
 
@@ -1954,7 +2334,8 @@
             }
 
             let copyText = `【hello好酪 訂單預訂資訊】\n訂單編號：${orderId}\n訂購人姓名：${name}\n手機號碼：${phone}\n取貨方式：${delivery}\n`;
-            if (delivery === '宅配') { copyText += `收件人姓名：${document.getElementById('receipt-rcpt-name').innerText}\n收件電話：${document.getElementById('receipt-rcpt-phone').innerText}\n宅配地址：${document.getElementById('receipt-address').innerText}\n`; }
+            if (delivery === '宅配' || delivery === '預約外送') { copyText += `收件人姓名：${document.getElementById('receipt-rcpt-name').innerText}\n收件電話：${document.getElementById('receipt-rcpt-phone').innerText}\n收貨地址：${document.getElementById('receipt-address').innerText}\n`; }
+            if (delivery === '預約外送' && scheduledPoint) copyText += `外送導航：${scheduledMapUrl(scheduledPoint)}\n`;
             copyText += `日期：${date}\n`; if (remarksText) copyText += `備註：${remarksText}\n`; copyText += `\n[購買明細]\n${itemsStr}`;
             
             if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(copyText).then(() => { alert("預訂單資訊已完整複製！您可以直接貼上傳給官方 LINE 客服人員。"); }).catch(err => { fallbackCopy(copyText, "預訂資訊"); }); } else { fallbackCopy(copyText, "預訂資訊"); }
