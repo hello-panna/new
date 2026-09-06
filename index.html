@@ -978,9 +978,13 @@
                 let current = new Date(startDate); current.setDate(startDate.getDate() + i);
                 let day = current.getDay(); let month = current.getMonth() + 1; let date = current.getDate();
                 
-                // === 新增：排除特定店休區間 (2026/07/05 ~ 2026/07/10) 以及 2026/08/25 ===
+                // === 排除特定店休區間與停止接單日期（自取、宅配皆不產生選項）===
                 let checkDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')}`;
-                if ((checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") || checkDateStr === "2026/08/25") {
+                if (
+                    (checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") ||
+                    checkDateStr === "2026/08/25" ||
+                    checkDateStr === "2026/09/09"
+                ) {
                 continue; // 遇到這幾天直接跳過，不管自取或宅配都不產生選項
                 }
 // =========================================================
