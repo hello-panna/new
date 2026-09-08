@@ -2008,7 +2008,13 @@
 
             try {
                 // 向您的 Google Apps Script 發送查詢請求 (需在 GAS 後端新增 action=queryOrder 的對應邏輯)
-                const response = await fetch(TRAFFIC_SCRIPT_URL + "?action=queryOrder&name=" + encodeURIComponent(name) + "&phone=" + encodeURIComponent(phone) + "&email=" + encodeURIComponent(email));
+                const response = await fetch(
+                    TRAFFIC_SCRIPT_URL +
+                    "?action=queryOrder&name=" + encodeURIComponent(name) +
+                    "&phone=" + encodeURIComponent(phone) +
+                    "&_=" + Date.now(),
+                    { cache: "no-store" }
+                );
                 const data = await response.json();
 
                 if (data.success && data.orders && data.orders.length > 0) {
