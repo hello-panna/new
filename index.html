@@ -686,11 +686,7 @@
         // 1. 核心設定變數與商品陣列
         // ==========================================
         const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
-        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSenpCJdVZWJ4seiaz4GimXwasppPbnX3o1pLGyrnIMWaJ_sqw/formResponse";
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/IfptidsAV8xmFSsDt3hTOWf6Otwr6TA10i3P1REVpFRrJLhS5KeOxPoyflT4zplF";
-        
-        const FORM_FIELDS = { orderContent: "entry.1214769536", name: "entry.537178649", phone: "entry.1240845794", email: "entry.586707224", payment: "entry.36879241", delivery: "entry.2126181854", address: "entry.1346414492", date: "entry.1111858266", cups: "entry.1482122773", subtotal: "entry.1558685102", shipping: "entry.1750953999", totalPrice: "entry.816848611", remarks: "entry.370850133", orderId: "entry.846286532", discountAmount: "entry.1977990591", couponCode: "entry.562394796" };
-        const FLAVOR_MAPPING = { 1: "entry.1878923092", 2: "entry.1221947009", 3: "entry.513696828", 4: "entry.629066213", 5: "entry.56980633", 6: "entry.2021049410", 7: "entry.1968820040", 8: "entry.73334113", 9: "entry.93299315", 10: "entry.799869452", 13: "entry.849234818" , 14: "entry.450635103", 15: "entry.1931520079" };
 
         const menuData = [
             { id: 1, name: "經典原味鮮奶酪", price: 50, image: "230242.jpg", desc: "濃郁奶香、綿密滑順，熱賣必買的人氣口味。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁", badge: "銷售第一", badgeColor: "#D84315" },
@@ -1691,14 +1687,11 @@
                 backendAddress = `收件人：${rcptName} (${rcptPhone}) / 地址：${uiAddress}`;
             }
 
-            let flavorCounts = {}; for (let id in FLAVOR_MAPPING) flavorCounts[id] = 0;
-            let orderDetails = ""; let itemsDetailStr = "";
+            let itemsDetailStr = "";
             
             cart.forEach(p => { 
                 let qty = parseInt(p.quantity, 10) || 0; 
-                orderDetails += `${p.name}x${qty}, `; 
                 itemsDetailStr += `• ${p.name} x ${qty}\n`; 
-                if (flavorCounts.hasOwnProperty(p.id)) flavorCounts[p.id] += qty; 
             });
             
             // ==========================================
@@ -1730,9 +1723,7 @@
             // === 新增：寫入後端紀錄與 LINE 顯示明細 (動態數量) ===
             let freeBags = Math.floor(currentTotalCups / 12);
             if (freeBags > 0) {
-                orderDetails += `🎁[贈品]保冷袋x${freeBags}, `;
                 itemsDetailStr += `• 🎁 [贈品] 質感保冷袋 x ${freeBags}\n`;
-                if (flavorCounts.hasOwnProperty(13)) flavorCounts[13] += freeBags;
             }
             
             let orderId = '';
@@ -1743,20 +1734,6 @@
                 return;
             }
             let earnedPoints = email ? currentTotalCups : 0; 
-
-            let fullOrderInfo = orderDetails + ` [共${currentTotalCups}杯]`;
-            if(currentShippingFee > 0) fullOrderInfo += ` [運費$${currentShippingFee}]`;
-            if(usedPoints > 0) fullOrderInfo += ` [使用折抵:${usedPoints}點]`;
-            if(earnedPoints > 0) fullOrderInfo += ` [本次獲得:${earnedPoints}點]`;
-
-            // 封裝備份用 Google 表單資料
-            let formData = new FormData();
-            formData.append(FORM_FIELDS.orderContent, fullOrderInfo); formData.append(FORM_FIELDS.name, name); formData.append(FORM_FIELDS.phone, phone); formData.append(FORM_FIELDS.email, email);
-            formData.append(FORM_FIELDS.payment, payment); formData.append(FORM_FIELDS.delivery, delivery); formData.append(FORM_FIELDS.address, backendAddress); formData.append(FORM_FIELDS.date, finalDateStr);
-            formData.append(FORM_FIELDS.cups, currentTotalCups); formData.append(FORM_FIELDS.subtotal, currentRawTotal); formData.append(FORM_FIELDS.shipping, currentShippingFee);
-            formData.append(FORM_FIELDS.totalPrice, currentFinalTotal); formData.append(FORM_FIELDS.remarks, remarks); formData.append(FORM_FIELDS.orderId, orderId);
-            formData.append(FORM_FIELDS.discountAmount, currentDiscountAmount); formData.append(FORM_FIELDS.couponCode, appliedCoupon ? appliedCoupon.code : "");
-            for (let id in FLAVOR_MAPPING) { if (flavorCounts[id] > 0) formData.append(FLAVOR_MAPPING[id], flavorCounts[id]); }
 
             let payMethodName = "";
             if (payment === 'Credit') payMethodName = '信用卡線上刷卡 (綠界金流)';
@@ -1773,59 +1750,74 @@
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('btn-next').disabled = true;
 
-            fetch(GOOGLE_FORM_URL, { method: "POST", body: formData, mode: "no-cors" }).then(async () => {
-                
-                if (TRAFFIC_SCRIPT_URL && !TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
-                    
-                    // === 修正：建立傳送給後端的購物車陣列 ===
-                    let finalCartForBackend = JSON.parse(JSON.stringify(cart));
-                    
-                    if (freeBags > 0) {
-                        let existingCoolerBag = finalCartForBackend.find(item => item.id === 13);
-                        
-                        if (existingCoolerBag) {
-                            existingCoolerBag.quantity += freeBags; // 加上贈送的總數量
-                            existingCoolerBag.name = existingCoolerBag.name + " (含滿額贈)";
-                        } else {
-                            finalCartForBackend.push({ id: 13, name: "🎁 [贈品] 質感保冷袋", price: 0, quantity: freeBags }); // 直接帶入獲得的數量
-                        }
-                    }
-                    
-                    const backendOrderData = { items: finalCartForBackend, originalTotal: currentRawTotal, discountPoints: usedPoints, otherDiscount: currentDiscountAmount - usedPoints, paymentMethod: payment, receivedAmount: currentFinalTotal, changeAmount: 0, phone: phone, email: email, name: name, delivery: delivery, address: backendAddress, date: finalDateStr, shippingFee: currentShippingFee, finalTotal: currentFinalTotal, remarks: remarks, totalCups: currentTotalCups, couponCode: appliedCoupon ? appliedCoupon.code : "" };
-                    try {
-                        document.getElementById('loading-text').innerText = "系統已登記訂單！正在為您準備結帳收據...";
+            // 訂單只透過 Apps Script 建立一次，避免 Google 表單與後端同時寫入重複訂單。
+            if (!TRAFFIC_SCRIPT_URL || TRAFFIC_SCRIPT_URL.includes("YOUR_ID_HERE")) {
+                alert("中央訂單系統尚未設定，本次訂單尚未送出，請聯絡客服。");
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('btn-next').disabled = false;
+                return;
+            }
 
-                        const response = await fetch(TRAFFIC_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "createEcpayOrder", phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, orderId: orderId, orderData: backendOrderData, paymentMethod: payment }) });
-                        const rawText = await response.text();
-                        let result; try { result = JSON.parse(rawText); } catch(jsonErr) { result = { success: false, msg: "後端回傳格式非標準 JSON" }; }
-                        
-                        if (result.success) {
-                            if (result.ecpayParams && payment !== 'LinePay') {
-                                const ecpayForm = document.getElementById('ecpay-post-form'); ecpayForm.innerHTML = ''; 
-                                for (const key in result.ecpayParams) {
-                                    if (result.ecpayParams.hasOwnProperty(key)) {
-                                        const hiddenInput = document.createElement('input'); hiddenInput.type = 'hidden'; hiddenInput.name = key; hiddenInput.value = result.ecpayParams[key]; ecpayForm.appendChild(hiddenInput);
-                                    }
-                                }
-                            }
-                            
-                            showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
-                            document.getElementById('loading-overlay').style.display = 'none';
+            let finalCartForBackend = JSON.parse(JSON.stringify(cart));
 
-                        } else {
-                            alert("【系統登記失敗】\n" + (result.msg || "參數異常") + "\n請截圖告知客服為您確認試算表狀態。");
-                            document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('btn-next').disabled = false;
-                        }
-                    } catch (e) {
-                        alert("中央伺服器同步線路異常，但您的訂單已透過防漏管道安全送出！請點擊確定查看您的訂單明細與付款條碼。");
-                        showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
-                        document.getElementById('loading-overlay').style.display = 'none';
-                    }
+            if (freeBags > 0) {
+                let existingCoolerBag = finalCartForBackend.find(item => item.id === 13);
+
+                if (existingCoolerBag) {
+                    existingCoolerBag.quantity += freeBags;
+                    existingCoolerBag.name = existingCoolerBag.name + " (含滿額贈)";
                 } else {
+                    finalCartForBackend.push({ id: 13, name: "🎁 [贈品] 質感保冷袋", price: 0, quantity: freeBags });
+                }
+            }
+
+            const backendOrderData = { items: finalCartForBackend, originalTotal: currentRawTotal, discountPoints: usedPoints, otherDiscount: currentDiscountAmount - usedPoints, paymentMethod: payment, receivedAmount: currentFinalTotal, changeAmount: 0, phone: phone, email: email, name: name, delivery: delivery, address: backendAddress, date: finalDateStr, shippingFee: currentShippingFee, finalTotal: currentFinalTotal, remarks: remarks, totalCups: currentTotalCups, couponCode: appliedCoupon ? appliedCoupon.code : "" };
+
+            try {
+                document.getElementById('loading-text').innerText = "正在登記訂單與準備結帳收據...";
+
+                const response = await fetch(TRAFFIC_SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "createEcpayOrder", phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, orderId: orderId, orderData: backendOrderData, paymentMethod: payment })
+                });
+                if (!response.ok) throw new Error("HTTP " + response.status);
+
+                const rawText = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(rawText);
+                } catch (jsonErr) {
+                    result = { success: false, msg: "後端回傳格式非標準 JSON" };
+                }
+
+                if (result.success) {
+                    if (result.ecpayParams && payment !== 'LinePay') {
+                        const ecpayForm = document.getElementById('ecpay-post-form');
+                        ecpayForm.innerHTML = '';
+                        for (const key in result.ecpayParams) {
+                            if (result.ecpayParams.hasOwnProperty(key)) {
+                                const hiddenInput = document.createElement('input');
+                                hiddenInput.type = 'hidden';
+                                hiddenInput.name = key;
+                                hiddenInput.value = result.ecpayParams[key];
+                                ecpayForm.appendChild(hiddenInput);
+                            }
+                        }
+                    }
+
                     showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
                     document.getElementById('loading-overlay').style.display = 'none';
+                } else {
+                    alert("【系統登記失敗】\n" + (result.msg || result.error || "參數異常") + "\n本次訂單尚未確認完成，請勿付款，並截圖聯絡客服。");
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    document.getElementById('btn-next').disabled = false;
                 }
-            }).catch(err => { alert("伺服器連線中斷，傳送失敗，請檢查您的網路訊號。"); document.getElementById('loading-overlay').style.display = 'none'; document.getElementById('btn-next').disabled = false; });
+            } catch (e) {
+                console.error("訂單傳送失敗：", e);
+                alert("中央訂單系統連線異常，本次訂單尚未確認完成，請勿付款。請先使用「查詢訂單」確認，或聯絡客服。");
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('btn-next').disabled = false;
+            }
         }
 
 
