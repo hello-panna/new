@@ -771,16 +771,30 @@
         let currentRawTotal = 0; let currentShippingFee = 0;
         let currentDiscountAmount = 0; let currentDiscountName = "";
         let currentFinalTotal = 0; let currentTotalCups = 0;
-        let scheduledDeliveryRequestId = createScheduledDeliveryRequestId();
+        let onlineOrderRequestId = getOnlineOrderRequestId();
+        let orderSubmissionInProgress = false;
 
-        function createScheduledDeliveryRequestId() {
+        function createOnlineOrderRequestId() {
             let randomPart = '';
             if (window.crypto && typeof window.crypto.randomUUID === 'function') {
                 randomPart = window.crypto.randomUUID().replace(/-/g, '');
             } else {
                 randomPart = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
             }
-            return `sd_${Date.now()}_${randomPart}`.slice(0, 80);
+            return `web_${Date.now()}_${randomPart}`.slice(0, 80);
+        }
+
+        function getOnlineOrderRequestId() {
+            try {
+                const key = 'helloPannaPendingOrderRequestId';
+                const pending = window.sessionStorage.getItem(key);
+                if (pending && /^[A-Za-z0-9_-]{16,80}$/.test(pending)) return pending;
+                const requestId = createOnlineOrderRequestId();
+                window.sessionStorage.setItem(key, requestId);
+                return requestId;
+            } catch (e) {
+                return createOnlineOrderRequestId();
+            }
         }
 
         function getSelectedDeliveryMode() {
@@ -832,14 +846,6 @@
             const help = document.getElementById('linepay-payment-help');
             const selected = document.querySelector('input[name="paymentMethod"]:checked');
             if (help) help.style.display = selected && selected.value === 'LinePay' ? 'block' : 'none';
-        }
-
-        async function getTaiwanOrderId() {
-            const response = await fetch(TRAFFIC_SCRIPT_URL + '?action=getTaiwanOrderId&_=' + Date.now(), { cache: 'no-store' });
-            if (!response.ok) throw new Error('無法取得台灣時間訂單編號');
-            const data = await response.json();
-            if (!data.success || !/^\d{14}$/.test(String(data.orderId || ''))) throw new Error('台灣時間訂單編號格式異常');
-            return String(data.orderId);
         }
 
         function resetMemberVerification() {
@@ -1803,6 +1809,7 @@
         }
 
         async function submitFinalOrder() {
+            if (orderSubmissionInProgress) return;
             const name = document.getElementById('cust-name').value.trim(); 
             const phone = document.getElementById('cust-phone').value.trim(); 
             const email = document.getElementById('cust-email').value.trim();
@@ -1914,13 +1921,6 @@
                 itemsDetailStr += `• 🎁 [贈品] 質感保冷袋 x ${freeBags}\n`;
             }
             
-            let orderId = '';
-            try {
-                orderId = await getTaiwanOrderId();
-            } catch (e) {
-                alert("目前無法取得台灣時間訂單編號，為避免產生錯誤單號，本次訂單尚未送出。請確認網路後再試一次。");
-                return;
-            }
             let earnedPoints = email ? currentTotalCups : 0; 
 
             let payMethodName = "";
@@ -1936,6 +1936,7 @@
             confirmMsg += `\n\n請確認以上資訊無誤，點擊「確定」送出訂單。`;
             if (!confirm(confirmMsg)) return; 
 
+            orderSubmissionInProgress = true;
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('btn-next').disabled = true;
 
@@ -1944,6 +1945,7 @@
                 alert("中央訂單系統尚未設定，本次訂單尚未送出，請聯絡客服。");
                 document.getElementById('loading-overlay').style.display = 'none';
                 document.getElementById('btn-next').disabled = false;
+                orderSubmissionInProgress = false;
                 return;
             }
 
@@ -1966,8 +1968,8 @@
             try {
                 document.getElementById('loading-text').innerText = "正在登記訂單與準備結帳收據...";
 
-                const requestPayload = { action: "createEcpayOrder", phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, orderId: orderId, orderData: backendOrderData, paymentMethod: payment };
-                if (delivery === '預約外送') requestPayload.requestId = scheduledDeliveryRequestId;
+                // 同一筆訂單只送一個固定請求編號；台灣時間單號由後端在正式送單時產生。
+                const requestPayload = { action: "createEcpayOrder", phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, requestId: onlineOrderRequestId, orderData: backendOrderData, paymentMethod: payment };
 
                 const response = await fetch(TRAFFIC_SCRIPT_URL, {
                     method: "POST",
@@ -1984,6 +1986,8 @@
                 }
 
                 if (result.success) {
+                    if (!/^\d{14}$/.test(String(result.orderId || ''))) throw new Error('後端已處理請求，但未回傳有效訂單編號；請先查單，不要另建新單');
+                    const orderId = String(result.orderId);
                     if (result.ecpayParams && payment !== 'LinePay') {
                         const ecpayForm = document.getElementById('ecpay-post-form');
                         ecpayForm.innerHTML = '';
@@ -1999,17 +2003,24 @@
                     }
 
                     showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
+                    try {
+                        if (window.sessionStorage.getItem('helloPannaPendingOrderRequestId') === onlineOrderRequestId) {
+                            window.sessionStorage.removeItem('helloPannaPendingOrderRequestId');
+                        }
+                    } catch (e) { /* 無法使用儲存空間時，仍保留頁面內的防重編號。 */ }
                     document.getElementById('loading-overlay').style.display = 'none';
                 } else {
                     alert("【系統登記失敗】\n" + (result.msg || result.error || "參數異常") + "\n本次訂單尚未確認完成，請勿付款，並截圖聯絡客服。");
                     document.getElementById('loading-overlay').style.display = 'none';
                     document.getElementById('btn-next').disabled = false;
+                    orderSubmissionInProgress = false;
                 }
             } catch (e) {
                 console.error("訂單傳送失敗：", e);
                 alert("中央訂單系統連線異常，本次訂單尚未確認完成，請勿付款。請先使用「查詢訂單」確認，或聯絡客服。");
                 document.getElementById('loading-overlay').style.display = 'none';
                 document.getElementById('btn-next').disabled = false;
+                orderSubmissionInProgress = false;
             }
         }
 
