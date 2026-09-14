@@ -719,7 +719,7 @@
         </div>
     </div>
     
-    <form id="ecpay-post-form" method="POST" action="https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5" style="display:none;"></form>
+    <form id="ecpay-post-form" method="POST" action="https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5" target="_self" accept-charset="UTF-8" style="display:none;"></form>
     
     <div id="cart-modal-overlay" onclick="if(event.target===this) closeCartModal()">
         <div class="cart-modal-content">
@@ -737,6 +737,8 @@
         // 1. 核心設定變數與商品陣列
         // ==========================================
         const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
+        const ONLINE_CHECKOUT_FRONTEND_VERSION = "2026-09-14-ecpay-redirect-v2";
+        const ECPAY_CHECKOUT_URL = "https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5";
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/IfptidsAV8xmFSsDt3hTOWf6Otwr6TA10i3P1REVpFRrJLhS5KeOxPoyflT4zplF";
 
         const menuData = [
@@ -795,6 +797,57 @@
             } catch (e) {
                 return createOnlineOrderRequestId();
             }
+        }
+
+        function clearOnlineOrderRequestId(requestId) {
+            try {
+                const key = 'helloPannaPendingOrderRequestId';
+                if (window.sessionStorage.getItem(key) === requestId) window.sessionStorage.removeItem(key);
+            } catch (e) { /* 無法使用儲存空間時，不影響已完成的訂單。 */ }
+        }
+
+        function getCheckoutErrorText(error) {
+            const text = String(error && error.message ? error.message : error || '未知錯誤')
+                .replace(/[\r\n\t]+/g, ' ').trim();
+            return text.slice(0, 180) || '未知錯誤';
+        }
+
+        function prepareEcpayPostForm(params, orderId, finalTotal, payment) {
+            const requiredFields = ['MerchantID', 'MerchantTradeNo', 'MerchantTradeDate', 'PaymentType', 'TotalAmount', 'TradeDesc', 'ItemName', 'ReturnURL', 'ChoosePayment', 'EncryptType', 'CheckMacValue'];
+            if (!params || typeof params !== 'object' || Array.isArray(params)) throw new Error('後端未回傳綠界付款參數');
+            for (const field of requiredFields) {
+                if (String(params[field] == null ? '' : params[field]).trim() === '') throw new Error(`綠界付款參數缺少 ${field}`);
+            }
+            if (String(params.MerchantTradeNo) !== `HP${orderId}`) throw new Error('綠界交易編號與訂單編號不一致');
+            if (String(params.TotalAmount) !== String(Math.round(Number(finalTotal)))) throw new Error('綠界付款金額與訂單金額不一致');
+            if (String(params.ChoosePayment) !== payment) throw new Error('綠界付款方式與所選方式不一致');
+            if (!/^[A-F0-9]{64}$/.test(String(params.CheckMacValue))) throw new Error('綠界付款檢查碼格式不正確');
+
+            const ecpayForm = document.getElementById('ecpay-post-form');
+            if (!ecpayForm) throw new Error('找不到綠界付款表單');
+            ecpayForm.innerHTML = '';
+            ecpayForm.method = 'POST';
+            ecpayForm.action = ECPAY_CHECKOUT_URL;
+            ecpayForm.target = '_self';
+            for (const [key, value] of Object.entries(params)) {
+                if (!Object.prototype.hasOwnProperty.call(params, key) || value == null) continue;
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = key;
+                hiddenInput.value = String(value);
+                ecpayForm.appendChild(hiddenInput);
+            }
+            return ecpayForm;
+        }
+
+        function submitPreparedEcpayPayment() {
+            const ecpayForm = document.getElementById('ecpay-post-form');
+            if (!ecpayForm || !ecpayForm.children.length) throw new Error('綠界付款表單尚未準備完成');
+            const loadingText = document.getElementById('loading-text');
+            if (loadingText) loadingText.innerText = '訂單已建立，正在前往綠界安全付款頁面...';
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+            HTMLFormElement.prototype.submit.call(ecpayForm);
         }
 
         function getSelectedDeliveryMode() {
@@ -1660,7 +1713,7 @@
                 const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
                 html += `<div class="summary-row"><span>低溫運費小計</span><span>${feeDisplay}</span></div>`;
             } else if (delivery === '預約外送') {
-                html += `<div class="summary-row"><span>預約外送費</span><span style="color:#2E7D32; font-weight:bold;">$0（滿12杯免外送費）</span></div>`;
+                html += `<div class="summary-row"><span>預約外送費</span><span>$0</span></div>`;
                 html += `<div style="margin-top:8px; color:#AA4334; font-size:0.82rem; line-height:1.55;">所選時段為希望送達時段，實際外送時間以店家聯絡確認為準。</div>`;
             }
 
@@ -1692,7 +1745,7 @@
                 const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
                 html += `<div class="summary-row"><span>低溫冷藏運費</span><span>${feeDisplay}</span></div>`;
             } else if (delivery === '預約外送') {
-                html += `<div class="summary-row"><span>預約外送費</span><span style="color:#2E7D32; font-weight:bold;">$0（滿12杯免外送費）</span></div>`;
+                html += `<div class="summary-row"><span>預約外送費</span><span>$0</span></div>`;
                 html += `<div style="margin-top:8px; color:#AA4334; font-size:0.82rem; line-height:1.55;">所選時段為希望送達時段，實際外送時間以店家聯絡確認為準。</div>`;
             }
 
@@ -1965,11 +2018,13 @@
             const backendOrderData = { items: finalCartForBackend, originalTotal: currentRawTotal, discountPoints: usedPoints, otherDiscount: currentDiscountAmount - usedPoints, paymentMethod: payment, receivedAmount: currentFinalTotal, changeAmount: 0, phone: phone, email: email, name: name, delivery: delivery, address: backendAddress, date: finalDateStr, shippingFee: currentShippingFee, finalTotal: currentFinalTotal, remarks: remarks, totalCups: currentTotalCups, couponCode: appliedCoupon ? appliedCoupon.code : "" };
             if (scheduledDeliveryData) backendOrderData.scheduledDelivery = scheduledDeliveryData;
 
+            let backendReportedSuccess = false;
+            let confirmedOrderId = '';
             try {
                 document.getElementById('loading-text').innerText = "正在登記訂單與準備結帳收據...";
 
                 // 同一筆訂單只送一個固定請求編號；台灣時間單號由後端在正式送單時產生。
-                const requestPayload = { action: "createEcpayOrder", phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, requestId: onlineOrderRequestId, orderData: backendOrderData, paymentMethod: payment };
+                const requestPayload = { action: "createEcpayOrder", clientVersion: ONLINE_CHECKOUT_FRONTEND_VERSION, phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, requestId: onlineOrderRequestId, orderData: backendOrderData, paymentMethod: payment };
 
                 const response = await fetch(TRAFFIC_SCRIPT_URL, {
                     method: "POST",
@@ -1986,29 +2041,37 @@
                 }
 
                 if (result.success) {
-                    if (!/^\d{14}$/.test(String(result.orderId || ''))) throw new Error('後端已處理請求，但未回傳有效訂單編號；請先查單，不要另建新單');
-                    const orderId = String(result.orderId);
-                    if (result.ecpayParams && payment !== 'LinePay') {
-                        const ecpayForm = document.getElementById('ecpay-post-form');
-                        ecpayForm.innerHTML = '';
-                        for (const key in result.ecpayParams) {
-                            if (result.ecpayParams.hasOwnProperty(key)) {
-                                const hiddenInput = document.createElement('input');
-                                hiddenInput.type = 'hidden';
-                                hiddenInput.name = key;
-                                hiddenInput.value = result.ecpayParams[key];
-                                ecpayForm.appendChild(hiddenInput);
-                            }
-                        }
+                    backendReportedSuccess = true;
+                    if (!/^\d{14}$/.test(String(result.orderId || ''))) {
+                        const versionError = new Error('後端部署版本不一致：成功回應未包含新版 14 碼訂單編號');
+                        versionError.code = 'BACKEND_VERSION_MISMATCH';
+                        throw versionError;
                     }
 
-                    showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
+                    const orderId = String(result.orderId);
+                    confirmedOrderId = orderId;
+                    const needsEcpayRedirect = payment !== 'LinePay' && Number(currentFinalTotal) > 0;
+                    if (needsEcpayRedirect) prepareEcpayPostForm(result.ecpayParams, orderId, currentFinalTotal, payment);
+
+                    // 收據或廣告追蹤即使個別失敗，也不能阻擋已建立訂單前往綠界付款。
+                    let receiptError = null;
                     try {
-                        if (window.sessionStorage.getItem('helloPannaPendingOrderRequestId') === onlineOrderRequestId) {
-                            window.sessionStorage.removeItem('helloPannaPendingOrderRequestId');
-                        }
-                    } catch (e) { /* 無法使用儲存空間時，仍保留頁面內的防重編號。 */ }
+                        showReceipt(name, phone, email, finalDateStr, delivery, payment, uiAddress, currentFinalTotal, currentTotalCups, currentShippingFee, remarks, orderId, currentRawTotal, currentDiscountAmount, currentDiscountName, usedPoints, earnedPoints, rcptName, rcptPhone);
+                    } catch (renderError) {
+                        receiptError = renderError;
+                        console.error('訂單已建立，但收據畫面產生失敗：', renderError);
+                    }
+
+                    clearOnlineOrderRequestId(onlineOrderRequestId);
+
+                    if (needsEcpayRedirect) {
+                        // 綠界官方規格要求由前端以 POST 表單 Submit；使用同頁導轉可避免新視窗遭瀏覽器封鎖。
+                        submitPreparedEcpayPayment();
+                        return;
+                    }
+
                     document.getElementById('loading-overlay').style.display = 'none';
+                    if (receiptError) alert(`訂單 ${orderId} 已建立，但收據畫面顯示異常。請保留此單號並使用「查詢訂單」確認。`);
                 } else {
                     alert("【系統登記失敗】\n" + (result.msg || result.error || "參數異常") + "\n本次訂單尚未確認完成，請勿付款，並截圖聯絡客服。");
                     document.getElementById('loading-overlay').style.display = 'none';
@@ -2017,10 +2080,17 @@
                 }
             } catch (e) {
                 console.error("訂單傳送失敗：", e);
-                alert("中央訂單系統連線異常，本次訂單尚未確認完成，請勿付款。請先使用「查詢訂單」確認，或聯絡客服。");
+                if (backendReportedSuccess && !confirmedOrderId) {
+                    alert("【後端部署版本不一致】\n伺服器回覆成功，但沒有回傳新版 14 碼訂單編號。這通常表示 Code.gs 已儲存、但尚未建立新的網頁應用程式部署版本。\n\n本筆可能已寫入試算表，請先使用「查詢訂單」確認，暫時不要再次送單。");
+                } else if (confirmedOrderId) {
+                    alert(`訂單 ${confirmedOrderId} 已建立，但未能開啟綠界付款頁。請勿重新下單；請保留單號並聯絡客服。\n原因：${getCheckoutErrorText(e)}`);
+                } else {
+                    alert(`中央訂單系統尚未確認完成，請勿付款。請先使用「查詢訂單」確認；若查無訂單再重試。\n原因：${getCheckoutErrorText(e)}`);
+                }
                 document.getElementById('loading-overlay').style.display = 'none';
-                document.getElementById('btn-next').disabled = false;
-                orderSubmissionInProgress = false;
+                const possiblyCreated = backendReportedSuccess || !!confirmedOrderId;
+                document.getElementById('btn-next').disabled = possiblyCreated;
+                orderSubmissionInProgress = possiblyCreated;
             }
         }
 
@@ -2029,15 +2099,20 @@
         // 收據與一鍵複製功能 (整合全付款管道動態按鈕)
         // ==========================================
         function showReceipt(name, phone, email, dateStr, delivery, payment, uiAddress, finalAllPrice, totalCups, shippingFee, remarks, orderId, rawTotal, discountAmount, discountName, usedPts, earnedPts, rcptName, rcptPhone) {
-            gtag('event', 'conversion', { 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 'value': finalAllPrice, 'currency': 'TWD', 'transaction_id': orderId });
-            if(typeof fbq !== 'undefined') fbq('track', 'Purchase', { value: finalAllPrice, currency: 'TWD', content_name: '鮮奶酪訂單', num_items: totalCups, transaction_id: orderId });
+            try {
+                if (typeof gtag === 'function') gtag('event', 'conversion', { 'send_to': 'AW-17855729381/9La6CO6XneybEOWdo8JC', 'value': finalAllPrice, 'currency': 'TWD', 'transaction_id': orderId });
+            } catch (trackingError) { console.warn('Google Ads 轉換追蹤未完成：', trackingError); }
+            try {
+                if (typeof fbq === 'function') fbq('track', 'Purchase', { value: finalAllPrice, currency: 'TWD', content_name: '鮮奶酪訂單', num_items: totalCups, transaction_id: orderId });
+            } catch (trackingError) { console.warn('Meta 轉換追蹤未完成：', trackingError); }
 
             const now = new Date(); document.getElementById('receipt-time').innerText = "訂單時間：" + now.toLocaleString('zh-TW', {hour12: false});
             document.getElementById('receipt-order-id').innerText = orderId;
             document.getElementById('receipt-total-highlight').innerText = "NT$ " + finalAllPrice;
             
             let paymentText = "";
-            if (payment === 'Credit') paymentText = "信用卡線上刷卡 (請點擊下方按鈕結帳)";
+            if (Number(finalAllPrice) <= 0) paymentText = "折抵後無需付款";
+            else if (payment === 'Credit') paymentText = "信用卡線上刷卡 (系統將自動前往綠界)";
             else if (payment === 'ApplePay') paymentText = "Apple Pay 行動支付 (請點擊下方按鈕結帳)";
             else if (payment === 'ATM') paymentText = "綠界 ATM 虛擬帳號 (請點擊下方按鈕取號)";
             else if (payment === 'LinePay') paymentText = "LINE Pay 條碼快速支付 (請自主輸入金額)";
@@ -2047,7 +2122,12 @@
             const paymentContainer = document.getElementById('dynamic-payment-info');
             const ecpayReady = document.getElementById('ecpay-post-form').children.length > 0;
 
-            if(payment === 'LinePay') {
+            if(Number(finalAllPrice) <= 0) {
+                paymentContainer.innerHTML = `
+                    <div style="background:#E8F5E9; padding:18px; border-radius:12px; border:1px solid #A5D6A7; margin-top:5px; text-align:center; color:#2E7D32; font-weight:bold;">
+                        本筆訂單折抵後為 $0，無需進入付款頁面。
+                    </div>`;
+            } else if(payment === 'LinePay') {
                 paymentContainer.innerHTML = `
                     <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px; text-align:center; box-shadow: 0 4px 15px rgba(216, 124, 124, 0.25);">
                         <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請完成付款</div>
@@ -2065,7 +2145,7 @@
                     <div style="background:#FFF3F3; padding:20px; border-radius:12px; border:2px solid var(--c-danger); margin-top:5px; text-align:center; box-shadow: 0 4px 15px rgba(216, 124, 124, 0.25);">
                         <div style="font-weight:bold; color:var(--c-danger); margin-bottom:12px; font-size:1.15rem;">⚠️ 重要：請完成付款</div>
                         <p style="font-size:0.95rem; color:#555; margin-bottom:15px;">系統已登記您的商品！請點擊下方按鈕前往綠界完成結帳步驟：</p>
-                        <button onclick="document.getElementById('ecpay-post-form').submit();" class="action-btn" style="background:#0056b3; color:white; width:100%; padding:16px; border-radius:50px; font-size:1.05rem; border:none; cursor:pointer; font-weight:bold; animation: pulseBtn 1.5s infinite;">
+                        <button onclick="try { submitPreparedEcpayPayment(); } catch (error) { alert('目前無法開啟綠界付款頁：' + getCheckoutErrorText(error)); }" class="action-btn" style="background:#0056b3; color:white; width:100%; padding:16px; border-radius:50px; font-size:1.05rem; border:none; cursor:pointer; font-weight:bold; animation: pulseBtn 1.5s infinite;">
                             ${btnText}
                         </button>
                     </div>`;
@@ -2110,7 +2190,7 @@
             document.getElementById('receipt-subtotal-text').innerText = "$" + rawTotal;
             // 判斷收據上的運費顯示
             if (delivery === '預約外送') {
-                document.getElementById('receipt-shipping-val').innerHTML = '<span style="color:#2E7D32; font-weight:bold;">免外送費</span>';
+                document.getElementById('receipt-shipping-val').innerText = '$0';
             } else if (delivery === '宅配' && shippingFee === 0) {
                 document.getElementById('receipt-shipping-val').innerHTML = '<span style="color:var(--c-danger); font-weight:bold;">免運費</span>';
             } else {
@@ -2120,7 +2200,7 @@
 
             if (discountAmount > 0) {
                 document.getElementById('receipt-discount-row').style.display = 'flex';
-                document.getElementById('receipt-discount-name').innerText = discountName.trim();
+                document.getElementById('receipt-discount-name').innerText = String(discountName || '').trim();
                 document.getElementById('receipt-discount-val').innerText = "-$" + discountAmount;
             } else { document.getElementById('receipt-discount-row').style.display = 'none'; }
 
