@@ -773,7 +773,8 @@
         let currentRawTotal = 0; let currentShippingFee = 0;
         let currentDiscountAmount = 0; let currentDiscountName = "";
         let currentFinalTotal = 0; let currentTotalCups = 0;
-        let onlineOrderRequestId = getOnlineOrderRequestId();
+        let onlineOrderRequestId = '';
+        let onlineOrderFingerprint = '';
         let orderSubmissionInProgress = false;
 
         function createOnlineOrderRequestId() {
@@ -786,24 +787,54 @@
             return `web_${Date.now()}_${randomPart}`.slice(0, 80);
         }
 
-        function getOnlineOrderRequestId() {
+        function getOnlineOrderRequestId(fingerprint) {
+            const normalizedFingerprint = String(fingerprint || '');
+            if (!normalizedFingerprint) throw new Error('無法建立訂單內容識別碼');
+
+            // 同一頁面內，只有訂單內容完全相同的網路重試才沿用原請求編號。
+            if (onlineOrderRequestId && onlineOrderFingerprint === normalizedFingerprint && /^[A-Za-z0-9_-]{16,80}$/.test(onlineOrderRequestId)) {
+                return onlineOrderRequestId;
+            }
+
             try {
-                const key = 'helloPannaPendingOrderRequestId';
-                const pending = window.sessionStorage.getItem(key);
-                if (pending && /^[A-Za-z0-9_-]{16,80}$/.test(pending)) return pending;
+                const idKey = 'helloPannaPendingOrderRequestId';
+                const fingerprintKey = 'helloPannaPendingOrderFingerprint';
+                const pending = window.sessionStorage.getItem(idKey);
+                const pendingFingerprint = window.sessionStorage.getItem(fingerprintKey);
+                if (pending && /^[A-Za-z0-9_-]{16,80}$/.test(pending) && pendingFingerprint === normalizedFingerprint) {
+                    onlineOrderRequestId = pending;
+                    onlineOrderFingerprint = normalizedFingerprint;
+                    return pending;
+                }
+
+                // 姓名、商品、日期、地址、金額或付款方式有任何變更，就視為另一份訂單內容。
                 const requestId = createOnlineOrderRequestId();
-                window.sessionStorage.setItem(key, requestId);
+                window.sessionStorage.setItem(idKey, requestId);
+                window.sessionStorage.setItem(fingerprintKey, normalizedFingerprint);
+                onlineOrderRequestId = requestId;
+                onlineOrderFingerprint = normalizedFingerprint;
                 return requestId;
             } catch (e) {
-                return createOnlineOrderRequestId();
+                // 儲存空間不可用時仍在本頁記憶；相同內容重試不換號，內容變更才換號。
+                onlineOrderRequestId = createOnlineOrderRequestId();
+                onlineOrderFingerprint = normalizedFingerprint;
+                return onlineOrderRequestId;
             }
         }
 
         function clearOnlineOrderRequestId(requestId) {
             try {
-                const key = 'helloPannaPendingOrderRequestId';
-                if (window.sessionStorage.getItem(key) === requestId) window.sessionStorage.removeItem(key);
+                const idKey = 'helloPannaPendingOrderRequestId';
+                const fingerprintKey = 'helloPannaPendingOrderFingerprint';
+                if (window.sessionStorage.getItem(idKey) === requestId) {
+                    window.sessionStorage.removeItem(idKey);
+                    window.sessionStorage.removeItem(fingerprintKey);
+                }
             } catch (e) { /* 無法使用儲存空間時，不影響已完成的訂單。 */ }
+            if (onlineOrderRequestId === requestId) {
+                onlineOrderRequestId = '';
+                onlineOrderFingerprint = '';
+            }
         }
 
         function getCheckoutErrorText(error) {
@@ -2018,6 +2049,10 @@
             const backendOrderData = { items: finalCartForBackend, originalTotal: currentRawTotal, discountPoints: usedPoints, otherDiscount: currentDiscountAmount - usedPoints, paymentMethod: payment, receivedAmount: currentFinalTotal, changeAmount: 0, phone: phone, email: email, name: name, delivery: delivery, address: backendAddress, date: finalDateStr, shippingFee: currentShippingFee, finalTotal: currentFinalTotal, remarks: remarks, totalCups: currentTotalCups, couponCode: appliedCoupon ? appliedCoupon.code : "" };
             if (scheduledDeliveryData) backendOrderData.scheduledDelivery = scheduledDeliveryData;
 
+            // 與後端內容指紋使用相同欄位：內容不變的斷線重試沿用編號；內容變更則自動建立新編號。
+            const requestFingerprint = JSON.stringify([name, phone, String(email || '').toLowerCase(), usedPoints || 0, backendOrderData]);
+            onlineOrderRequestId = getOnlineOrderRequestId(requestFingerprint);
+
             let backendReportedSuccess = false;
             let confirmedOrderId = '';
             try {
@@ -2073,7 +2108,13 @@
                     document.getElementById('loading-overlay').style.display = 'none';
                     if (receiptError) alert(`訂單 ${orderId} 已建立，但收據畫面顯示異常。請保留此單號並使用「查詢訂單」確認。`);
                 } else {
-                    alert("【系統登記失敗】\n" + (result.msg || result.error || "參數異常") + "\n本次訂單尚未確認完成，請勿付款，並截圖聯絡客服。");
+                    const failureMessage = result.msg || result.error || result.message || "參數異常";
+                    if (String(failureMessage).includes('送單資料與原請求不同')) {
+                        clearOnlineOrderRequestId(onlineOrderRequestId);
+                        alert("【訂單內容已變更】\n系統已重設這次的送單識別碼。請先使用「查詢訂單」確認前一筆是否成立；若查無前一筆，再按一次送出目前訂單。\n\n本次沒有付款，也不會自動重送。");
+                    } else {
+                        alert("【系統登記失敗】\n" + failureMessage + "\n本次訂單尚未確認完成，請勿付款，並截圖聯絡客服。");
+                    }
                     document.getElementById('loading-overlay').style.display = 'none';
                     document.getElementById('btn-next').disabled = false;
                     orderSubmissionInProgress = false;
