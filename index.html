@@ -1274,15 +1274,15 @@
                 let current = new Date(startDate); current.setDate(startDate.getDate() + i);
                 let day = current.getDay(); let month = current.getMonth() + 1; let date = current.getDate();
                 
-                // === 排除特定店休區間與停止接單日期（自取、宅配皆不產生選項）===
+                // === 排除特定店休區間與停止接單日期 ===
                 let checkDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')}`;
                 if (
                     (checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") ||
                     checkDateStr === "2026/08/25" ||
                     checkDateStr === "2026/09/09" ||
-                    checkDateStr === "2026/09/23"
+                    (mode === 'delivery' && (checkDateStr === "2026/09/23" || checkDateStr === "2026/09/24"))
                 ) {
-                continue; // 遇到這幾天直接跳過，不管自取或宅配都不產生選項
+                continue; // 這個日期與取貨方式不產生選項
                 }
 // =========================================================
                 // =========================================================
