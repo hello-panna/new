@@ -1280,6 +1280,7 @@
                     (checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") ||
                     checkDateStr === "2026/08/25" ||
                     checkDateStr === "2026/09/09" ||
+                    (checkDateStr === "2026/09/19" && (mode === 'pickup' || mode === 'scheduled')) ||
                     (mode === 'delivery' && checkDateStr === "2026/09/24")
                 ) {
                 continue; // 這個日期與取貨方式不產生選項
