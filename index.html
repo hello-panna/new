@@ -428,6 +428,12 @@
                     <p>位於彰化市中正路一段403號，提供多口味手工鮮奶酪、香草焦糖烤布丁與六入禮盒，可門市自取、彰化市預約外送及冷藏宅配。</p>
                 </section>
 
+                <div class="announcement-banner" style="background:linear-gradient(135deg,#FFF8E8 0%,#FFFDF8 100%); border:1px solid #D9A441; color:#6D4C41; box-shadow:0 6px 18px rgba(174,126,43,.12);">
+                    <strong style="color:#9A6515; font-size:1.12rem;">📣 9/22（二）～9/24（四）門市取貨公告</strong>
+                    <span style="display:block; font-weight:700; font-size:1rem; color:#7A4F16;">期間門市僅接受「事先預訂取貨」</span>
+                    <span style="display:block; margin-top:4px;">請於預計取貨日前兩天完成下單，取貨時段為 12:00～18:00。<br>謝謝您的體諒，讓我們為每一份甜點留足新鮮製作時間 🤎</span>
+                </div>
+
                 <div class="announcement-banner" style="background-color: #FFF8E1; border-color: #FFCA28;">
     <strong>🌕 中秋禮盒預訂活動開跑！</strong>
     即日起至 2026/09/19 23:59 前，口味不限<strong style="color:var(--c-danger);">任選 6 杯即享中秋優惠價 300 元/盒</strong>
@@ -1145,8 +1151,8 @@
             
             // 算出目前購物車內的總杯數 (排除 ID 13 的保冷袋)
             let totalCups = cart.reduce((sum, item) => item.id !== 13 ? sum + item.quantity : sum, 0);
-            // 檢查購物車內是否包含「烤布丁」(ID 為 14)
-            const hasPudding = cart.some(i => i.id === 14); 
+            const today = new Date();
+            const todayKey = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
             hint.style.color = 'var(--c-danger)';
 
             if (mode === 'delivery') {
@@ -1165,12 +1171,12 @@
                 let daysToAdd = 1; // 預設改為 D+1
                 if (cart.some(i => i.id === 12)) {
                     hint.innerText = "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 出貨。";
-                } else if (hasPudding) {
-                    daysToAdd = 2; // 有烤布丁強制 D+2
-                    hint.innerHTML = "⚠️ 提醒：因訂單包含<strong>烤布丁</strong> (製作工序較長)，最快出貨日改為<strong>兩天後</strong> (週六至週一不出貨)";
-                } else if (totalCups > 18) {
-                    daysToAdd = 2; // 超過 18 杯強制 D+2
-                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>超過 18 杯</strong> (需較長備料時間)，最快出貨日改為<strong>兩天後</strong> (週六至週一不出貨)";
+                } else if (totalCups >= 18) {
+                    daysToAdd = 2; // 18 杯以上強制 D+2
+                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>達 18 杯以上</strong> (需較長備料時間)，最快出貨日改為<strong>兩天後</strong> (週六至週一不出貨)";
+                } else if (todayKey >= "2026/09/19" && todayKey <= "2026/09/23") {
+                    daysToAdd = 2;
+                    hint.innerText = "提醒：9/22～9/23 宅配出貨需提前兩天完成下單；9/24、9/25 暫停宅配出貨。";
                 } else {
                     hint.innerText = "提醒：最快可選擇隔天出貨 (週六、日、一公休不出貨)";
                 }
@@ -1197,14 +1203,14 @@
                 }
 
                 let daysToAdd = 1;
-                if (hasPudding) {
+                if (totalCups >= 18) {
                     daysToAdd = 2;
-                    hint.innerHTML = '訂單包含<strong>烤布丁</strong>，最快可選擇兩天後；所選時段為希望送達時段，實際時間將由店家聯絡確認。';
-                } else if (totalCups > 18) {
-                    daysToAdd = 2;
-                    hint.innerHTML = '訂購數量<strong>超過 18 杯</strong>，最快可選擇兩天後；所選時段為希望送達時段，實際時間將由店家聯絡確認。';
+                    hint.innerHTML = '訂購數量<strong>達 18 杯以上</strong>，最快可選擇兩天後；所選時段為希望送達時段，實際時間將由店家聯絡確認。';
                 } else {
                     hint.innerText = '最快可選擇隔天；所選時段為希望送達時段，實際時間可能依當日訂單與路線調整。';
+                }
+                if (todayKey >= "2026/09/19" && todayKey <= "2026/09/24") {
+                    hint.innerText = '提醒：預約外送日期與時段至 9/24 暫停開放，9/25 起恢復選擇。';
                 }
                 generateOptions(mode, daysToAdd);
             } else {
@@ -1222,9 +1228,12 @@
                 let daysToAdd = 1;
                 if (cart.some(i => i.id === 12)) {
                     hint.innerText = "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。";
-                } else if (totalCups > 18) {
-                    daysToAdd = 2; // 超過 18 杯改為 D+2
-                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>超過 18 杯</strong> (需較長備料時間)，最快取貨日改為<strong>兩天後</strong> (週日、一公休)";
+                } else if (totalCups >= 18) {
+                    daysToAdd = 2; // 18 杯以上改為 D+2
+                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>達 18 杯以上</strong> (需較長備料時間)，最快取貨日改為<strong>兩天後</strong> (週日、一公休)";
+                } else if (todayKey >= "2026/09/19" && todayKey <= "2026/09/23") {
+                    daysToAdd = 2;
+                    hint.innerText = "提醒：9/22～9/24 門市取貨需於取貨日前兩天完成下單。";
                 } else {
                     hint.innerText = "提醒：最快可選擇隔天門市自取 (週日、週一固定公休)";
                 }
@@ -1276,13 +1285,19 @@
                 
                 // === 排除特定店休區間與停止接單日期 ===
                 let checkDateStr = `${current.getFullYear()}/${String(month).padStart(2,'0')}/${String(date).padStart(2,'0')}`;
+                const leadDays = Math.round((
+                    Date.UTC(current.getFullYear(), current.getMonth(), current.getDate()) -
+                    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+                ) / 86400000);
                 if (
                     (checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") ||
                     checkDateStr === "2026/08/25" ||
                     checkDateStr === "2026/09/09" ||
                     (checkDateStr === "2026/09/19" && (mode === 'pickup' || mode === 'scheduled')) ||
-                    ((checkDateStr === "2026/09/22" || checkDateStr === "2026/09/23") && (mode === 'pickup' || mode === 'scheduled')) ||
-                    (mode === 'delivery' && (checkDateStr === "2026/09/22" || checkDateStr === "2026/09/23" || checkDateStr === "2026/09/24" || checkDateStr === "2026/09/25" || checkDateStr === "2026/10/09"))
+                    (mode === 'pickup' && checkDateStr >= "2026/09/22" && checkDateStr <= "2026/09/24" && leadDays < 2) ||
+                    (mode === 'scheduled' && checkDateStr <= "2026/09/24") ||
+                    (mode === 'delivery' && checkDateStr >= "2026/09/22" && checkDateStr <= "2026/09/23" && leadDays < 2) ||
+                    (mode === 'delivery' && (checkDateStr === "2026/09/24" || checkDateStr === "2026/09/25" || checkDateStr === "2026/10/09"))
                 ) {
                 continue; // 這個日期與取貨方式不產生選項
                 }
