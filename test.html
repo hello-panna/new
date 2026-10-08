@@ -812,7 +812,7 @@
         // 1. 核心設定變數與商品陣列
         // ==========================================
         const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
-        const ONLINE_CHECKOUT_FRONTEND_VERSION = "2026-09-14-ecpay-redirect-v2";
+        const ONLINE_CHECKOUT_FRONTEND_VERSION = "2026-10-08-ecpay-bridge-v3";
         const ECPAY_CHECKOUT_URL = "https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5";
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/IfptidsAV8xmFSsDt3hTOWf6Otwr6TA10i3P1REVpFRrJLhS5KeOxPoyflT4zplF";
 
@@ -887,6 +887,98 @@
         let onlineOrderRequestId = '';
         let onlineOrderFingerprint = '';
         let orderSubmissionInProgress = false;
+        let queriedOnlineOrders = [];
+        let queriedOrderBuyer = null;
+        let orderQuerySequence = 0;
+        let paymentResumeInProgress = false;
+
+        function createCheckoutNonce() {
+            if (!window.crypto || typeof window.crypto.getRandomValues !== 'function') {
+                throw new Error('請使用更新版瀏覽器開啟正式官網');
+            }
+            return Array.from(window.crypto.getRandomValues(new Uint8Array(16)))
+                .map(value => value.toString(16).padStart(2, '0')).join('');
+        }
+
+        function isCheckoutBridgeSource(source, frameWindow) {
+            try {
+                for (let depth = 0; source && depth < 6; depth++) {
+                    if (source === frameWindow) return true;
+                    const parent = source.parent;
+                    if (!parent || parent === source) break;
+                    source = parent;
+                }
+            } catch (error) { /* 不接受來源不明的回覆。 */ }
+            return false;
+        }
+
+        function sendOrderServiceRequest(payload) {
+            const origin = window.location.origin;
+            if (!['https://www.hello-panna.com', 'https://hello-panna.com'].includes(origin)) {
+                return Promise.reject(new Error('請從 Hello 好酪正式官網進行訂購與查詢'));
+            }
+            const nonce = createCheckoutNonce();
+            const request = {...payload, clientVersion: ONLINE_CHECKOUT_FRONTEND_VERSION};
+            return new Promise((resolve, reject) => {
+                const frame = document.createElement('iframe');
+                frame.name = 'hp_checkout_' + nonce;
+                frame.title = '訂單資料處理';
+                frame.style.display = 'none';
+                frame.setAttribute('aria-hidden', 'true');
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = TRAFFIC_SCRIPT_URL;
+                form.target = frame.name;
+                form.acceptCharset = 'UTF-8';
+                form.style.display = 'none';
+                const fields = {action:'checkoutBridge', checkoutOrigin:origin,
+                    checkoutNonce:nonce, checkoutPayload:JSON.stringify(request)};
+                for (const [key, value] of Object.entries(fields)) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden'; input.name = key; input.value = value;
+                    form.appendChild(input);
+                }
+                let timer;
+                const cleanup = () => {
+                    clearTimeout(timer);
+                    window.removeEventListener('message', onMessage);
+                    frame.remove(); form.remove();
+                };
+                const onMessage = event => {
+                    if (!/^https:\/\/(?:script\.google\.com|(?:[a-z0-9-]+\.)?script\.googleusercontent\.com|[a-z0-9-]+-script\.googleusercontent\.com)$/.test(event.origin) ||
+                        !isCheckoutBridgeSource(event.source, frame.contentWindow)) return;
+                    const message = event.data;
+                    if (!message || message.type !== 'hello-panna-checkout-result' || message.nonce !== nonce ||
+                        message.action !== request.action || message.requestId !== String(request.requestId || '')) return;
+                    cleanup();
+                    if (message.apiVersion !== ONLINE_CHECKOUT_FRONTEND_VERSION) {
+                        reject(new Error('訂單系統版本尚未更新，請聯絡客服')); return;
+                    }
+                    if (!message.result || typeof message.result !== 'object' || Array.isArray(message.result)) {
+                        reject(new Error('訂單系統回傳資料不完整')); return;
+                    }
+                    resolve(message.result);
+                };
+                window.addEventListener('message', onMessage);
+                timer = setTimeout(() => {
+                    cleanup();
+                    reject(new Error('未收到訂單系統回覆，請先查詢訂單；已成立的訂單可接續付款'));
+                }, 120000);
+                try {
+                    document.body.appendChild(frame);
+                    document.body.appendChild(form);
+                    // 訂單結果由獨立回傳頁傳給官網；綠界付款仍由官網以同頁 POST 開啟。
+                    HTMLFormElement.prototype.submit.call(form);
+                } catch (error) {
+                    cleanup(); reject(error);
+                }
+            });
+        }
+
+        function escapeOrderQueryText(value) {
+            return String(value == null ? '' : value).replace(/[&<>"']/g,
+                character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+        }
 
         function createOnlineOrderRequestId() {
             let randomPart = '';
@@ -2288,19 +2380,7 @@
                 // 同一筆訂單只送一個固定請求編號；台灣時間單號由後端在正式送單時產生。
                 const requestPayload = { action: "createEcpayOrder", clientVersion: ONLINE_CHECKOUT_FRONTEND_VERSION, phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, requestId: onlineOrderRequestId, orderData: backendOrderData, paymentMethod: payment };
 
-                const response = await fetch(TRAFFIC_SCRIPT_URL, {
-                    method: "POST",
-                    body: JSON.stringify(requestPayload)
-                });
-                if (!response.ok) throw new Error("HTTP " + response.status);
-
-                const rawText = await response.text();
-                let result;
-                try {
-                    result = JSON.parse(rawText);
-                } catch (jsonErr) {
-                    result = { success: false, msg: "後端回傳格式非標準 JSON" };
-                }
+                const result = await sendOrderServiceRequest(requestPayload);
 
                 if (result.success) {
                     backendReportedSuccess = true;
@@ -2324,14 +2404,14 @@
                         console.error('訂單已建立，但收據畫面產生失敗：', renderError);
                     }
 
-                    clearOnlineOrderRequestId(onlineOrderRequestId);
-
                     if (needsEcpayRedirect) {
                         // 綠界官方規格要求由前端以 POST 表單 Submit；使用同頁導轉可避免新視窗遭瀏覽器封鎖。
                         submitPreparedEcpayPayment();
+                        clearOnlineOrderRequestId(onlineOrderRequestId);
                         return;
                     }
 
+                    clearOnlineOrderRequestId(onlineOrderRequestId);
                     document.getElementById('loading-overlay').style.display = 'none';
                     if (receiptError) alert(`訂單 ${orderId} 已建立，但收據畫面顯示異常。請保留此單號並使用「查詢訂單」確認。`);
                 } else {
@@ -2351,9 +2431,12 @@
                 if (backendReportedSuccess && !confirmedOrderId) {
                     alert("【後端部署版本不一致】\n伺服器回覆成功，但沒有回傳新版 14 碼訂單編號。這通常表示 Code.gs 已儲存、但尚未建立新的網頁應用程式部署版本。\n\n本筆可能已寫入試算表，請先使用「查詢訂單」確認，暫時不要再次送單。");
                 } else if (confirmedOrderId) {
-                    alert(`訂單 ${confirmedOrderId} 已建立，但未能開啟綠界付款頁。請勿重新下單；請保留單號並聯絡客服。\n原因：${getCheckoutErrorText(e)}`);
+                    const recoveryHint = payment === 'Credit'
+                        ? '請使用「查詢訂單」的「接續信用卡付款」開啟原訂單付款頁。'
+                        : '請保留單號並聯絡客服確認付款方式。';
+                    alert(`訂單 ${confirmedOrderId} 已建立，但未能開啟綠界付款頁。${recoveryHint}\n原因：${getCheckoutErrorText(e)}`);
                 } else {
-                    alert(`中央訂單系統尚未確認完成，請勿付款。請先使用「查詢訂單」確認；若查無訂單再重試。\n原因：${getCheckoutErrorText(e)}`);
+                    alert(`尚未收到訂單系統回覆。請先使用「查詢訂單」確認；已成立的信用卡訂單可按「接續信用卡付款」，不必重新下單。\n原因：${getCheckoutErrorText(e)}`);
                 }
                 document.getElementById('loading-overlay').style.display = 'none';
                 const possiblyCreated = backendReportedSuccess || !!confirmedOrderId;
@@ -2531,11 +2614,16 @@
         }
         
         function closeOrderQuery() { 
+            orderQuerySequence++;
+            queriedOnlineOrders = [];
+            queriedOrderBuyer = null;
             document.getElementById('order-query-modal').style.display = 'none'; 
             document.getElementById('query-result-area').style.display = 'none';
             document.getElementById('query-result-area').innerHTML = '';
             document.getElementById('query-name').value = '';
             document.getElementById('query-phone').value = '';
+            document.getElementById('btn-do-query').innerText = '開始查詢';
+            document.getElementById('btn-do-query').disabled = false;
         }
 
         async function executeOrderQuery() {
@@ -2555,28 +2643,33 @@
 
             btn.innerText = "系統查詢中..."; 
             btn.disabled = true;
+            const querySequence = ++orderQuerySequence;
+            queriedOnlineOrders = [];
+            queriedOrderBuyer = null;
             resultArea.style.display = 'block'; 
             resultArea.innerHTML = '<div style="text-align:center; color:#888; margin-top:10px;">資料庫連線比對中，請稍候...</div>';
 
             try {
-                // 向您的 Google Apps Script 發送查詢請求 (需在 GAS 後端新增 action=queryOrder 的對應邏輯)
-                const response = await fetch(
-                    TRAFFIC_SCRIPT_URL +
-                    "?action=queryOrder&name=" + encodeURIComponent(name) +
-                    "&phone=" + encodeURIComponent(phone) +
-                    "&_=" + Date.now(),
-                    { cache: "no-store" }
-                );
-                const data = await response.json();
+                const data = await sendOrderServiceRequest({action:'queryOrder', name, phone});
+                if (querySequence !== orderQuerySequence) return;
 
                 if (data.success && data.orders && data.orders.length > 0) {
+                    queriedOnlineOrders = data.orders;
+                    queriedOrderBuyer = {name, phone};
                     let html = '<div style="font-weight:700; color:var(--c-text); margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">近期的訂單紀錄 (點擊可看明細)：</div>';
                     
-                    data.orders.forEach(order => {
+                    data.orders.forEach((rawOrder, index) => {
+                        const order = {...rawOrder};
+                        for (const field of ['orderId','date','status','total','paymentMethod','cups','items']) {
+                            order[field] = escapeOrderQueryText(order[field]);
+                        }
+                        const resumeButton = rawOrder.canResumePayment === true && /^\d{14}$/.test(String(rawOrder.orderId))
+                            ? `<button onclick="resumeQueriedOrderPayment(${index}, this)" style="display:block; width:100%; margin-top:12px; padding:13px; border:0; border-radius:8px; background:#0056b3; color:white; font-size:1rem; font-weight:bold; cursor:pointer;">接續信用卡付款</button>`
+                            : '';
                         html += `
                         <div style="background:#FAF8F5; border:1px solid #EFEBE9; border-radius:8px; margin-bottom:12px; overflow:hidden;">
                             
-                            <div onclick="const detail = this.nextElementSibling; detail.style.display = detail.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('.toggle-icon'); icon.innerText = detail.style.display === 'none' ? '▼' : '▲';" style="padding:15px; cursor:pointer; position:relative; transition: background 0.2s;" onmouseover="this.style.background='#F5F2EB'" onmouseout="this.style.background='transparent'">
+                            <div onclick="const detail = this.parentElement.querySelector('.order-query-detail'); detail.style.display = detail.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('.toggle-icon'); icon.innerText = detail.style.display === 'none' ? '▼' : '▲';" style="padding:15px; cursor:pointer; position:relative; transition: background 0.2s;" onmouseover="this.style.background='#F5F2EB'" onmouseout="this.style.background='transparent'">
                                 <div style="font-family:monospace; font-size:1.05rem; font-weight:bold; color:var(--c-text); margin-bottom:5px;">#${order.orderId || '未知單號'}</div>
                                 <div style="color:#888; font-size:0.85rem; margin-bottom:8px;">預定日期：${order.date || '無'}</div>
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
@@ -2589,8 +2682,9 @@
                                 </div>
                                 <div class="toggle-icon" style="position:absolute; top:15px; right:15px; color:#BCAAA4; font-size:0.8rem;">▼</div>
                             </div>
+                            ${resumeButton ? `<div style="padding:0 15px 12px;">${resumeButton}</div>` : ''}
                             
-                            <div style="display:none; padding:15px; border-top:1px dashed #EFEBE9; background:#fff; font-size:0.9rem;">
+                            <div class="order-query-detail" style="display:none; padding:15px; border-top:1px dashed #EFEBE9; background:#fff; font-size:0.9rem;">
                                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                                     <span style="color:#888;">付款方式</span>
                                     <span style="color:var(--c-text); font-weight:500;">${order.paymentMethod}</span>
@@ -2612,11 +2706,48 @@
                     resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">❌ 查無符合的訂單資料。<br><span style="font-size:0.85rem; color:#888;">請確認輸入的資料與訂購時是否完全一致。</span></div>`;
                 }
             } catch (e) {
-                resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">連線失敗，請檢查網路狀態或稍後再試。</div>`;
+                if (querySequence !== orderQuerySequence) return;
+                resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">${escapeOrderQueryText(getCheckoutErrorText(e))}</div>`;
+            } finally {
+                if (querySequence === orderQuerySequence) {
+                    btn.innerText = "開始查詢";
+                    btn.disabled = false;
+                }
             }
-            
-            btn.innerText = "開始查詢"; 
-            btn.disabled = false;
+        }
+
+        async function resumeQueriedOrderPayment(index, button) {
+            if (paymentResumeInProgress) return;
+            const order = queriedOnlineOrders[index], buyer = queriedOrderBuyer;
+            if (!order || !buyer || order.canResumePayment !== true) {
+                alert('請重新查詢訂單後再接續付款'); return;
+            }
+            paymentResumeInProgress = true;
+            button.disabled = true;
+            let redirectStarted = false;
+            document.getElementById('loading-text').innerText = '正在取得原訂單付款資料...';
+            document.getElementById('loading-overlay').style.display = 'flex';
+            try {
+                const result = await sendOrderServiceRequest({action:'resumeEcpayPayment',
+                    orderId:String(order.orderId), name:buyer.name, phone:buyer.phone});
+                if (!result.success) throw new Error(result.msg || result.error || '無法取得原訂單付款資料');
+                const expectedTotal = Number(String(order.total).replace(/,/g, ''));
+                if (String(result.orderId) !== String(order.orderId) || result.paymentMethod !== 'Credit' ||
+                    !Number.isSafeInteger(expectedTotal) || result.finalTotal !== expectedTotal) {
+                    throw new Error('訂單資料已變更，請重新查詢確認');
+                }
+                prepareEcpayPostForm(result.ecpayParams, result.orderId, result.finalTotal, 'Credit');
+                submitPreparedEcpayPayment();
+                redirectStarted = true;
+            } catch (error) {
+                alert(`原訂單 ${order.orderId} 未重新建單。\n${getCheckoutErrorText(error)}`);
+            } finally {
+                if (!redirectStarted) {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    button.disabled = false;
+                    paymentResumeInProgress = false;
+                }
+            }
         }
         // ==========================================
         // 圖片預覽彈出視窗功能
