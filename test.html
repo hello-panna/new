@@ -218,8 +218,6 @@
         
         .menu-name { font-family: var(--font-title); font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; color: var(--c-text); }
         .menu-desc { font-size: 0.8rem; color: #999; margin-bottom: 10px; line-height: 1.5; min-height: 3.6em; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
-        .menu-coffee-promo { margin: -8px 0 20px; padding: 12px 14px; background: #F8F2E9; border: 1px solid #E7D9C7; border-radius: 8px; color: #765640; font-size: 0.95rem; font-weight: 700; line-height: 1.6; }
-        .menu-coffee-promo small { display: block; margin-top: 3px; font-size: 0.82rem; font-weight: 400; }
         .coffee-temperature-note { color: #765640; font-size: 0.78rem; line-height: 1.5; margin: 0 0 10px; }
         .coffee-temperature-label { color: var(--c-text); font-size: 0.82rem; margin-bottom: 6px; }
         .coffee-temperature-picker { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; margin-bottom: 10px; }
@@ -460,7 +458,6 @@
                 </div>
                 
                 <div class="section-header">選擇口味</div>
-                <div class="menu-coffee-promo">☕ 購買奶酪加購咖啡每杯-10元<small>每杯奶酪可優惠一杯咖啡，美式與拿鐵、冷／熱皆可混搭。咖啡僅限自取／預約外送，請先選擇冷／熱再加入購物車。</small></div>
                 <div class="menu-grid" id="menu-list"></div>
 
                 <div class="section-header">您的選購清單</div>
@@ -841,8 +838,8 @@
                 badge: (new Date() < new Date('2026/09/04 00:00:00')) ? "嘗鮮優惠" : "", 
                 badgeColor: "#F57F17" 
             },
-            { id: 16, name: "美式咖啡", price: 60, image: "20261007.jpg", desc: "購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡、水", category: "coffee" },
-            { id: 18, name: "拿鐵咖啡", price: 75, image: "20261007.jpg", desc: "購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡、鮮奶、水", category: "coffee" },
+            { id: 16, name: "美式咖啡", price: 60, image: "20261007.jpg", desc: "購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡豆、水", category: "coffee" },
+            { id: 18, name: "拿鐵咖啡", price: 75, image: "20261007.jpg", desc: "購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡豆、鮮奶、水", category: "coffee" },
             { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" }
         ];
         const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" } };
@@ -861,7 +858,7 @@
         }
 
         function isValidCoffeeTemperature(temperature) {
-            return temperature === '冷' || temperature === '熱';
+            return temperature === '冰' || temperature === '熱';
         }
 
         function selectCoffeeTemperature(id, temperature) {
@@ -1127,14 +1124,14 @@
                 let btnHtml = coffeeShippingBlocked
                     ? '<button class="add-btn" type="button" disabled>咖啡不提供宅配</button>'
                     : coffeeTemperatureMissing
-                    ? '<button class="add-btn" type="button" disabled>請先選擇冷／熱</button>'
+                    ? '<button class="add-btn" type="button" disabled>請先選擇冰／熱</button>'
                     : cartItem
                     ? `<div class="qty-control-card"><button class="qty-btn-card" onclick="updateItemQty(${item.id}, -1${temperatureArg})">-</button><span class="qty-text-card">${cartItem.quantity}</span><button class="qty-btn-card" onclick="updateItemQty(${item.id}, 1${temperatureArg})">+</button></div>`
                     : `<button class="add-btn" onclick="addToCart(${item.id})">加入購物車</button>`;
                 const temperaturePickerHtml = coffee ? `
-                    <div class="coffee-temperature-label">${temperature ? `已選擇：${temperature}` : '請先選擇冷／熱'}</div>
-                    <div class="coffee-temperature-picker" role="group" aria-label="${item.name}冷熱選擇">
-                        <button type="button" class="coffee-temperature-btn" aria-pressed="${temperature === '冷'}" onclick="selectCoffeeTemperature(${item.id}, '冷')" ${coffeeShippingBlocked ? 'disabled' : ''}>冷</button>
+                    <div class="coffee-temperature-label">${temperature ? `已選擇：${temperature}` : '請先選擇冰／熱'}</div>
+                    <div class="coffee-temperature-picker" role="group" aria-label="${item.name}冰熱選擇">
+                        <button type="button" class="coffee-temperature-btn" aria-pressed="${temperature === '冰'}" onclick="selectCoffeeTemperature(${item.id}, '冰')" ${coffeeShippingBlocked ? 'disabled' : ''}>冰</button>
                         <button type="button" class="coffee-temperature-btn" aria-pressed="${temperature === '熱'}" onclick="selectCoffeeTemperature(${item.id}, '熱')" ${coffeeShippingBlocked ? 'disabled' : ''}>熱</button>
                     </div>` : '';
                 let badgeHtml = item.badge ? `<div style="background:${item.badgeColor || '#D84315'}; color:#fff; font-size:0.75rem; padding:3px 8px; border-radius:15px; margin-bottom:8px; font-weight:bold; display:inline-block; letter-spacing:1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">👑 ${item.badge}</div>` : '';
@@ -1164,7 +1161,7 @@
             if (isCoffeeItem(product)) {
                 const temperature = coffeeTemperatureSelections[id];
                 if (!isValidCoffeeTemperature(temperature)) {
-                    alert('請先選擇咖啡的冷／熱，再加入購物車。');
+                    alert('請先選擇咖啡的冰／熱，再加入購物車。');
                     return;
                 }
                 const existingItem = cart.find(item => item.id === id && item.temperature === temperature);
@@ -1421,7 +1418,7 @@
                 return;
             }
             if (cart.some(item => isCoffeeItem(item) && !isValidCoffeeTemperature(item.temperature))) {
-                alert('請返回菜單選擇咖啡的冷／熱，再加入購物車。');
+                alert('請返回菜單選擇咖啡的冰／熱，再加入購物車。');
                 return;
             }
             
@@ -1528,7 +1525,7 @@
         currentDiscountName = "中秋任選6杯300";
     }
 
-    // 每杯奶酪可優惠一杯咖啡，冷／熱咖啡合併計算，超出配對杯數照原價
+    // 每杯奶酪可優惠一杯咖啡，冰／熱咖啡合併計算，超出配對杯數照原價
     currentCoffeeDiscountCups = Math.min(currentPannaCottaCups, currentCoffeeCups);
     currentCoffeeDiscount = currentCoffeeDiscountCups * 10;
     if (currentCoffeeDiscount > 0) {
@@ -1641,7 +1638,7 @@
                 const coffeeOfferText = currentCoffeeDiscount > 0
                     ? `奶酪加購咖啡 ${currentCoffeeDiscountCups} 杯，每杯折 10 元，共折 ${currentCoffeeDiscount} 元`
                     : '購買奶酪加購咖啡每杯-10元，每杯奶酪可優惠一杯咖啡';
-                promoHtml += `<div style="background:#F8F2E9; color:#765640; padding:12px; border-radius:8px; margin-bottom:15px; font-size:0.9rem; line-height:1.6;"><strong>☕ ${coffeeOfferText}</strong><div>冷／熱咖啡皆適用，溫度依各品項所選製作。</div></div>`;
+                promoHtml += `<div style="background:#F8F2E9; color:#765640; padding:12px; border-radius:8px; margin-bottom:15px; font-size:0.9rem; line-height:1.6;"><strong>☕ ${coffeeOfferText}</strong><div>冰／熱咖啡皆適用，溫度依各品項所選製作。</div></div>`;
             }
 
             // --- 確保購物車狀態正確寫入畫面 (這段剛剛不小心被吃掉了) ---
@@ -2121,7 +2118,7 @@
                 return;
             }
             if (cart.some(item => isCoffeeItem(item) && !isValidCoffeeTemperature(item.temperature))) {
-                alert('請返回菜單選擇咖啡的冷／熱，再加入購物車。');
+                alert('請返回菜單選擇咖啡的冰／熱，再加入購物車。');
                 goToStep(1);
                 return;
             }
@@ -2157,7 +2154,7 @@
             let remarks = document.getElementById('cust-remarks').value.trim(); 
             if (currentCoffeeCups > 0) {
                 const coffeeTemperatureDetails = cart.filter(isCoffeeItem).map(item => `${item.name} × ${item.quantity} 杯`).join('、');
-                const coffeeTemperatureNote = `【咖啡冷熱：${coffeeTemperatureDetails}】`;
+                const coffeeTemperatureNote = `【咖啡冰熱：${coffeeTemperatureDetails}】`;
                 remarks = remarks ? `${remarks} / ${coffeeTemperatureNote}` : coffeeTemperatureNote;
                 if (currentCoffeeDiscount > 0) {
                     remarks += ` / 【奶酪加購咖啡${currentCoffeeDiscountCups}杯，每杯折10元，共折${currentCoffeeDiscount}元】`;
