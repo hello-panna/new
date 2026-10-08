@@ -218,6 +218,12 @@
         
         .menu-name { font-family: var(--font-title); font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; color: var(--c-text); }
         .menu-desc { font-size: 0.8rem; color: #999; margin-bottom: 10px; line-height: 1.5; min-height: 3.6em; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+        .coffee-temperature-note { color: #765640; font-size: 0.78rem; line-height: 1.5; margin: 0 0 10px; }
+        .coffee-temperature-label { color: var(--c-text); font-size: 0.82rem; margin-bottom: 6px; }
+        .coffee-temperature-picker { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; margin-bottom: 10px; }
+        .coffee-temperature-btn { background: #FFF; border: 1px solid var(--c-primary); border-radius: 6px; color: var(--c-primary); font-size: 0.9rem; padding: 9px 0; cursor: pointer; }
+        .coffee-temperature-btn[aria-pressed="true"] { background: var(--c-primary); color: #FFF; font-weight: 700; }
+        .coffee-temperature-btn:disabled { background: #EEE; border-color: #DDD; color: #888; cursor: not-allowed; }
         .menu-ingredients { font-size: 0.75rem; color: #8D6E63; background-color: #F8F6F4; padding: 8px; border-radius: 6px; margin-bottom: 15px; text-align: justify; line-height: 1.4; width: 100%; border: 1px solid #EFEBE9; }
         .menu-ingredients span.ing-label { font-weight: 700; color: var(--c-accent); margin-right: 2px; font-size: 0.7rem; display: inline-block; }
         .menu-price { color: var(--c-primary); font-family: var(--font-title); font-weight: 700; font-size: 1.15rem; margin-bottom: 15px; margin-top: auto; }
@@ -225,6 +231,7 @@
         /* 按鈕與計數器 */
         .add-btn { background: transparent; border: 1px solid var(--c-primary); color: var(--c-primary); padding: 8px 0; border-radius: 4px; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; font-weight: 500; width: 100%; letter-spacing: 1px; }
         .add-btn:active, .add-btn:hover:not(:disabled) { background: var(--c-primary); color: #fff; }
+        .add-btn:disabled { background: #EEE; border-color: #DDD; color: #888; cursor: not-allowed; }
         .qty-control-card { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 6px; border: 1px solid var(--c-primary); border-radius: 4px; background: #fff; }
         .qty-btn-card { background: none; border: none; font-size: 1.2rem; color: var(--c-primary); cursor: pointer; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; }
         .qty-text-card { font-family: var(--font-title); font-weight: 700; color: var(--c-text); }
@@ -593,7 +600,7 @@
                 <div class="section-header">特殊需求備註</div>
                 <div class="options-section">
                     <div class="form-group">
-                        <textarea id="cust-remarks" class="form-input" rows="2" placeholder="選填"></textarea>
+                        <textarea id="cust-remarks" class="form-input" rows="2" placeholder="選填（其他特殊需求）"></textarea>
                     </div>
                 </div>
 
@@ -805,7 +812,7 @@
         // 1. 核心設定變數與商品陣列
         // ==========================================
         const TRAFFIC_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR8_vSNcZ_R7NjG3lnYweXVn1IAiOc1jk1hGcfZHEk4uPuU1WKHaFdFIEJ5B18SmI/exec"; 
-        const ONLINE_CHECKOUT_FRONTEND_VERSION = "2026-09-14-ecpay-redirect-v2";
+        const ONLINE_CHECKOUT_FRONTEND_VERSION = "2026-10-08-ecpay-bridge-v3";
         const ECPAY_CHECKOUT_URL = "https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5";
         const LINE_PAY_LINK = "https://qrcodepay.line.me/qr/payment/IfptidsAV8xmFSsDt3hTOWf6Otwr6TA10i3P1REVpFRrJLhS5KeOxPoyflT4zplF";
 
@@ -831,9 +838,43 @@
                 badge: (new Date() < new Date('2026/09/04 00:00:00')) ? "嘗鮮優惠" : "", 
                 badgeColor: "#F57F17" 
             },
+            { id: 16, name: "美式咖啡", price: 60, image: "2026100801.png", desc: "12oz (350 ml)<br>購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡豆、水", category: "coffee" },
+            { id: 18, name: "拿鐵咖啡", price: 75, image: "2026100802.png", desc: "12oz (350 ml)<br>購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡豆、鮮奶、水", category: "coffee" },
             { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" }
         ];
         const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" } };
+        const coffeeTemperatureSelections = {};
+
+        function isCoffeeItem(item) {
+            return item.category === 'coffee' || menuData.some(product => product.id === Number(item.id) && product.category === 'coffee');
+        }
+
+        function isDessertItem(item) {
+            return Number(item.id) !== 13 && !isCoffeeItem(item) && /奶酪|布丁/.test(String(item.name || ''));
+        }
+
+        function isPannaCottaItem(item) {
+            return isDessertItem(item) && String(item.name || '').includes('奶酪');
+        }
+
+        function isValidCoffeeTemperature(temperature) {
+            return temperature === '冰' || temperature === '熱';
+        }
+
+        function selectCoffeeTemperature(id, temperature) {
+            const product = menuData.find(item => item.id === id);
+            if (!product || !isCoffeeItem(product) || !isValidCoffeeTemperature(temperature)) return;
+            if (getSelectedDeliveryMode() === 'delivery') return;
+            coffeeTemperatureSelections[id] = temperature;
+            renderMenu();
+        }
+
+        function getOrderCupSummary() {
+            const parts = [];
+            if (currentTotalCups > 0) parts.push(`奶酪／烤布丁 ${currentTotalCups} 杯`);
+            if (currentCoffeeCups > 0) parts.push(`咖啡 ${currentCoffeeCups} 杯`);
+            return parts.join('、') || '0 杯';
+        }
 
         // 狀態管理
         let cart = []; let currentStep = 1; let appliedCoupon = null; let initiateCheckoutFired = false; 
@@ -841,9 +882,103 @@
         let currentRawTotal = 0; let currentShippingFee = 0;
         let currentDiscountAmount = 0; let currentDiscountName = "";
         let currentFinalTotal = 0; let currentTotalCups = 0;
+        let currentPannaCottaCups = 0; let currentCoffeeCups = 0;
+        let currentCoffeeDiscountCups = 0; let currentCoffeeDiscount = 0;
         let onlineOrderRequestId = '';
         let onlineOrderFingerprint = '';
         let orderSubmissionInProgress = false;
+        let queriedOnlineOrders = [];
+        let queriedOrderBuyer = null;
+        let orderQuerySequence = 0;
+        let paymentResumeInProgress = false;
+
+        function createCheckoutNonce() {
+            if (!window.crypto || typeof window.crypto.getRandomValues !== 'function') {
+                throw new Error('請使用更新版瀏覽器開啟正式官網');
+            }
+            return Array.from(window.crypto.getRandomValues(new Uint8Array(16)))
+                .map(value => value.toString(16).padStart(2, '0')).join('');
+        }
+
+        function isCheckoutBridgeSource(source, frameWindow) {
+            try {
+                for (let depth = 0; source && depth < 6; depth++) {
+                    if (source === frameWindow) return true;
+                    const parent = source.parent;
+                    if (!parent || parent === source) break;
+                    source = parent;
+                }
+            } catch (error) { /* 不接受來源不明的回覆。 */ }
+            return false;
+        }
+
+        function sendOrderServiceRequest(payload) {
+            const origin = window.location.origin;
+            if (!['https://www.hello-panna.com', 'https://hello-panna.com'].includes(origin)) {
+                return Promise.reject(new Error('請從 Hello 好酪正式官網進行訂購與查詢'));
+            }
+            const nonce = createCheckoutNonce();
+            const request = {...payload, clientVersion: ONLINE_CHECKOUT_FRONTEND_VERSION};
+            return new Promise((resolve, reject) => {
+                const frame = document.createElement('iframe');
+                frame.name = 'hp_checkout_' + nonce;
+                frame.title = '訂單資料處理';
+                frame.style.display = 'none';
+                frame.setAttribute('aria-hidden', 'true');
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = TRAFFIC_SCRIPT_URL;
+                form.target = frame.name;
+                form.acceptCharset = 'UTF-8';
+                form.style.display = 'none';
+                const fields = {action:'checkoutBridge', checkoutOrigin:origin,
+                    checkoutNonce:nonce, checkoutPayload:JSON.stringify(request)};
+                for (const [key, value] of Object.entries(fields)) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden'; input.name = key; input.value = value;
+                    form.appendChild(input);
+                }
+                let timer;
+                const cleanup = () => {
+                    clearTimeout(timer);
+                    window.removeEventListener('message', onMessage);
+                    frame.remove(); form.remove();
+                };
+                const onMessage = event => {
+                    if (!/^https:\/\/(?:script\.google\.com|(?:[a-z0-9-]+\.)?script\.googleusercontent\.com|[a-z0-9-]+-script\.googleusercontent\.com)$/.test(event.origin) ||
+                        !isCheckoutBridgeSource(event.source, frame.contentWindow)) return;
+                    const message = event.data;
+                    if (!message || message.type !== 'hello-panna-checkout-result' || message.nonce !== nonce ||
+                        message.action !== request.action || message.requestId !== String(request.requestId || '')) return;
+                    cleanup();
+                    if (message.apiVersion !== ONLINE_CHECKOUT_FRONTEND_VERSION) {
+                        reject(new Error('訂單系統版本尚未更新，請聯絡客服')); return;
+                    }
+                    if (!message.result || typeof message.result !== 'object' || Array.isArray(message.result)) {
+                        reject(new Error('訂單系統回傳資料不完整')); return;
+                    }
+                    resolve(message.result);
+                };
+                window.addEventListener('message', onMessage);
+                timer = setTimeout(() => {
+                    cleanup();
+                    reject(new Error('未收到訂單系統回覆，請先查詢訂單；已成立的訂單可接續付款'));
+                }, 120000);
+                try {
+                    document.body.appendChild(frame);
+                    document.body.appendChild(form);
+                    // 訂單結果由獨立回傳頁傳給官網；綠界付款仍由官網以同頁 POST 開啟。
+                    HTMLFormElement.prototype.submit.call(form);
+                } catch (error) {
+                    cleanup(); reject(error);
+                }
+            });
+        }
+
+        function escapeOrderQueryText(value) {
+            return String(value == null ? '' : value).replace(/[&<>"']/g,
+                character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+        }
 
         function createOnlineOrderRequestId() {
             let randomPart = '';
@@ -963,8 +1098,20 @@
 
         function handleDeliveryMethodChange(mode) {
             clearScheduledDeliveryConfirmation();
+            let removedCoffeeCups = 0;
+            if (mode === 'delivery') {
+                cart = cart.filter(item => {
+                    if (!isCoffeeItem(item)) return true;
+                    removedCoffeeCups += item.quantity;
+                    return false;
+                });
+            }
             updateDateSettings(mode);
+            renderMenu();
             renderCart();
+            if (removedCoffeeCups > 0) {
+                alert(`咖啡僅提供自取或預約外送，不提供宅配。\n已從購物車移除 ${removedCoffeeCups} 杯咖啡。`);
+            }
         }
 
         // ==========================================
@@ -1060,10 +1207,25 @@
             const menuContainer = document.getElementById('menu-list');
             menuContainer.innerHTML = '';
             menuData.forEach(item => {
-                const cartItem = cart.find(c => c.id === item.id);
-                let btnHtml = cartItem 
-                    ? `<div class="qty-control-card"><button class="qty-btn-card" onclick="updateItemQty(${item.id}, -1)">-</button><span class="qty-text-card">${cartItem.quantity}</span><button class="qty-btn-card" onclick="updateItemQty(${item.id}, 1)">+</button></div>`
+                const coffee = isCoffeeItem(item);
+                const temperature = coffeeTemperatureSelections[item.id] || '';
+                const cartItem = cart.find(c => c.id === item.id && (!coffee || c.temperature === temperature));
+                const coffeeShippingBlocked = getSelectedDeliveryMode() === 'delivery' && coffee;
+                const coffeeTemperatureMissing = coffee && !isValidCoffeeTemperature(temperature);
+                const temperatureArg = coffee ? `, '${temperature}'` : '';
+                let btnHtml = coffeeShippingBlocked
+                    ? '<button class="add-btn" type="button" disabled>咖啡不提供宅配</button>'
+                    : coffeeTemperatureMissing
+                    ? '<button class="add-btn" type="button" disabled>請先選擇冰／熱</button>'
+                    : cartItem
+                    ? `<div class="qty-control-card"><button class="qty-btn-card" onclick="updateItemQty(${item.id}, -1${temperatureArg})">-</button><span class="qty-text-card">${cartItem.quantity}</span><button class="qty-btn-card" onclick="updateItemQty(${item.id}, 1${temperatureArg})">+</button></div>`
                     : `<button class="add-btn" onclick="addToCart(${item.id})">加入購物車</button>`;
+                const temperaturePickerHtml = coffee ? `
+                    <div class="coffee-temperature-label">${temperature ? `已選擇：${temperature}` : '請先選擇冰／熱'}</div>
+                    <div class="coffee-temperature-picker" role="group" aria-label="${item.name}冰熱選擇">
+                        <button type="button" class="coffee-temperature-btn" aria-pressed="${temperature === '冰'}" onclick="selectCoffeeTemperature(${item.id}, '冰')" ${coffeeShippingBlocked ? 'disabled' : ''}>冰</button>
+                        <button type="button" class="coffee-temperature-btn" aria-pressed="${temperature === '熱'}" onclick="selectCoffeeTemperature(${item.id}, '熱')" ${coffeeShippingBlocked ? 'disabled' : ''}>熱</button>
+                    </div>` : '';
                 let badgeHtml = item.badge ? `<div style="background:${item.badgeColor || '#D84315'}; color:#fff; font-size:0.75rem; padding:3px 8px; border-radius:15px; margin-bottom:8px; font-weight:bold; display:inline-block; letter-spacing:1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">👑 ${item.badge}</div>` : '';
                 
                 menuContainer.innerHTML += `
@@ -1072,22 +1234,41 @@
                         ${badgeHtml}
                         <div class="menu-name">${item.name}</div>
                         <div class="menu-desc">${item.desc}</div>
+                        ${coffee ? '<div class="coffee-temperature-note">僅限自取／預約外送</div>' : ''}
                         <div class="menu-ingredients"><span class="ing-label">${item.id === 13 ? '材質' : '成份'} | </span>${item.ingredients}</div>
                         <div class="menu-price">$${item.price}</div>
+                        ${temperaturePickerHtml}
                         ${btnHtml}
                     </div>`;
             });
         }
 
         function addToCart(id) {
-            cart.push({ ...menuData.find(p => p.id === id), quantity: 1 });
             const product = menuData.find(p => p.id === id);
+            if (!product) return;
+            if (isCoffeeItem(product) && getSelectedDeliveryMode() === 'delivery') {
+                alert('咖啡不提供宅配，請改選自取或預約外送。');
+                return;
+            }
+            if (isCoffeeItem(product)) {
+                const temperature = coffeeTemperatureSelections[id];
+                if (!isValidCoffeeTemperature(temperature)) {
+                    alert('請先選擇咖啡的冰／熱，再加入購物車。');
+                    return;
+                }
+                const existingItem = cart.find(item => item.id === id && item.temperature === temperature);
+                if (existingItem) existingItem.quantity += 1;
+                else cart.push({ ...product, name: `${product.name}（${temperature}）`, temperature: temperature, quantity: 1 });
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
             if(typeof fbq !== 'undefined') fbq('track', 'AddToCart', { content_name: product.name, value: product.price, currency: 'TWD' });
             renderMenu(); renderCart();
         }
-        function updateItemQty(id, delta) {
+        function updateItemQty(id, delta, temperature = '') {
             completedBoxes = []; currentBoxBuilding = []; // 只要購物車數量變動，就重置裝盒狀態
-            const index = cart.findIndex(item => item.id === id);
+            const index = cart.findIndex(item => item.id === id && (!isCoffeeItem(item) || item.temperature === temperature));
+            if (index < 0) return;
             cart[index].quantity += delta;
             if (cart[index].quantity <= 0) cart.splice(index, 1);
             renderMenu(); renderCart();
@@ -1133,8 +1314,8 @@
             // --- 核心防呆 1：保存客人原本選好的日期，避免畫面重整時被清空 ---
             let currentSelectedDate = selectEl.value; 
             
-            // 算出目前購物車內的總杯數 (排除 ID 13 的保冷袋)
-            let totalCups = cart.reduce((sum, item) => item.id !== 13 ? sum + item.quantity : sum, 0);
+            // 備料與外送門檻只計算奶酪、烤布丁杯數
+            let totalCups = cart.reduce((sum, item) => isDessertItem(item) ? sum + item.quantity : sum, 0);
             const today = new Date();
             const todayKey = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
             hint.style.color = 'var(--c-danger)';
@@ -1324,6 +1505,14 @@
             const email = document.getElementById('cust-email').value.trim();
             const delivery = document.querySelector('input[name="deliveryMethod"]:checked').value;
             const slot = document.getElementById('pickup-slot-select').value;
+            if (delivery === '宅配' && cart.some(isCoffeeItem)) {
+                alert('宅配訂單不能包含咖啡，請移除咖啡或改選自取／預約外送。');
+                return;
+            }
+            if (cart.some(item => isCoffeeItem(item) && !isValidCoffeeTemperature(item.temperature))) {
+                alert('請返回菜單選擇咖啡的冰／熱，再加入購物車。');
+                return;
+            }
             
             if(!name || !phone) { alert("請填寫訂購人姓名與手機號碼"); return; }
             if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) { alert("手機號碼格式不正確！\n請輸入開頭為 09 的 10 碼數字"); return; }
@@ -1361,12 +1550,16 @@
         // ==========================================
         function calculateOrderTotals() {
     currentRawTotal = 0; currentTotalCups = 0;
+    currentPannaCottaCups = 0; currentCoffeeCups = 0;
+    currentCoffeeDiscountCups = 0; currentCoffeeDiscount = 0;
     let pannaCottaList = []; // 用於中秋活動計算
 
     cart.forEach(item => {
         currentRawTotal += item.price * item.quantity; 
-        // ID 13 是保冷袋，不列入總杯數計算
-        if (item.id !== 13) {
+        if (isCoffeeItem(item)) currentCoffeeCups += item.quantity;
+        if (isPannaCottaItem(item)) currentPannaCottaCups += item.quantity;
+        // 甜點杯數供裝盒、運費、贈品及點數使用
+        if (isDessertItem(item)) {
             currentTotalCups += item.quantity;
             // 將奶酪展開成單杯，方便排序與計算折扣
             for (let i = 0; i < item.quantity; i++) {
@@ -1424,6 +1617,16 @@
         currentDiscountName = "中秋任選6杯300";
     }
 
+    // 每杯奶酪可優惠一杯咖啡，冰／熱咖啡合併計算，超出配對杯數照原價
+    currentCoffeeDiscountCups = Math.min(currentPannaCottaCups, currentCoffeeCups);
+    currentCoffeeDiscount = currentCoffeeDiscountCups * 10;
+    if (currentCoffeeDiscount > 0) {
+        productFinalPrice -= currentCoffeeDiscount;
+        currentDiscountAmount += currentCoffeeDiscount;
+        const coffeeDiscountName = `奶酪加購咖啡${currentCoffeeDiscountCups}杯（每杯折10元）`;
+        currentDiscountName = currentDiscountName ? `${currentDiscountName} + ${coffeeDiscountName}` : coffeeDiscountName;
+    }
+
     if (appliedCoupon) {
         let originalForCoupon = productFinalPrice;
         if (appliedCoupon.type === 'rate') { 
@@ -1459,7 +1662,7 @@
             if (currentFinalTotal < 0) currentFinalTotal = 0;
             
             // 同步渲染底部全局懸浮列
-            document.getElementById('total-cups-badge').innerText = currentTotalCups;
+            document.getElementById('total-cups-badge').innerText = currentTotalCups + currentCoffeeCups;
             document.getElementById('final-total').innerText = currentFinalTotal.toLocaleString();
             
             const badge = document.getElementById('discount-badge');
@@ -1523,6 +1726,13 @@
                 }
             }
 
+            if (currentCoffeeCups > 0) {
+                const coffeeOfferText = currentCoffeeDiscount > 0
+                    ? `奶酪加購咖啡 ${currentCoffeeDiscountCups} 杯，每杯折 10 元，共折 ${currentCoffeeDiscount} 元`
+                    : '購買奶酪加購咖啡每杯-10元，每杯奶酪可優惠一杯咖啡';
+                promoHtml += `<div style="background:#F8F2E9; color:#765640; padding:12px; border-radius:8px; margin-bottom:15px; font-size:0.9rem; line-height:1.6;"><strong>☕ ${coffeeOfferText}</strong><div>冰／熱咖啡皆適用，溫度依各品項所選製作。</div></div>`;
+            }
+
             // --- 確保購物車狀態正確寫入畫面 (這段剛剛不小心被吃掉了) ---
             if (cart.length === 0) { 
                 cartContainer.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">購物車內尚未加入商品</div>'; 
@@ -1534,11 +1744,11 @@
             // === 加入客製化裝盒按鈕 ===
             
             // === 加入客製化裝盒按鈕 ===
-            let pannaCottaTotal = cart.reduce((sum, item) => item.id !== 13 ? sum + item.quantity : sum, 0);
+            let pannaCottaTotal = cart.reduce((sum, item) => isDessertItem(item) ? sum + item.quantity : sum, 0);
             if (pannaCottaTotal >= 6) {
                 let boxedCups = completedBoxes.reduce((sum, box) => sum + 6, 0);
                 let unboxedNum = pannaCottaTotal - boxedCups;
-                let boxStatusMsg = unboxedNum > 0 ? `<span style="color:var(--c-danger);">尚有 ${unboxedNum} 杯未裝盒</span>` : `<span style="color:var(--c-success);">已全部裝盒完畢</span>`;
+                let boxStatusMsg = unboxedNum > 0 ? `<span style="color:var(--c-danger);">尚有 ${unboxedNum} 杯奶酪／布丁未裝盒</span>` : `<span style="color:var(--c-success);">已全部裝盒完畢</span>`;
                 
                 cartContainer.innerHTML += `
                 <div style="background: #fff; padding: 15px; border-radius: 12px; border: 2px dashed var(--c-primary); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(140, 123, 117, 0.1);">
@@ -1591,9 +1801,9 @@
         // 取得「還沒裝盒」的商品剩餘數量
         function getUnboxedCounts() {
             let counts = {};
-            // 先載入購物車所有商品 (排除保冷袋 ID 13)
+            // 裝盒只載入奶酪、烤布丁
             cart.forEach(item => {
-                if (item.id !== 13) counts[item.id] = { name: item.name, qty: item.quantity };
+                if (isDessertItem(item)) counts[item.id] = { name: item.name, qty: item.quantity };
             });
             // 扣除已經封裝的
             completedBoxes.forEach(box => {
@@ -1667,7 +1877,7 @@
                     </div>`;
                 }
             }
-            if (!hasUnboxed) unboxedHtml = '<div style="text-align:center; color:#999; padding:20px 0;">目前所有商品皆已裝盒完畢 🎉</div>';
+            if (!hasUnboxed) unboxedHtml = '<div style="text-align:center; color:#999; padding:20px 0;">目前所有奶酪與布丁皆已裝盒完畢 🎉</div>';
             document.getElementById('unboxed-items-list').innerHTML = unboxedHtml;
 
             // 3. 繪製已完成清單
@@ -1701,12 +1911,14 @@
 
         // 增減目前盒子內的商品
         function modifyCurrentBox(id, delta) {
+            const product = cart.find(item => item.id == id);
+            if (!product || !isDessertItem(product)) return;
             let unboxed = getUnboxedCounts();
             let currentCupsInBox = currentBoxBuilding.reduce((sum, item) => sum + item.qty, 0);
             
             // 防呆機制
             if (delta > 0 && currentCupsInBox >= 6) return; // 已經滿6杯
-            if (delta > 0 && unboxed[id].qty <= 0) return; // 沒庫存了
+            if (delta > 0 && (!unboxed[id] || unboxed[id].qty <= 0)) return; // 沒有可裝盒的商品了
 
             let existingItem = currentBoxBuilding.find(item => item.id == id);
             if (existingItem) {
@@ -1715,7 +1927,7 @@
                     currentBoxBuilding = currentBoxBuilding.filter(item => item.id != id);
                 }
             } else if (delta > 0) {
-                currentBoxBuilding.push({ id: id, name: cart.find(c => c.id == id).name, qty: 1 });
+                currentBoxBuilding.push({ id: id, name: product.name, qty: 1 });
             }
             renderBoxingUI();
         }
@@ -1723,7 +1935,7 @@
         // 儲存當前盒子
         function saveCurrentBox() {
             const currentCupsInBox = currentBoxBuilding.reduce((sum, item) => sum + item.qty, 0);
-            if (currentCupsInBox !== 6) return;
+            if (currentCupsInBox !== 6 || currentBoxBuilding.some(item => !isDessertItem(item))) return;
             
             completedBoxes.push({
                 label: String.fromCharCode(65 + completedBoxes.length),
@@ -1765,6 +1977,7 @@
             // 先把 currentBoxBuilding 退回
             if(currentBoxBuilding.length > 0) {
                 currentBoxBuilding.forEach(item => {
+                    if (!isDessertItem(item)) return;
                     for(let i=0; i<item.qty; i++) flatArray.push({id: item.id, name: item.name});
                 });
                 currentBoxBuilding = [];
@@ -1819,7 +2032,11 @@
             
             html += `<div style="border-top: 1px dashed #E0E0E0; margin: 10px 0;"></div>`;
             
-            html += `<div class="summary-row"><span>商品小計 (${currentTotalCups}杯)</span><span>$${currentRawTotal}</span></div>`;
+            html += `<div class="summary-row"><span>商品小計（${getOrderCupSummary()}）</span><span>$${currentRawTotal}</span></div>`;
+            if (currentCoffeeDiscount > 0) {
+                html += `<div class="summary-row discount"><span>奶酪加購咖啡 ${currentCoffeeDiscountCups} 杯 × 折10元</span><span>-$${currentCoffeeDiscount}</span></div>`;
+                html += `<div class="summary-row"><span>咖啡加購優惠後商品小計</span><span>$${currentRawTotal - currentCoffeeDiscount}</span></div>`;
+            }
             
             if (delivery === '宅配') {
                 const feeDisplay = currentShippingFee === 0 ? '<span style="color:var(--c-danger); font-weight:bold;">$0 (滿額免運)</span>' : `$${currentShippingFee}`;
@@ -1861,8 +2078,13 @@
                 html += `<div style="margin-top:8px; color:#AA4334; font-size:0.82rem; line-height:1.55;">所選時段為希望送達時段，實際外送時間以店家聯絡確認為準。</div>`;
             }
 
-            if (currentDiscountAmount > 0) { 
-                html += `<div class="summary-row discount"><span>活動折扣與點數折抵總計</span><span>-$${currentDiscountAmount}</span></div>`; 
+            if (currentCoffeeDiscount > 0) {
+                html += `<div class="summary-row discount"><span>奶酪加購咖啡 ${currentCoffeeDiscountCups} 杯 × 折10元</span><span>-$${currentCoffeeDiscount}</span></div>`;
+            }
+            const otherDiscountAmount = currentDiscountAmount - currentCoffeeDiscount;
+            if (otherDiscountAmount > 0) {
+                const otherDiscountLabel = currentCoffeeDiscount > 0 ? '其他活動折扣與點數折抵' : '活動折扣與點數折抵總計';
+                html += `<div class="summary-row discount"><span>${otherDiscountLabel}</span><span>-$${otherDiscountAmount}</span></div>`;
             }
             
             html += `<div class="summary-row total"><span>最終應付總額</span><span style="color:var(--c-danger); font-size:1.25rem;">$${currentFinalTotal}</span></div>`;
@@ -1985,6 +2207,16 @@
             // 最終送單前再次驗證，避免第 2/3 步修改購物車後繞過第一步防呆
             calculateOrderTotals();
             if (cart.length === 0) { alert("購物車目前沒有商品"); return; }
+            if (delivery === '宅配' && cart.some(isCoffeeItem)) {
+                alert('宅配訂單不能包含咖啡，請移除咖啡或改選自取／預約外送。');
+                goToStep(1);
+                return;
+            }
+            if (cart.some(item => isCoffeeItem(item) && !isValidCoffeeTemperature(item.temperature))) {
+                alert('請返回菜單選擇咖啡的冰／熱，再加入購物車。');
+                goToStep(1);
+                return;
+            }
             if (!name || !phone) { alert("請返回第一步填寫訂購人姓名與手機號碼"); goToStep(1); return; }
             if (!/^09\d{8}$/.test(phone.replace(/-/g, ''))) { alert("手機號碼格式不正確"); goToStep(1); return; }
             if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert("Email 格式不正確"); goToStep(1); return; }
@@ -2015,6 +2247,14 @@
             
             // 將原本的 const 改為 let，允許我們在後面動態修改備註內容
             let remarks = document.getElementById('cust-remarks').value.trim(); 
+            if (currentCoffeeCups > 0) {
+                const coffeeTemperatureDetails = cart.filter(isCoffeeItem).map(item => `${item.name} × ${item.quantity} 杯`).join('、');
+                const coffeeTemperatureNote = `【咖啡冰熱：${coffeeTemperatureDetails}】`;
+                remarks = remarks ? `${remarks} / ${coffeeTemperatureNote}` : coffeeTemperatureNote;
+                if (currentCoffeeDiscount > 0) {
+                    remarks += ` / 【奶酪加購咖啡${currentCoffeeDiscountCups}杯，每杯折10元，共折${currentCoffeeDiscount}元】`;
+                }
+            }
             
             // === 新增：自動偵測滿2000宅配免運，並加註至備註欄 ===
             if (delivery === '宅配' && currentRawTotal >= 2000) {
@@ -2095,9 +2335,10 @@
             else if (payment === 'LinePay') payMethodName = 'LINE Pay 條碼快速支付 (自主輸入金額)';
             else if (payment === 'TWQR') payMethodName = 'TWQR 行動支付 (綠界金流)';
             
-            let confirmMsg = `【訂單確認】\n---------------------\n[購買明細]\n${itemsDetailStr}奶酪數量：${currentTotalCups} 杯\n---------------------\n應付總額：$${currentFinalTotal}\n訂購人：${name} / ${phone}\n取貨方式：${delivery}\n日期：${finalDateStr}\n付款方式：${payMethodName}`;
+            let confirmMsg = `【訂單確認】\n---------------------\n[購買明細]\n${itemsDetailStr}杯數：${getOrderCupSummary()}\n---------------------\n應付總額：$${currentFinalTotal}\n訂購人：${name} / ${phone}\n取貨方式：${delivery}\n日期：${finalDateStr}\n付款方式：${payMethodName}`;
             if (delivery === '宅配') confirmMsg += `\n收件人：${rcptName} / ${rcptPhone}\n宅配地址：${uiAddress}`;
             if (delivery === '預約外送') confirmMsg += `\n收件人：${rcptName} / ${rcptPhone}\n外送地址：${uiAddress}\n⚠️ 此為希望送達時段，實際外送時間可能調整，將以店家聯絡確認為準。`;
+            if (currentCoffeeCups > 0) confirmMsg += `\n咖啡備註：${remarks}`;
             confirmMsg += `\n\n請確認以上資訊無誤，點擊「確定」送出訂單。`;
             if (!confirm(confirmMsg)) return; 
 
@@ -2142,19 +2383,7 @@
                 // 同一筆訂單只送一個固定請求編號；台灣時間單號由後端在正式送單時產生。
                 const requestPayload = { action: "createEcpayOrder", clientVersion: ONLINE_CHECKOUT_FRONTEND_VERSION, phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, requestId: onlineOrderRequestId, orderData: backendOrderData, paymentMethod: payment };
 
-                const response = await fetch(TRAFFIC_SCRIPT_URL, {
-                    method: "POST",
-                    body: JSON.stringify(requestPayload)
-                });
-                if (!response.ok) throw new Error("HTTP " + response.status);
-
-                const rawText = await response.text();
-                let result;
-                try {
-                    result = JSON.parse(rawText);
-                } catch (jsonErr) {
-                    result = { success: false, msg: "後端回傳格式非標準 JSON" };
-                }
+                const result = await sendOrderServiceRequest(requestPayload);
 
                 if (result.success) {
                     backendReportedSuccess = true;
@@ -2178,14 +2407,14 @@
                         console.error('訂單已建立，但收據畫面產生失敗：', renderError);
                     }
 
-                    clearOnlineOrderRequestId(onlineOrderRequestId);
-
                     if (needsEcpayRedirect) {
                         // 綠界官方規格要求由前端以 POST 表單 Submit；使用同頁導轉可避免新視窗遭瀏覽器封鎖。
                         submitPreparedEcpayPayment();
+                        clearOnlineOrderRequestId(onlineOrderRequestId);
                         return;
                     }
 
+                    clearOnlineOrderRequestId(onlineOrderRequestId);
                     document.getElementById('loading-overlay').style.display = 'none';
                     if (receiptError) alert(`訂單 ${orderId} 已建立，但收據畫面顯示異常。請保留此單號並使用「查詢訂單」確認。`);
                 } else {
@@ -2205,9 +2434,12 @@
                 if (backendReportedSuccess && !confirmedOrderId) {
                     alert("【後端部署版本不一致】\n伺服器回覆成功，但沒有回傳新版 14 碼訂單編號。這通常表示 Code.gs 已儲存、但尚未建立新的網頁應用程式部署版本。\n\n本筆可能已寫入試算表，請先使用「查詢訂單」確認，暫時不要再次送單。");
                 } else if (confirmedOrderId) {
-                    alert(`訂單 ${confirmedOrderId} 已建立，但未能開啟綠界付款頁。請勿重新下單；請保留單號並聯絡客服。\n原因：${getCheckoutErrorText(e)}`);
+                    const recoveryHint = payment === 'Credit'
+                        ? '請使用「查詢訂單」的「接續信用卡付款」開啟原訂單付款頁。'
+                        : '請保留單號並聯絡客服確認付款方式。';
+                    alert(`訂單 ${confirmedOrderId} 已建立，但未能開啟綠界付款頁。${recoveryHint}\n原因：${getCheckoutErrorText(e)}`);
                 } else {
-                    alert(`中央訂單系統尚未確認完成，請勿付款。請先使用「查詢訂單」確認；若查無訂單再重試。\n原因：${getCheckoutErrorText(e)}`);
+                    alert(`尚未收到訂單系統回覆。請先使用「查詢訂單」確認；已成立的信用卡訂單可按「接續信用卡付款」，不必重新下單。\n原因：${getCheckoutErrorText(e)}`);
                 }
                 document.getElementById('loading-overlay').style.display = 'none';
                 const possiblyCreated = backendReportedSuccess || !!confirmedOrderId;
@@ -2385,11 +2617,16 @@
         }
         
         function closeOrderQuery() { 
+            orderQuerySequence++;
+            queriedOnlineOrders = [];
+            queriedOrderBuyer = null;
             document.getElementById('order-query-modal').style.display = 'none'; 
             document.getElementById('query-result-area').style.display = 'none';
             document.getElementById('query-result-area').innerHTML = '';
             document.getElementById('query-name').value = '';
             document.getElementById('query-phone').value = '';
+            document.getElementById('btn-do-query').innerText = '開始查詢';
+            document.getElementById('btn-do-query').disabled = false;
         }
 
         async function executeOrderQuery() {
@@ -2409,28 +2646,33 @@
 
             btn.innerText = "系統查詢中..."; 
             btn.disabled = true;
+            const querySequence = ++orderQuerySequence;
+            queriedOnlineOrders = [];
+            queriedOrderBuyer = null;
             resultArea.style.display = 'block'; 
             resultArea.innerHTML = '<div style="text-align:center; color:#888; margin-top:10px;">資料庫連線比對中，請稍候...</div>';
 
             try {
-                // 向您的 Google Apps Script 發送查詢請求 (需在 GAS 後端新增 action=queryOrder 的對應邏輯)
-                const response = await fetch(
-                    TRAFFIC_SCRIPT_URL +
-                    "?action=queryOrder&name=" + encodeURIComponent(name) +
-                    "&phone=" + encodeURIComponent(phone) +
-                    "&_=" + Date.now(),
-                    { cache: "no-store" }
-                );
-                const data = await response.json();
+                const data = await sendOrderServiceRequest({action:'queryOrder', name, phone});
+                if (querySequence !== orderQuerySequence) return;
 
                 if (data.success && data.orders && data.orders.length > 0) {
+                    queriedOnlineOrders = data.orders;
+                    queriedOrderBuyer = {name, phone};
                     let html = '<div style="font-weight:700; color:var(--c-text); margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">近期的訂單紀錄 (點擊可看明細)：</div>';
                     
-                    data.orders.forEach(order => {
+                    data.orders.forEach((rawOrder, index) => {
+                        const order = {...rawOrder};
+                        for (const field of ['orderId','date','status','total','paymentMethod','cups','items']) {
+                            order[field] = escapeOrderQueryText(order[field]);
+                        }
+                        const resumeButton = rawOrder.canResumePayment === true && /^\d{14}$/.test(String(rawOrder.orderId))
+                            ? `<button onclick="resumeQueriedOrderPayment(${index}, this)" style="display:block; width:100%; margin-top:12px; padding:13px; border:0; border-radius:8px; background:#0056b3; color:white; font-size:1rem; font-weight:bold; cursor:pointer;">接續信用卡付款</button>`
+                            : '';
                         html += `
                         <div style="background:#FAF8F5; border:1px solid #EFEBE9; border-radius:8px; margin-bottom:12px; overflow:hidden;">
                             
-                            <div onclick="const detail = this.nextElementSibling; detail.style.display = detail.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('.toggle-icon'); icon.innerText = detail.style.display === 'none' ? '▼' : '▲';" style="padding:15px; cursor:pointer; position:relative; transition: background 0.2s;" onmouseover="this.style.background='#F5F2EB'" onmouseout="this.style.background='transparent'">
+                            <div onclick="const detail = this.parentElement.querySelector('.order-query-detail'); detail.style.display = detail.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('.toggle-icon'); icon.innerText = detail.style.display === 'none' ? '▼' : '▲';" style="padding:15px; cursor:pointer; position:relative; transition: background 0.2s;" onmouseover="this.style.background='#F5F2EB'" onmouseout="this.style.background='transparent'">
                                 <div style="font-family:monospace; font-size:1.05rem; font-weight:bold; color:var(--c-text); margin-bottom:5px;">#${order.orderId || '未知單號'}</div>
                                 <div style="color:#888; font-size:0.85rem; margin-bottom:8px;">預定日期：${order.date || '無'}</div>
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
@@ -2443,8 +2685,9 @@
                                 </div>
                                 <div class="toggle-icon" style="position:absolute; top:15px; right:15px; color:#BCAAA4; font-size:0.8rem;">▼</div>
                             </div>
+                            ${resumeButton ? `<div style="padding:0 15px 12px;">${resumeButton}</div>` : ''}
                             
-                            <div style="display:none; padding:15px; border-top:1px dashed #EFEBE9; background:#fff; font-size:0.9rem;">
+                            <div class="order-query-detail" style="display:none; padding:15px; border-top:1px dashed #EFEBE9; background:#fff; font-size:0.9rem;">
                                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                                     <span style="color:#888;">付款方式</span>
                                     <span style="color:var(--c-text); font-weight:500;">${order.paymentMethod}</span>
@@ -2466,11 +2709,48 @@
                     resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">❌ 查無符合的訂單資料。<br><span style="font-size:0.85rem; color:#888;">請確認輸入的資料與訂購時是否完全一致。</span></div>`;
                 }
             } catch (e) {
-                resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">連線失敗，請檢查網路狀態或稍後再試。</div>`;
+                if (querySequence !== orderQuerySequence) return;
+                resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">${escapeOrderQueryText(getCheckoutErrorText(e))}</div>`;
+            } finally {
+                if (querySequence === orderQuerySequence) {
+                    btn.innerText = "開始查詢";
+                    btn.disabled = false;
+                }
             }
-            
-            btn.innerText = "開始查詢"; 
-            btn.disabled = false;
+        }
+
+        async function resumeQueriedOrderPayment(index, button) {
+            if (paymentResumeInProgress) return;
+            const order = queriedOnlineOrders[index], buyer = queriedOrderBuyer;
+            if (!order || !buyer || order.canResumePayment !== true) {
+                alert('請重新查詢訂單後再接續付款'); return;
+            }
+            paymentResumeInProgress = true;
+            button.disabled = true;
+            let redirectStarted = false;
+            document.getElementById('loading-text').innerText = '正在取得原訂單付款資料...';
+            document.getElementById('loading-overlay').style.display = 'flex';
+            try {
+                const result = await sendOrderServiceRequest({action:'resumeEcpayPayment',
+                    orderId:String(order.orderId), name:buyer.name, phone:buyer.phone});
+                if (!result.success) throw new Error(result.msg || result.error || '無法取得原訂單付款資料');
+                const expectedTotal = Number(String(order.total).replace(/,/g, ''));
+                if (String(result.orderId) !== String(order.orderId) || result.paymentMethod !== 'Credit' ||
+                    !Number.isSafeInteger(expectedTotal) || result.finalTotal !== expectedTotal) {
+                    throw new Error('訂單資料已變更，請重新查詢確認');
+                }
+                prepareEcpayPostForm(result.ecpayParams, result.orderId, result.finalTotal, 'Credit');
+                submitPreparedEcpayPayment();
+                redirectStarted = true;
+            } catch (error) {
+                alert(`原訂單 ${order.orderId} 未重新建單。\n${getCheckoutErrorText(error)}`);
+            } finally {
+                if (!redirectStarted) {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    button.disabled = false;
+                    paymentResumeInProgress = false;
+                }
+            }
         }
         // ==========================================
         // 圖片預覽彈出視窗功能
@@ -2518,7 +2798,7 @@
 
             <!-- 尚未裝盒的口味清單 -->
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
-                <div style="font-size: 0.9rem; color: var(--c-text); font-weight: bold;">未裝盒商品</div>
+                <div style="font-size: 0.9rem; color: var(--c-text); font-weight: bold;">未裝盒奶酪／布丁</div>
                 <button onclick="autoFillBoxes()" style="background:var(--c-primary); color:white; border:none; padding:4px 10px; border-radius:15px; font-size:0.8rem; cursor:pointer;">⚡ 一鍵自動裝盒</button>
             </div>
             <div id="unboxed-items-list"></div>
