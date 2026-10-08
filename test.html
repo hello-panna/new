@@ -838,8 +838,8 @@
                 badge: (new Date() < new Date('2026/09/04 00:00:00')) ? "嘗鮮優惠" : "", 
                 badgeColor: "#F57F17" 
             },
-            { id: 16, name: "美式咖啡", price: 60, image: "2026100801.png", desc: "12oz (350 ml)紙杯裝<br>購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡豆、水", category: "coffee" },
-            { id: 18, name: "拿鐵咖啡", price: 75, image: "2026100802.png", desc: "12oz (350 ml)紙杯裝<br>購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡豆、鮮奶、水", category: "coffee" },
+            { id: 16, name: "美式咖啡", price: 60, image: "2026100801.png", desc: "12oz (350 ml)<br>購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡豆、水", category: "coffee" },
+            { id: 18, name: "拿鐵咖啡", price: 75, image: "2026100802.png", desc: "12oz (350 ml)<br>購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡豆、鮮奶、水", category: "coffee" },
             { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" }
         ];
         const COUPONS = { "VIP95": { type: "rate", value: 0.95, name: "好酪友95折" } };
@@ -850,7 +850,7 @@
         }
 
         function isDessertItem(item) {
-            return Number(item.id) !== 13 && !isCoffeeItem(item);
+            return Number(item.id) !== 13 && !isCoffeeItem(item) && /奶酪|布丁/.test(String(item.name || ''));
         }
 
         function isPannaCottaItem(item) {
@@ -1748,7 +1748,7 @@
             if (pannaCottaTotal >= 6) {
                 let boxedCups = completedBoxes.reduce((sum, box) => sum + 6, 0);
                 let unboxedNum = pannaCottaTotal - boxedCups;
-                let boxStatusMsg = unboxedNum > 0 ? `<span style="color:var(--c-danger);">尚有 ${unboxedNum} 杯未裝盒</span>` : `<span style="color:var(--c-success);">已全部裝盒完畢</span>`;
+                let boxStatusMsg = unboxedNum > 0 ? `<span style="color:var(--c-danger);">尚有 ${unboxedNum} 杯奶酪／布丁未裝盒</span>` : `<span style="color:var(--c-success);">已全部裝盒完畢</span>`;
                 
                 cartContainer.innerHTML += `
                 <div style="background: #fff; padding: 15px; border-radius: 12px; border: 2px dashed var(--c-primary); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(140, 123, 117, 0.1);">
@@ -1877,7 +1877,7 @@
                     </div>`;
                 }
             }
-            if (!hasUnboxed) unboxedHtml = '<div style="text-align:center; color:#999; padding:20px 0;">目前所有商品皆已裝盒完畢 🎉</div>';
+            if (!hasUnboxed) unboxedHtml = '<div style="text-align:center; color:#999; padding:20px 0;">目前所有奶酪與布丁皆已裝盒完畢 🎉</div>';
             document.getElementById('unboxed-items-list').innerHTML = unboxedHtml;
 
             // 3. 繪製已完成清單
@@ -1911,12 +1911,14 @@
 
         // 增減目前盒子內的商品
         function modifyCurrentBox(id, delta) {
+            const product = cart.find(item => item.id == id);
+            if (!product || !isDessertItem(product)) return;
             let unboxed = getUnboxedCounts();
             let currentCupsInBox = currentBoxBuilding.reduce((sum, item) => sum + item.qty, 0);
             
             // 防呆機制
             if (delta > 0 && currentCupsInBox >= 6) return; // 已經滿6杯
-            if (delta > 0 && unboxed[id].qty <= 0) return; // 沒庫存了
+            if (delta > 0 && (!unboxed[id] || unboxed[id].qty <= 0)) return; // 沒有可裝盒的商品了
 
             let existingItem = currentBoxBuilding.find(item => item.id == id);
             if (existingItem) {
@@ -1925,7 +1927,7 @@
                     currentBoxBuilding = currentBoxBuilding.filter(item => item.id != id);
                 }
             } else if (delta > 0) {
-                currentBoxBuilding.push({ id: id, name: cart.find(c => c.id == id).name, qty: 1 });
+                currentBoxBuilding.push({ id: id, name: product.name, qty: 1 });
             }
             renderBoxingUI();
         }
@@ -1933,7 +1935,7 @@
         // 儲存當前盒子
         function saveCurrentBox() {
             const currentCupsInBox = currentBoxBuilding.reduce((sum, item) => sum + item.qty, 0);
-            if (currentCupsInBox !== 6) return;
+            if (currentCupsInBox !== 6 || currentBoxBuilding.some(item => !isDessertItem(item))) return;
             
             completedBoxes.push({
                 label: String.fromCharCode(65 + completedBoxes.length),
@@ -1975,6 +1977,7 @@
             // 先把 currentBoxBuilding 退回
             if(currentBoxBuilding.length > 0) {
                 currentBoxBuilding.forEach(item => {
+                    if (!isDessertItem(item)) return;
                     for(let i=0; i<item.qty; i++) flatArray.push({id: item.id, name: item.name});
                 });
                 currentBoxBuilding = [];
@@ -2795,7 +2798,7 @@
 
             <!-- 尚未裝盒的口味清單 -->
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
-                <div style="font-size: 0.9rem; color: var(--c-text); font-weight: bold;">未裝盒商品</div>
+                <div style="font-size: 0.9rem; color: var(--c-text); font-weight: bold;">未裝盒奶酪／布丁</div>
                 <button onclick="autoFillBoxes()" style="background:var(--c-primary); color:white; border:none; padding:4px 10px; border-radius:15px; font-size:0.8rem; cursor:pointer;">⚡ 一鍵自動裝盒</button>
             </div>
             <div id="unboxed-items-list"></div>
