@@ -661,7 +661,21 @@
         .seo-content-card summary { cursor:pointer; font-size:.92rem; font-weight:700; }
         .seo-content-card details p { margin-bottom:0; }
         .seo-noscript { margin-top:14px !important; }
-    </style>
+    
+/* 手機版：精簡版頭及側邊工具 */
+.seo-intro {padding:16px 14px;margin-bottom:16px;}
+.seo-intro h1 {font-size:1.2rem;letter-spacing:.02em;}
+.seo-intro .quick-order-card {margin:14px 0 0;padding:0;background:transparent;border:0;box-shadow:none;}
+.seo-intro .quick-order-title {display:none;}
+.seo-links {margin-top:12px;gap:6px;}
+.seo-links a {font-size:.75rem;padding:5px 8px;}
+@media(max-width:619px){
+.floating-btn-group {gap:6px;}
+.bookmark-line-btn,.query-order-btn {width:30px;padding:8px 3px;}
+.bookmark-line-btn img,.query-order-btn span.icon {width:20px;height:20px;margin-bottom:4px;font-size:16px;line-height:20px;}
+.bookmark-line-btn span.text,.query-order-btn span.text {font-size:11px;letter-spacing:1px;}
+}
+</style>
 </head>   
 <body>
 
@@ -706,8 +720,15 @@
 
             <div id="step-1" class="step-content active">
                 <section class="seo-intro" aria-labelledby="seo-main-heading">
-                    <h1 id="seo-main-heading">彰化手工鮮奶酪與烤布丁<br>Hello 好酪官方網站</h1>
-                    <p>位於彰化市中正路一段403號，提供多口味手工鮮奶酪、香草焦糖烤布丁與六入禮盒，可門市自取、彰化市預約外送及冷藏宅配。</p>
+                    <h1 id="seo-main-heading">Hello 好酪手工鮮奶酪</h1>
+                    <p>鮮奶酪・烤布丁・六入禮盒，選一份喜歡的甜點。</p>
+                <div class="quick-order-card">
+                    <div class="quick-order-title">想直接下單？</div>
+                    <div class="quick-order-actions">
+                        <button type="button" class="quick-order-btn" onclick="scrollToMenu()">立即選購口味</button>
+                        <button type="button" class="quick-order-btn secondary" onclick="openCartModal()">查看購物車</button>
+                    </div>
+                </div>
                     <nav class="seo-links" aria-label="官網資訊">
                         <a href="menu.html">完整菜單與六入禮盒</a>
                         <a href="delivery.html">冷藏宅配與外送</a>
@@ -718,13 +739,7 @@
 
             
 
-                <div class="quick-order-card">
-                    <div class="quick-order-title">想直接下單？</div>
-                    <div class="quick-order-actions">
-                        <button type="button" class="quick-order-btn" onclick="scrollToMenu()">立即選購口味</button>
-                        <button type="button" class="quick-order-btn secondary" onclick="openCartModal()">查看購物車</button>
-                    </div>
-                </div>
+
 
                 <div class="section-header first">綿密口感</div>
                 <div class="package-box" style="padding: 10px;">
