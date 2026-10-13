@@ -1,7 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://www.hello-panna.com/</loc>
-    <lastmod>2026-09-15</lastmod>
+    <lastmod>2026-10-13</lastmod>
+    <image:image><image:loc>https://www.hello-panna.com/230242.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230240_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230241_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230243.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230239_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230234_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230235_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230237_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230233_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230236_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/12356211.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/2026082701.png</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/2026100801.png</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/2026100802.png</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/155911.png</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.hello-panna.com/menu.html</loc>
+    <lastmod>2026-10-13</lastmod>
+    <image:image><image:loc>https://www.hello-panna.com/230242.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230240_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230241_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230243.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230239_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230234_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230235_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230237_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230233_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/230236_0.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/12356211.jpg</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/2026082701.png</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/2026100801.png</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/2026100802.png</image:loc></image:image>
+    <image:image><image:loc>https://www.hello-panna.com/155911.png</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.hello-panna.com/delivery.html</loc>
+    <lastmod>2026-10-13</lastmod>
+  </url>
+  <url>
+    <loc>https://www.hello-panna.com/store.html</loc>
+    <lastmod>2026-10-13</lastmod>
+    <image:image><image:loc>https://www.hello-panna.com/101842.jpg</image:loc></image:image>
   </url>
 </urlset>
