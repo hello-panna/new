@@ -298,6 +298,20 @@
                 "priceCurrency": "TWD",
                 "url": "https://www.hello-panna.com/#menu-item-15"
               }
+            },
+            {
+              "@type": "MenuItem",
+              "@id": "https://www.hello-panna.com/menu.html#item-20",
+              "name": "草莓鮮奶酪",
+              "description": "天然草莓凍乾粉搭配濃郁奶香，酸甜柔和、綿密滑順。",
+              "image": "https://www.hello-panna.com/20261016.png",
+              "url": "https://www.hello-panna.com/menu.html#item-20",
+              "offers": {
+                "@type": "Offer",
+                "price": "55",
+                "priceCurrency": "TWD",
+                "url": "https://www.hello-panna.com/#menu-item-20"
+              }
             }
           ]
         },
@@ -888,6 +902,16 @@
                         
                         <button class="add-btn" onclick="addToCart(15)">加入購物車</button>
                     </article>
+                    <article class="menu-item" id="menu-item-20">
+                        <div class="menu-img-container"><img src="20261016.png" alt="Hello 好酪 草莓鮮奶酪" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></div>
+                        <h3 class="menu-name">草莓鮮奶酪</h3>
+                        <div class="menu-desc">天然草莓凍乾粉搭配濃郁奶香，酸甜柔和、綿密滑順。</div>
+                        
+                        <div class="menu-ingredients"><span class="ing-label">成份 | </span>台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、天然草莓凍乾粉</div>
+                        <div class="menu-price">$55</div>
+                        
+                        <button class="add-btn" onclick="addToCart(20)">加入購物車</button>
+                    </article>
                     <article class="menu-item" id="menu-item-16">
                         <div class="menu-img-container"><img src="2026100801.png" alt="Hello 好酪 美式咖啡" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></div>
                         
@@ -1327,6 +1351,7 @@
                 badge: (new Date() < new Date('2026/09/04 00:00:00')) ? "嘗鮮優惠" : "", 
                 badgeColor: "#F57F17" 
             },
+            { id: 20, name: "草莓鮮奶酪", price: 55, image: "20261016.png", desc: "天然草莓凍乾粉搭配濃郁奶香，酸甜柔和、綿密滑順。", ingredients: "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、天然草莓凍乾粉" },
             { id: 16, name: "美式咖啡", price: 60, image: "2026100801.png", desc: "12oz (350 ml)<br>購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡豆、水", category: "coffee" },
             { id: 18, name: "拿鐵咖啡", price: 75, image: "2026100802.png", desc: "12oz (350 ml)<br>購買奶酪加購咖啡每杯-10元。", ingredients: "咖啡豆、鮮奶、水", category: "coffee" },
             { id: 13, name: "質感保冷袋", price: 15, image: "155911.png", desc: "長途保鮮推薦加購，讓奶酪維持最佳綿密口感。", ingredients: "環保鋁箔保溫層、不織布提把" }
