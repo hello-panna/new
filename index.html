@@ -705,8 +705,14 @@
 .bookmark-line-btn img,.query-order-btn span.icon {width:20px;height:20px;margin-bottom:4px;font-size:16px;line-height:20px;}
 .bookmark-line-btn span.text,.query-order-btn span.text {font-size:11px;letter-spacing:1px;}
 }
-</style>
+
+        /* 圖片維持原本卡片尺寸；影片預留原始比例，減少載入時跳動。 */
+        .menu-img-container > .media-picture { display:block; width:100%; height:100%; }
+        .media-store-picture { display:block; }
+        .package-box video, .video-box video { height:auto; }
+    </style>
     <meta name="twitter:image:alt" content="Hello 好酪經典原味鮮奶酪杯裝照片">
+<link rel="preload" as="image" href="assets/media-20261028/2026100803-poster.webp" fetchpriority="high">
 </head>   
 <body>
 
@@ -775,14 +781,14 @@
 
                 <div class="section-header first">綿密口感</div>
                 <div class="package-box" style="padding: 10px;">
-                    <video class="package-img" controls autoplay loop muted playsinline style="margin-bottom:0; border-radius: 6px;"><source src="2026100803.mp4" type="video/mp4"></video>
+                    <video preload="none" poster="assets/media-20261028/2026100803-poster.webp" width="1080" height="1530" class="package-img" controls autoplay loop muted playsinline style="margin-bottom:0; border-radius: 6px;"><source src="2026100803.mp4" type="video/mp4"></video>
                     <div class="package-text" style="padding: 15px 5px 5px;">每一口，都是最純粹的溫柔。</div>
                 </div>
                 
                 <div class="section-header">市集日常</div>
                 <div class="video-row">
-                    <div class="video-box"><video controls autoplay loop muted playsinline style="width:100%; border-radius:6px; display:block;"><source src="s1.mp4" type="video/mp4"></video></div>
-                    <div class="video-box"><video controls autoplay loop muted playsinline style="width:100%; border-radius:6px; display:block;"><source src="s2.mp4" type="video/mp4"></video></div>
+                    <div class="video-box"><video preload="none" poster="assets/media-20261028/s1-poster.webp" width="720" height="1280" controls loop muted playsinline style="width:100%; border-radius:6px; display:block;"><source src="s1.mp4" type="video/mp4"></video></div>
+                    <div class="video-box"><video preload="none" poster="assets/media-20261028/s2-poster.webp" width="720" height="1280" controls loop muted playsinline style="width:100%; border-radius:6px; display:block;"><source src="s2.mp4" type="video/mp4"></video></div>
                 </div>
                 
                 <h2 class="section-header">鮮奶酪、烤布丁與咖啡菜單</h2>
@@ -844,7 +850,7 @@
                         <button class="add-btn" onclick="addToCart(3)">加入購物車</button>
                     </article>
                     <article class="menu-item" id="menu-item-20">
-                        <div class="menu-img-container"><img src="20261016.png" alt="Hello 好酪 草莓鮮奶酪" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></div>
+                        <div class="menu-img-container"><picture class="media-picture"><source type="image/webp" srcset="assets/media-20261028/20261016-400.webp 400w, assets/media-20261028/20261016-800.webp 800w" sizes="(max-width: 520px) calc((100vw - 124px) / 2), 198px"><img src="20261016.png" alt="Hello 好酪 草莓鮮奶酪" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></picture></div>
                         <h3 class="menu-name">草莓鮮奶酪</h3>
                         <div class="menu-desc">天然草莓凍乾粉搭配濃郁奶香，酸甜柔和、綿密滑順。</div>
                         
@@ -909,7 +915,7 @@
                         <button class="add-btn" onclick="addToCart(5)">加入購物車</button>
                     </article>
                     <article class="menu-item" id="menu-item-15">
-                        <div class="menu-img-container"><img src="2026082701.png" alt="Hello 好酪 黃金蕎麥鮮奶酪" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></div>
+                        <div class="menu-img-container"><picture class="media-picture"><source type="image/webp" srcset="assets/media-20261028/2026082701-400.webp 400w, assets/media-20261028/2026082701-800.webp 800w" sizes="(max-width: 520px) calc((100vw - 124px) / 2), 198px"><img src="2026082701.png" alt="Hello 好酪 黃金蕎麥鮮奶酪" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></picture></div>
                         
                         <h3 class="menu-name">黃金蕎麥鮮奶酪</h3>
                         <div class="menu-desc">嚴選黃金蕎麥，獨特焙炒穀香與濃郁奶香完美融合。</div>
@@ -920,7 +926,7 @@
                         <button class="add-btn" onclick="addToCart(15)">加入購物車</button>
                     </article>
                     <article class="menu-item" id="menu-item-14">
-                        <div class="menu-img-container"><img src="12356211.jpg" alt="Hello 好酪 烤布丁" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></div>
+                        <div class="menu-img-container"><picture class="media-picture"><source type="image/webp" srcset="assets/media-20261028/12356211-400.webp 400w, assets/media-20261028/12356211-800.webp 800w" sizes="(max-width: 520px) calc((100vw - 124px) / 2), 198px"><img src="12356211.jpg" alt="Hello 好酪 烤布丁" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></picture></div>
                         
                         <h3 class="menu-name">烤布丁</h3>
                         <div class="menu-desc">滑嫩香濃，焦糖微苦，口感綿密。<span onclick='openImageModal("1663232.jpg")' style='color: var(--c-primary); text-decoration: underline; cursor: pointer;'>(杯裝出貨)</span></div>
@@ -931,7 +937,7 @@
                         <button class="add-btn" onclick="addToCart(14)">加入購物車</button>
                     </article>
                     <article class="menu-item" id="menu-item-21">
-                        <div class="menu-img-container"><img src="20261023.png" alt="Hello 好酪 抹茶烤布丁" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></div>
+                        <div class="menu-img-container"><picture class="media-picture"><source type="image/webp" srcset="assets/media-20261028/20261023-400.webp 400w, assets/media-20261028/20261023-800.webp 800w" sizes="(max-width: 520px) calc((100vw - 124px) / 2), 198px"><img src="20261023.png" alt="Hello 好酪 抹茶烤布丁" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></picture></div>
                         <h3 class="menu-name">抹茶烤布丁</h3>
                         <div class="menu-desc">靜岡抹茶香氣醇厚，微苦回甘，布丁滑嫩細緻。<br>(杯裝出貨)</div>
                         
@@ -941,7 +947,7 @@
                         <button class="add-btn" onclick="addToCart(21)">加入購物車</button>
                     </article>
                     <article class="menu-item" id="menu-item-16">
-                        <div class="menu-img-container"><img src="2026100801.png" alt="Hello 好酪 美式咖啡" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></div>
+                        <div class="menu-img-container"><picture class="media-picture"><source type="image/webp" srcset="assets/media-20261028/2026100801-400.webp 400w, assets/media-20261028/2026100801-800.webp 800w" sizes="(max-width: 520px) calc((100vw - 124px) / 2), 198px"><img src="2026100801.png" alt="Hello 好酪 美式咖啡" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></picture></div>
                         
                         <h3 class="menu-name">美式咖啡</h3>
                         <div class="menu-desc">12oz (350 ml)<br>購買奶酪加購咖啡每杯-10元。</div>
@@ -957,7 +963,7 @@
                         <button class="add-btn" type="button" disabled>請先選擇冰／熱</button>
                     </article>
                     <article class="menu-item" id="menu-item-18">
-                        <div class="menu-img-container"><img src="2026100802.png" alt="Hello 好酪 拿鐵咖啡" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></div>
+                        <div class="menu-img-container"><picture class="media-picture"><source type="image/webp" srcset="assets/media-20261028/2026100802-400.webp 400w, assets/media-20261028/2026100802-800.webp 800w" sizes="(max-width: 520px) calc((100vw - 124px) / 2), 198px"><img src="2026100802.png" alt="Hello 好酪 拿鐵咖啡" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></picture></div>
                         
                         <h3 class="menu-name">拿鐵咖啡</h3>
                         <div class="menu-desc">12oz (350 ml)<br>購買奶酪加購咖啡每杯-10元。</div>
@@ -973,7 +979,7 @@
                         <button class="add-btn" type="button" disabled>請先選擇冰／熱</button>
                     </article>
                     <article class="menu-item" id="menu-item-13">
-                        <div class="menu-img-container"><img src="155911.png" alt="Hello 好酪 質感保冷袋" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></div>
+                        <div class="menu-img-container"><picture class="media-picture"><source type="image/webp" srcset="assets/media-20261028/155911-400.webp 400w, assets/media-20261028/155911-768.webp 768w" sizes="(max-width: 520px) calc((100vw - 124px) / 2), 198px"><img src="155911.png" alt="Hello 好酪 質感保冷袋" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></picture></div>
                         
                         <h3 class="menu-name">質感保冷袋</h3>
                         <div class="menu-desc">長途保鮮推薦加購，讓奶酪維持最佳綿密口感。</div>
@@ -1757,6 +1763,24 @@
         // ==========================================
         // 3. Step 1 功能：菜單繪製、選購增減、取貨日期連動
         // ==========================================
+        // 網頁圖片版本；原圖保留給預覽及不支援 WebP 的瀏覽器。
+        const MEDIA_IMAGE_SRCSETS = {
+    "2026100802.png": "assets/media-20261028/2026100802-400.webp 400w, assets/media-20261028/2026100802-800.webp 800w",
+    "20261016.png": "assets/media-20261028/20261016-400.webp 400w, assets/media-20261028/20261016-800.webp 800w",
+    "2026100801.png": "assets/media-20261028/2026100801-400.webp 400w, assets/media-20261028/2026100801-800.webp 800w",
+    "20261023.png": "assets/media-20261028/20261023-400.webp 400w, assets/media-20261028/20261023-800.webp 800w",
+    "155911.png": "assets/media-20261028/155911-400.webp 400w, assets/media-20261028/155911-768.webp 768w",
+    "2026082701.png": "assets/media-20261028/2026082701-400.webp 400w, assets/media-20261028/2026082701-800.webp 800w",
+    "12356211.jpg": "assets/media-20261028/12356211-400.webp 400w, assets/media-20261028/12356211-800.webp 800w"
+};
+        function renderMenuImage(item) {
+            const img = `<img src="${item.image}" alt="Hello 好酪 ${item.name}" class="menu-img" loading="lazy" decoding="async" width="400" height="400">`;
+            const srcset = MEDIA_IMAGE_SRCSETS[item.image];
+            return srcset
+                ? `<picture class="media-picture"><source type="image/webp" srcset="${srcset}" sizes="(max-width: 520px) calc((100vw - 124px) / 2), 198px">${img}</picture>`
+                : img;
+        }
+
         function renderMenu() {
             const menuContainer = document.getElementById('menu-list');
             menuContainer.innerHTML = '';
@@ -1784,7 +1808,7 @@
                 
                 menuContainer.innerHTML += `
                     <article class="menu-item" id="menu-item-${item.id}">
-                        <div class="menu-img-container"><img src="${item.image}" alt="Hello 好酪 ${item.name}" class="menu-img" loading="lazy" decoding="async" width="400" height="400"></div>
+                        <div class="menu-img-container">${renderMenuImage(item)}</div>
                         ${badgeHtml}
                         <h3 class="menu-name">${item.name}</h3>
                         <div class="menu-desc">${item.desc}</div>
@@ -3317,7 +3341,12 @@
         function closeImageModal() {
             document.getElementById('image-modal-overlay').style.display = 'none';
         }
-        window.onload = init;
+        // 表單與購物車在 DOM 就緒時初始化，不等待圖片與影片完成。
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init, { once: true });
+        } else {
+            init();
+        }
     </script>
     
     <!-- 圖片預覽彈出視窗 -->
