@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#f7f1e7">
+  <title>我的會員卡｜Hello 好酪</title>
+  <script src="./line-member-config.js"></script>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    :root{color-scheme:light;--paper:#fffdf8;--bg:#f7f1e7;--ink:#503c2d;--muted:#776b5d;--line:#e1d4c1;--accent:#846449}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Noto Sans TC','Microsoft JhengHei',sans-serif;line-height:1.6}
+    main{max-width:470px;margin:auto;padding:30px 20px calc(28px + env(safe-area-inset-bottom))}.brand{letter-spacing:2px;font-size:15px;margin:0}.eyebrow{font-size:11px;letter-spacing:3px;color:var(--muted);margin:5px 0 22px}
+    h1{font-size:29px;margin:0 0 6px}p{margin:8px 0}.subtle{color:var(--muted);font-size:14px}.card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:22px;margin:20px 0;box-shadow:0 8px 24px #6b4b2910}
+    .member-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.badge{font-size:12px;border:1px solid var(--line);padding:3px 9px;border-radius:20px;white-space:nowrap}.name{font-size:18px;overflow-wrap:anywhere}.balance{display:flex;align-items:baseline;gap:8px;margin:14px 0 0}.balance strong{font-size:48px;line-height:1.2;font-weight:650}.balance span{font-size:15px}
+    .qr{display:flex;justify-content:center;align-items:center;width:280px;max-width:100%;min-height:280px;padding:26px;margin:20px auto 12px;background:#fff;border-radius:12px}.qr img,.qr canvas{display:block;width:228px!important;height:auto!important;max-width:100%;image-rendering:pixelated}.qr[hidden]{display:none}
+    .center{text-align:center}.expiry{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}.steps{padding-left:21px;font-size:15px}.steps li{padding:4px 0}
+    button,.button{display:block;width:100%;min-height:48px;padding:12px 16px;border-radius:12px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;text-align:center;text-decoration:none;cursor:pointer;margin:12px 0}
+    button:disabled{opacity:.55;cursor:wait}.secondary{background:transparent;color:var(--ink);border-color:var(--line)}.status{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);min-height:24px}.status.error{color:#a03926}.privacy{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;margin-top:24px}.phone{font-variant-numeric:tabular-nums;letter-spacing:1px}
+    [hidden]{display:none!important}@media(max-width:350px){main{padding:24px 14px}.card{padding:17px}.qr{width:246px;min-height:246px;padding:24px}.qr img,.qr canvas{width:198px!important;height:auto!important}}
+  </style>
+</head>
+<body>
+<main>
+  <p class="brand">Hello 好酪</p><p class="eyebrow">A LITTLE SWEETNESS, EVERY VISIT</p>
+  <h1>我的會員卡</h1><p class="subtle">來店出示會員碼，輕鬆累積每次的小甜蜜。</p>
+  <p id="status" class="status" role="status" aria-live="polite">正在開啟會員資料…</p>
+  <section id="member-panel" class="card" hidden>
+    <div class="member-head"><strong id="member-name" class="name"></strong><span class="badge">好酪會員</span></div>
+    <p id="member-phone" class="subtle phone"></p>
+    <div class="balance"><strong id="member-points">0</strong><span>可用點數</span></div>
+    <p id="member-visits" class="subtle"></p>
+    <div id="member-qr" class="qr" aria-label="請將會員碼出示給門市掃描"></div>
+    <p class="center">請出示給店員掃描</p><p id="member-expiry" class="center expiry"></p>
+    <button id="refresh-card" type="button">重新整理會員卡／點數</button>
+    <p class="subtle center">掃碼只辨識會員；累點與折抵依門市結帳結果為準。</p>
+  </section>
+  <section id="binding-panel" class="card" hidden>
+    <strong class="name">第一次使用，先連結原本的會員</strong>
+    <p class="subtle">過去的點數與消費紀錄會沿用。沒有登記過會員，也可以到門市協助建立。</p>
+    <ol class="steps"><li>按下方按鈕出示綁定碼。</li><li>請店員掃描，並核對你原本登記的手機。</li><li>店員完成後，按「綁定完成，開啟會員卡」。</li></ol>
+    <button id="create-binding" type="button">出示門市綁定碼</button>
+    <div id="binding-code" hidden><div id="binding-qr" class="qr" aria-label="請店員掃描此首次綁定碼"></div><p class="center">此碼用於首次綁定，請由店員協助。</p><p id="binding-expiry" class="center expiry"></p></div>
+    <button id="check-binding" type="button" class="secondary">綁定完成，開啟會員卡</button>
+  </section>
+  <a id="open-line" class="button secondary" href="#" hidden>重新在 LINE 開啟會員卡</a>
+  <button id="retry" type="button" class="secondary" hidden>重新整理</button>
+  <a class="button secondary" href="https://www.hello-panna.com/">前往線上訂購</a>
+  <p class="privacy">會員資料用於身分辨識、點數查詢及門市結帳。會員碼不包含手機號碼，並會定時更新。首次連結手機由門市核對；仍可使用原本報手機號碼的方式累點。</p>
+</main>
+<script>
+  'use strict';
+  const config=window.HELLO_MEMBER_CONFIG||{};
+  let requestBusy=false,cardExpiry=0,bindingExpiry=0,lastRefresh=0,initialized=false;
+  const byId=id=>document.getElementById(id);
+  function status(text,error=false){byId('status').textContent=text;byId('status').classList.toggle('error',error);}
+  function randomId(){return Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');}
+  function busy(value){requestBusy=value;for(const id of ['refresh-card','create-binding','check-binding'])byId(id).disabled=value;}
+  function api(method){
+    return new Promise((resolve,reject)=>{
+      if(!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(config.API_URL||'')){reject(new Error('會員頁尚未完成設定，請聯絡門市。'));return;}
+      const token=liff.getIDToken();if(!token){const error=new Error('請重新在LINE開啟會員卡登入。');error.code='LINE_AUTH_REQUIRED';reject(error);return;}
+      const nonce=randomId(),requestId=randomId(),frame=document.createElement('iframe'),form=document.createElement('form');
+      frame.name='hello_member_'+nonce;frame.hidden=true;frame.setAttribute('aria-hidden','true');
+      form.method='POST';form.action=config.API_URL;form.target=frame.name;form.hidden=true;
+      const fields={action:'helloLineMemberBridge',memberOrigin:location.origin,memberNonce:nonce,memberPayload:JSON.stringify({method,idToken:token,requestId})};
+      for(const [name,value] of Object.entries(fields)){const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;form.appendChild(input);}
+      const cleanup=()=>{window.removeEventListener('message',receive);clearTimeout(timeout);for(const input of form.elements)input.value='';form.remove();frame.remove();};
+      const receive=event=>{
+        const allowed=event.origin==='https://script.google.com'||/^https:\/\/(?:[a-z0-9-]+-script|script)\.googleusercontent\.com$/.test(event.origin);
+        const data=event.data;
+        if(!allowed||!data||data.type!=='hello-panna-line-member-result'||data.nonce!==nonce||data.requestId!==requestId)return;
+        cleanup();if(!data.result||!data.result.success){const error=new Error(data.result&&data.result.error||'會員查詢失敗，請再試一次。');error.code=data.result&&data.result.code;reject(error);}else resolve(data.result);
+      };
+      const timeout=setTimeout(()=>{cleanup();reject(new Error('連線逾時，請重新整理；若仍無法開啟，請門市確認部署設定。'));},25000);
+      window.addEventListener('message',receive);document.body.append(frame,form);form.submit();
+    });
+  }
+  function qr(id,code){
+    if(typeof QRCode==='undefined')throw new Error('會員碼元件尚未載入，請重新整理。');
+    if(!/^(?:HM|HB)-[a-f0-9]{64}$/i.test(code||''))throw new Error('會員碼格式異常，請重新整理。');
+    const node=byId(id);node.innerHTML='';node.hidden=false;
+    new QRCode(node,{text:code,width:256,height:256,correctLevel:QRCode.CorrectLevel.M,colorDark:'#000000',colorLight:'#ffffff'});
+  }
+  function renderMember(data){
+    lastRefresh=Date.now();byId('retry').hidden=true;byId('open-line').hidden=true;
+    byId('member-panel').hidden=!data.bound;byId('binding-panel').hidden=!!data.bound;
+    if(!data.bound){cardExpiry=0;byId('member-qr').innerHTML='';status('首次綁定一次，之後來店即可出示會員卡。');return;}
+    bindingExpiry=0;byId('binding-qr').innerHTML='';byId('binding-code').hidden=true;
+    byId('member-name').textContent=data.displayName||'好酪會員';byId('member-phone').textContent=data.phoneMasked||'';
+    byId('member-points').textContent=String(data.points);byId('member-visits').textContent='歷史來店消費：'+data.purchaseCount+' 次';
+    cardExpiry=Number(data.cardExpiresAt)||0;qr('member-qr',data.cardCode);status('會員卡已更新，來店時出示給店員即可。');countdown();
+  }
+  function failure(error){status(error.message||'無法連線，請稍後再試。',true);byId('retry').hidden=false;if(error.code==='LINE_AUTH_REQUIRED')byId('open-line').hidden=false;}
+  async function refresh(){if(requestBusy||!initialized)return;busy(true);status('正在讀取會員資料…');try{renderMember(await api('profile'));}catch(error){failure(error);}finally{busy(false);}}
+  async function createBinding(){if(requestBusy||!initialized)return;busy(true);status('正在產生首次綁定碼…');try{const result=await api('bindingTicket');if(result.bound){renderMember(result);return;}bindingExpiry=Number(result.expiresAt)||0;qr('binding-qr',result.ticket);byId('binding-code').hidden=false;status('請將此綁定碼出示給店員，並核對原本的會員手機。');countdown();}catch(error){failure(error);}finally{busy(false);}}
+  function remaining(expiry){const n=Math.max(0,Math.ceil((expiry-Date.now())/1000));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0');}
+  function countdown(){
+    if(cardExpiry){const valid=cardExpiry>Date.now();byId('member-expiry').textContent=valid?'會員碼更新倒數 '+remaining(cardExpiry):'會員碼已到期，請按重新整理。';if(!valid){byId('member-qr').innerHTML='';byId('member-qr').hidden=true;}}
+    if(bindingExpiry){const valid=bindingExpiry>Date.now();byId('binding-expiry').textContent=valid?'綁定碼有效時間 '+remaining(bindingExpiry):'綁定碼已到期，請重新產生。';if(!valid){byId('binding-qr').innerHTML='';byId('binding-qr').hidden=true;}}
+  }
+  async function start(){
+    if(!/^\d+-[A-Za-z0-9]+$/.test(config.LIFF_ID||'')){status('會員頁尚未啟用，請先使用門市報手機累點。',true);return;}
+    byId('open-line').href='https://liff.line.me/'+config.LIFF_ID;
+    if(typeof liff==='undefined'){status('LINE登入元件尚未載入，請稍後重新整理。',true);byId('retry').hidden=false;return;}
+    try{await liff.init({liffId:config.LIFF_ID});if(!liff.isLoggedIn()){byId('open-line').hidden=false;status('請登入LINE以開啟你的會員卡。');liff.login({redirectUri:location.origin+location.pathname});return;}initialized=true;await refresh();}catch(error){failure(error);byId('open-line').hidden=false;}
+  }
+  byId('refresh-card').addEventListener('click',refresh);byId('create-binding').addEventListener('click',createBinding);byId('check-binding').addEventListener('click',refresh);byId('retry').addEventListener('click',()=>location.reload());
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&initialized&&!requestBusy&&Date.now()-lastRefresh>15000)refresh();});
+  setInterval(countdown,1000);start();
+</script>
+</body>
+</html>
