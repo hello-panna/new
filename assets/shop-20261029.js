@@ -1,6 +1,6 @@
 /* Hello 好酪完整購物流程；沿用原官網金流橋接、商品資料與店家設定。 */
 'use strict';
-const hp = {category:'all',benefits:{},benefitKey:'',benefitSeq:0,backendReady:false,selection:'auto',quote:null,calendarMonth:'',dateGroups:{},lastDate:'',receipt:null,lastFocus:null,toastTimer:0,busy:false,preview:!['https://www.hello-panna.com','https://hello-panna.com'].includes(location.origin)};
+const hp = {manualCouponCode:'',category:'all',benefits:{},benefitKey:'',benefitSeq:0,backendReady:false,selection:'auto',quote:null,calendarMonth:'',dateGroups:{},lastDate:'',receipt:null,lastFocus:null,toastTimer:0,busy:false,preview:!['https://www.hello-panna.com','https://hello-panna.com'].includes(location.origin)};
 const hpOldDateSettings=updateDateSettings;
 const hpOriginalBridge=sendOrderServiceRequest;
 const hpOriginalCloseBoxing=closeBoxingModal;
@@ -19,7 +19,7 @@ function hpCloseDialog(){hpId('hp-dialog').close();hp.lastFocus?.focus();}
 function hpFood(item){if(item.id===13)return '可重複使用・另計件數';if(item.id===14||item.id===21)return '蛋奶素・含蛋、乳';if(isCoffeeItem(item))return item.id===18?'12oz・含乳':'12oz・黑咖啡';return '葷食・含乳'+(item.id===3?'、芝麻':item.id===15?'、蕎麥':item.id===9?'・含酒精':'');}
 function hpGetQuote(){
   try{
-    const q=HelloPannaPricing.quote(cart,{delivery:hpMode(),benefits:hp.benefits,selection:hp.selection,usedPoints});
+    const q=HelloPannaPricing.quote(cart,{delivery:hpMode(),benefits:hp.benefits,selection:hp.selection,manualCouponCode:hp.manualCouponCode,usedPoints});
     usedPoints=q.usedPoints;hp.quote=q;
     currentRawTotal=q.raw;currentTotalCups=q.cups;currentCoffeeCups=q.coffee;currentPannaCottaCups=q.panna;currentCoffeeDiscountCups=q.coffeeCups;currentCoffeeDiscount=q.coffeeDiscount;currentShippingFee=q.shipping;currentDiscountAmount=q.discount;currentFinalTotal=q.total;
     currentDiscountName=[q.coffeeDiscount?'咖啡加購折'+q.coffeeDiscount+'元':'',q.promo?q.promo.name:'',q.usedPoints?'點數折抵'+q.usedPoints+'元':''].filter(Boolean).join('＋');
@@ -66,7 +66,7 @@ function hpMount(){
   const review=hpEl('div','hp-review-layout','<div><section class="hp-panel"><div class="hp-edit-heading"><h2>選購內容</h2><button class="hp-edit" onclick="openCartModal()">修改商品</button></div><div id="hp-review-items"></div><details class="hp-disclosure"><summary>裝盒方式：預設由好酪安排</summary><div style="padding:0 16px 16px"><p class="hp-subtle">有分盒或送禮需求時再設定；未設定會依口味混裝。</p><button class="action-btn secondary" onclick="openBoxingModal()">自訂每盒口味</button><div id="hp-box-summary" class="hp-subtle"></div></div></details></section><section class="hp-panel"><div class="hp-edit-heading"><h2>取貨與聯絡資料</h2><button class="hp-edit" onclick="hpEditDelivery()">修改資料</button></div><div id="hp-review-fulfillment"></div></section></div><section class="hp-panel" id="hp-payment-panel"><h2>確認金額與付款</h2><div id="hp-review-totals"></div><div id="hp-benefits"></div><div id="hp-discounts"></div><div id="hp-payments"></div><p class="hp-subtle">按下確認後，會先建立訂單，再帶你前往所選的付款頁面。</p><div class="hp-error" id="hp-submit-error" role="alert"></div></section>');
   s3.replaceChildren(review);
   const pointDetails=hpEl('details','hp-disclosure','<summary>使用會員點數（選填）</summary>');pointDetails.append(points);
-  const couponDetails=hpEl('details','hp-disclosure','<summary>我有優惠碼（選填）</summary>');couponDetails.append(coupons);hpId('hp-discounts').append(pointDetails,couponDetails);
+  const couponDetails=hpEl('details','hp-disclosure','<summary>我有優惠碼／優惠券（選填）</summary>');couponDetails.append(coupons);hpId('hp-discounts').append(pointDetails,couponDetails);
   const allPoints=hpEl('button','hp-link-btn','使用目前可折抵的全部點數');allPoints.type='button';allPoints.onclick=()=>{usedPoints=memberMaxPoints;renderCart();hpId('use-points-input').value=usedPoints;};hpId('points-input-area').append(allPoints);
   payments.classList.add('hp-pay-options');payments.style.border='0';payments.style.padding='0';payments.style.margin='18px 0 0';hpId('hp-payments').append(hpEl('h3','','付款方式'),payments);
   hpId('hp-payments').querySelectorAll('.radio-label span').forEach(s=>{s.textContent=s.textContent.replace('銀行轉帳 / 虛擬帳號自動產出 (綠界金流)','ATM轉帳（取得專屬帳號）').replace('信用卡線上刷卡 (綠界金流)','信用卡').replace('Apple Pay 行動支付 (綠界金流)','Apple Pay').replace('TWQR 行動支付 (綠界金流)','TWQR 行動支付').replace('LINE Pay（自行輸入金額・人工核款）','LINE Pay（自行輸入金額，人工核款）');});
@@ -217,17 +217,62 @@ function hpRenderReview(q){
   const addr=hpMode()==='宅配'?hpId('cust-city').value+hpId('cust-addr-detail').value.trim():hpMode()==='預約外送'?'彰化市'+hpId('scheduled-delivery-village').value+hpId('scheduled-delivery-address-detail').value.trim():'彰化市中正路一段403號';
   hpId('hp-review-fulfillment').innerHTML='<dl class="hp-review-kv"><dt>取貨方式</dt><dd>'+hpEsc(hpMode())+'</dd><dt>'+(hpMode()==='宅配'?'出貨日期':'日期時段')+'</dt><dd>'+hpEsc(hpId('pickup-slot-select').value||'尚未選擇')+'</dd><dt>訂購人</dt><dd>'+hpEsc(hpId('cust-name').value)+'<br>'+hpEsc(hpId('cust-phone').value)+'</dd>'+(hpMode()!=='自取'?'<dt>收件人</dt><dd>'+hpEsc(hpId('rcpt-name').value)+'・'+hpEsc(hpId('rcpt-phone').value)+'</dd>':'')+'<dt>地址</dt><dd>'+hpEsc(addr)+'</dd></dl>'+(hpMode()==='預約外送'?'<p class="hp-quiet">所選為希望送達時段，實際時間由好酪確認。</p>':'')+(hpId('cust-remarks').value?'<p class="hp-subtle">備註：'+hpEsc(hpId('cust-remarks').value)+'</p>':'');
   hpId('hp-review-totals').innerHTML=hpTotalsHtml(q);
-  const key=hpId('cust-name').value.trim()+'|'+hpId('cust-phone').value.trim();
-  hpId('hp-benefits').innerHTML='<div class="hp-benefit">'+(hp.benefitKey===key?(q.promo?'已自動選用：'+hpEsc(q.promo.name):'目前沒有符合條件的主優惠'):'填寫聯絡資料後，會為你確認首購與回購優惠。')+'<div class="hp-quiet">首購、回購券與95折擇優，不重複折抵。運費門檻依折扣前商品小計。</div><button class="hp-link-btn" onclick="hpLoadBenefits(true)">重新確認優惠</button>'+(q.candidates.length?'<label class="hp-switch"><input type="checkbox" '+(hp.selection==='none'?'':'checked')+' onchange="hp.selection=this.checked?\'auto\':\'none\';renderCart()">自動使用本次最划算的主優惠</label>':'')+'</div>';
+  const key=hpBenefitsKey();
+  hpId('hp-benefits').innerHTML='<div class="hp-benefit">'+(hp.benefitKey===key?(q.promo?'本次選用：'+hpEsc(q.promo.name):'目前沒有符合條件的主優惠'):'填寫聯絡資料後確認首購資格；優惠碼與券號請自行輸入。')+'<div class="hp-quiet">首購、活動碼與優惠券每單擇一；共用券不併用點數或咖啡加購優惠。</div><button class="hp-link-btn" onclick="hpLoadBenefits(true)">重新確認優惠</button>'+(q.candidates.length?'<label class="hp-switch"><input type="checkbox" '+(hp.selection==='none'?'':'checked')+' onchange="hpToggleBenefit(this.checked)">使用本次已確認的優惠</label>':'')+'</div>';
   hpId('verify-email-text').textContent=hpId('cust-email').value||'尚未填寫Email';
 }
+function hpBenefitsKey(){return hpId('cust-name').value.trim()+'|'+hpId('cust-phone').value.trim()+'|'+hp.manualCouponCode;}
+function hpToggleBenefit(enabled){hp.selection=enabled?(hp.manualCouponCode==='VIP95'&&hp.benefits.vip95?'VIP95':hp.manualCouponCode&&hp.benefits.receiptCoupon?'RECEIPT':'auto'):'none';renderCart();}
+function hpClearManualCoupon(render=true){
+  hp.benefitSeq++;hp.manualCouponCode='';hp.benefits={};hp.benefitKey='';hp.backendReady=false;hp.selection='auto';
+  if(hpId('coupon-code'))hpId('coupon-code').value='';
+  if(hpId('coupon-msg'))hpId('coupon-msg').textContent='';
+  if(render){hpRenderBundles();renderCart();}
+}
 async function hpLoadBenefits(force){
-  const name=hpId('cust-name').value.trim(),phone=hpId('cust-phone').value.trim(),key=name+'|'+phone;if(!name||!/^09\d{8}$/.test(phone))return false;if(!force&&hp.benefitKey===key)return true;const sequence=++hp.benefitSeq;
-  try{const data=await sendOrderServiceRequest({action:'getShoppingBenefits',name,phone});if(sequence!==hp.benefitSeq)return false;if(!data.success||data.version!==HelloPannaPricing.version)throw new Error(data.msg||'優惠服務暫時無法確認');hp.backendReady=true;hp.benefitKey=key;hp.benefits=data.benefits||{};hp.selection='auto';hpRenderBundles();renderCart();return true;}
-  catch(error){if(sequence!==hp.benefitSeq)return false;hp.benefits={};hp.benefitKey='';renderCart();if(force)hpToast('暫時無法確認專屬優惠，請稍後按重新確認');return false;}
+  const name=hpId('cust-name').value.trim(),phone=hpId('cust-phone').value.trim(),key=hpBenefitsKey();
+  if(!name||!/^09\d{8}$/.test(phone))return false;
+  if(!force&&hp.benefitKey===key)return true;
+  const sequence=++hp.benefitSeq;
+  try{
+    const data=await sendOrderServiceRequest({action:'getShoppingBenefits',name,phone,manualCouponCode:hp.manualCouponCode});
+    if(sequence!==hp.benefitSeq||key!==hpBenefitsKey())return false;
+    if(!data.success||data.version!==HelloPannaPricing.version)throw new Error(data.msg||'優惠服務已更新，請重新整理頁面後再試');
+    hp.backendReady=true;hp.benefitKey=key;hp.benefits=data.benefits||{};
+    if(hp.manualCouponCode==='VIP95')hp.selection=hp.benefits.vip95?'VIP95':'auto';
+    else if(hp.manualCouponCode)hp.selection=hp.benefits.receiptCoupon?'RECEIPT':'auto';
+    else hp.selection='auto';
+    hpRenderBundles();renderCart();return true;
+  }catch(error){
+    if(sequence!==hp.benefitSeq)return false;
+    hp.backendReady=false;hp.benefits={};hp.benefitKey='';renderCart();
+    if(force)hpToast(error.message||'暫時無法確認優惠，請稍後再試');return false;
+  }
+}
+async function hpApplyCoupon(){
+  const input=hpId('coupon-code'),code=input.value.trim().toUpperCase().replace(/\s/g,''),msg=hpId('coupon-msg');
+  if(!code){hpClearManualCoupon();await hpLoadBenefits(true);msg.textContent='已移除優惠碼／優惠券';return;}
+  if(code!=='VIP95'&&!/^(?:\d{8}|(?:HC-?)?[A-Z0-9]{12}|HR[A-F0-9]{20})$/.test(code)){
+    msg.textContent='請輸入8碼數字優惠券號或活動折扣碼';return;
+  }
+  if(!hpId('cust-name').value.trim()||!/^09\d{8}$/.test(hpId('cust-phone').value.trim())){msg.textContent='請先填寫訂購人姓名與手機，再套用';return;}
+  hp.manualCouponCode=code;hp.benefits={};hp.benefitKey='';hp.backendReady=false;
+  msg.textContent='正在確認…';
+  const ok=await hpLoadBenefits(true);if(!ok){msg.textContent='優惠尚未確認，請重新套用';return;}
+  if(hp.benefits.couponError){msg.textContent=hp.benefits.couponError;return;}
+  const q=hp.quote;
+  if(code==='VIP95')msg.textContent=q.promo?.code==='VIP95'?'已套用VIP95優惠':'VIP95尚未套用，請確認商品與優惠';
+  else if(q.promo?.code==='RECEIPT'){msg.textContent='已套用優惠券 '+hp.benefits.receiptCoupon.code+'，折 '+q.promo.amount+' 元；本單不併用點數或咖啡加購優惠';if(hpId('use-points-input'))hpId('use-points-input').value='0';}
+  else msg.textContent='券號有效；請達到券面奶酪／布丁門檻後使用';
+  input.value=hp.benefits.receiptCoupon?.code||code;hpSaveDraft();
+}
+function hpCouponInputChanged(){
+  if(!hp.manualCouponCode)return;
+  hp.benefitSeq++;hp.manualCouponCode='';hp.benefits={};hp.benefitKey='';hp.backendReady=false;hp.selection='auto';
+  hpId('coupon-msg').textContent='優惠碼已變更，請重新按套用';hpRenderBundles();renderCart();
 }
 async function hpCheckPoints(){const name=hpId('cust-name').value.trim(),phone=hpId('cust-phone').value.trim(),email=hpId('cust-email').value.trim(),msg=hpId('points-msg'),btn=document.querySelector('.points-verify-btn');if(!name||!phone||!email){msg.textContent='使用點數請先填寫姓名、手機與Email。';return;}btn.disabled=true;btn.textContent='正在驗證點數…';try{const data=await sendOrderServiceRequest({action:'checkPoints',name,phone,email});if(!data.success)throw new Error(data.msg||'查無相符會員資料');memberMaxPoints=Math.max(0,Number(data.points)||0);hpId('member-points-balance').textContent='可用 '+memberMaxPoints+'點';hpId('points-input-area').style.display=memberMaxPoints?'block':'none';msg.textContent=memberMaxPoints?'驗證完成，可輸入折抵點數或使用全部。':'目前沒有可用點數，本次購買完成取貨後可累積。';renderCart();}catch(e){memberMaxPoints=0;usedPoints=0;hpId('points-input-area').style.display='none';msg.textContent=e.message;renderCart();}finally{btn.disabled=false;btn.textContent='查詢可用點數';}}
-async function hpApplyCoupon(){const code=hpId('coupon-code').value.trim().toUpperCase(),msg=hpId('coupon-msg');if(code!=='VIP95'){msg.textContent='查無此優惠碼；首購及回購優惠會自動核對。';return;}const ok=await hpLoadBenefits(true);if(!ok||!hp.benefits.vip95){msg.textContent='此手機目前不符合95折優惠資格。';return;}hp.selection='auto';renderCart();msg.textContent=hp.quote.promo?.code==='VIP95'?'已套用95折優惠。':'已為你選用折抵更多的主優惠，95折不重複計算。';hpId('coupon-code').value='';}
+
 function hpSaveDraft(){
   if(!hp.initialized||!hpId('cust-name')||!hpId('hp-remember-contact'))return;
   const ids=['cust-name','cust-phone','cust-email','rcpt-name','rcpt-phone','cust-city','cust-addr-detail','scheduled-delivery-village','scheduled-delivery-address-detail','cust-remarks'];const contact={};ids.forEach(id=>contact[id]=hpId(id).value);
@@ -247,14 +292,14 @@ function hpBuildOrder(){
   if(delivery==='預約外送'){uiAddress='彰化市'+hpId('scheduled-delivery-village').value+hpId('scheduled-delivery-address-detail').value.trim();scheduled={city:'彰化市',village:hpId('scheduled-delivery-village').value,addressDetail:hpId('scheduled-delivery-address-detail').value.trim(),address:uiAddress,recipientName:rcptName,recipientPhone:rcptPhone,detailsConfirmed:true,scheduleAdjustmentAccepted:true};}
   if(uiAddress)address='收件人：'+rcptName+' ('+rcptPhone+') / 地址：'+uiAddress;
   if(completedBoxes.length)remarks+='\n[裝盒分配明細]\n'+completedBoxes.map(b=>b.label+'盒'+(b.note?'（'+b.note+'）':'')+'：'+b.items.map(i=>i.name+'×'+i.qty).join('、')).join('\n');
-  const orderData={uxVersion:HelloPannaPricing.version,items:q.items,originalTotal:q.raw,discountPoints:q.usedPoints,otherDiscount:q.discount-q.usedPoints,paymentMethod:payment,receivedAmount:q.total,changeAmount:0,phone,email,name,delivery,address,date:hpId('pickup-slot-select').value,shippingFee:q.shipping,finalTotal:q.total,remarks,totalCups:q.cups,couponCode:q.promo?.code||'',rewardId:q.promo?.rewardId||''};if(scheduled)orderData.scheduledDelivery=scheduled;
+  const orderData={manualCouponCode:hp.manualCouponCode,uxVersion:HelloPannaPricing.version,items:q.items,originalTotal:q.raw,discountPoints:q.usedPoints,otherDiscount:q.discount-q.usedPoints,paymentMethod:payment,receivedAmount:q.total,changeAmount:0,phone,email,name,delivery,address,date:hpId('pickup-slot-select').value,shippingFee:q.shipping,finalTotal:q.total,remarks,totalCups:q.cups,couponCode:q.promo?.code||'',receiptCouponCode:q.promo?.receiptCouponCode||'',rewardId:''};if(scheduled)orderData.scheduledDelivery=scheduled;
   const requestId=getOnlineOrderRequestId(JSON.stringify([name,phone,email.toLowerCase(),q.usedPoints,orderData]));
   const payload={action:'createEcpayOrder',clientVersion:ONLINE_CHECKOUT_FRONTEND_VERSION,name,phone,email,points:email?q.cups:0,usedPoints:q.usedPoints,requestId,orderData,paymentMethod:payment};
   return {payload,q,receipt:{at:Date.now(),name,phone,email,delivery,payment,date:orderData.date,address:uiAddress,rcptName,rcptPhone,items:q.items,total:q.total,quote:q,remarks}};
 }
 async function hpSubmit(){
   if(orderSubmissionInProgress)return;if(!hpValidateCart()||!hpValidateDetails())return;
-  if(!hp.backendReady){const ok=await hpLoadBenefits(true);if(!ok){hpId('hp-submit-error').textContent='訂單服務暫時無法確認，請稍後重新確認優惠與金額，再送出。';return;}hpToast('優惠與金額已更新，請確認後再次按付款');return;}
+  if(!hp.backendReady||hp.benefitKey!==hpBenefitsKey()){const ok=await hpLoadBenefits(true);if(!ok){hpId('hp-submit-error').textContent='訂單服務暫時無法確認，請稍後重新確認優惠與金額，再送出。';return;}hpToast('優惠與金額已更新，請確認後再次按付款');return;}
   const {payload,q,receipt}=hpBuildOrder();orderSubmissionInProgress=true;hpId('btn-next').disabled=true;hpId('hp-submit-error').textContent='';hpId('loading-text').textContent='正在建立訂單，請稍候…';hpId('loading-overlay').style.display='flex';hpSaveDraft();
   let confirmed='';
   try{
@@ -282,7 +327,7 @@ function hpShowResult(receipt,state,order){
   if(state==='paid'||state==='settled')hpTrackPaid(receipt);
   hp.receipt=receipt;hpId('shop-view').style.display='none';hpId('hp-mode-wrap').hidden=true;hpId('checkout-bottom-bar').style.display='none';const result=hpId('receipt-view');result.style.display='block';
   const canceled=state==='canceled',paid=state==='paid'||state==='settled',manual=receipt.payment==='LinePay',title=canceled?'訂單已取消':state==='settled'?'訂單成立，無需付款':paid?'付款已確認':manual?'訂單已成立，等待付款／核款':'訂單已成立，請完成付款';
-  result.innerHTML='<div class="hp-result"><div class="hp-status-icon">'+(paid?'✓':canceled?'—':'…')+'</div><div class="hp-eyebrow">HELLO 好酪・ORDER</div><h1 class="hp-status-title">'+title+'</h1><p class="hp-order-id">訂單編號 #'+hpEsc(receipt.orderId)+'</p><p class="hp-subtle" id="hp-result-status-note">'+(paid?'好酪已確認付款，取貨與配送資訊如下。':manual?'LINE Pay需自行輸入金額，付款後由好酪人工核對。':'付款狀態以訂單系統確認結果為準，離開付款頁仍可回來接續。')+'</p><section class="hp-panel"><div class="hp-money-row total" style="border:0;padding:0"><span>訂單總額</span><span>'+hpMoney(receipt.total)+'</span></div><dl class="hp-review-kv"><dt>取貨方式</dt><dd>'+hpEsc(receipt.delivery)+'</dd><dt>'+(receipt.delivery==='宅配'?'出貨日期':'日期時段')+'</dt><dd>'+hpEsc(receipt.date)+'</dd><dt>訂購人</dt><dd>'+hpEsc(receipt.name)+'・'+hpEsc(receipt.phone)+'</dd><dt>取貨地址</dt><dd>'+hpEsc(receipt.address||'彰化市中正路一段403號')+'</dd></dl><details class="hp-disclosure"><summary>查看商品與金額明細</summary><div style="padding:0 16px 16px">'+receipt.items.map(p=>'<div class="hp-money-row"><span>'+hpEsc(p.name)+' × '+p.quantity+'</span><span>'+hpMoney(p.price*p.quantity)+'</span></div>').join('')+hpTotalsHtml(receipt.quote,receipt.delivery)+'</div></details><div class="hp-result-actions" id="hp-result-actions"></div></section><section class="hp-panel"><h2>訂單與付款進度</h2><p class="hp-subtle">'+(paid?'完成取貨或出貨後，可於下次結帳驗證30天內的回購券。':'如已完成付款，可按重新確認。ATM取號完成仍需轉帳；LINE Pay需等待人工核款。')+'</p><button class="action-btn secondary" onclick="hpRefreshPayment()" id="hp-check-payment">重新確認付款狀態</button><button class="hp-link-btn" onclick="openOrderQuery()">查詢全部訂單</button></section><div class="hp-result-actions"><button class="action-btn secondary" onclick="hpCopyReceipt()">複製訂單資訊</button><a class="action-btn" href="https://lin.ee/UHEkfgW" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">聯絡好酪</a></div><button class="hp-link-btn" onclick="hpStartNewOrder()" style="width:100%;margin-top:20px">返回選購</button><p class="hp-quiet" style="margin-top:18px">已由系統確認的付款，不需再複製訂單傳送客服。人工核款或有特殊需求時，才需要聯絡。</p></div>';
+  result.innerHTML='<div class="hp-result"><div class="hp-status-icon">'+(paid?'✓':canceled?'—':'…')+'</div><div class="hp-eyebrow">HELLO 好酪・ORDER</div><h1 class="hp-status-title">'+title+'</h1><p class="hp-order-id">訂單編號 #'+hpEsc(receipt.orderId)+'</p><p class="hp-subtle" id="hp-result-status-note">'+(paid?'好酪已確認付款，取貨與配送資訊如下。':manual?'LINE Pay需自行輸入金額，付款後由好酪人工核對。':'付款狀態以訂單系統確認結果為準，離開付款頁仍可回來接續。')+'</p><section class="hp-panel"><div class="hp-money-row total" style="border:0;padding:0"><span>訂單總額</span><span>'+hpMoney(receipt.total)+'</span></div><dl class="hp-review-kv"><dt>取貨方式</dt><dd>'+hpEsc(receipt.delivery)+'</dd><dt>'+(receipt.delivery==='宅配'?'出貨日期':'日期時段')+'</dt><dd>'+hpEsc(receipt.date)+'</dd><dt>訂購人</dt><dd>'+hpEsc(receipt.name)+'・'+hpEsc(receipt.phone)+'</dd><dt>取貨地址</dt><dd>'+hpEsc(receipt.address||'彰化市中正路一段403號')+'</dd></dl><details class="hp-disclosure"><summary>查看商品與金額明細</summary><div style="padding:0 16px 16px">'+receipt.items.map(p=>'<div class="hp-money-row"><span>'+hpEsc(p.name)+' × '+p.quantity+'</span><span>'+hpMoney(p.price*p.quantity)+'</span></div>').join('')+hpTotalsHtml(receipt.quote,receipt.delivery)+'</div></details><div class="hp-result-actions" id="hp-result-actions"></div></section><section class="hp-panel"><h2>訂單與付款進度</h2><p class="hp-subtle">'+(paid?(receipt.delivery==='自取'?'門市取貨核銷時將列印收據優惠券；下次可在官網或門市依券面期限使用。':'已確認付款，可查詢配送安排；收據優惠券於門市消費或門市取貨核銷時發放。'):'如已完成付款，可按重新確認。ATM取號完成仍需轉帳；LINE Pay需等待人工核款。')+'</p><button class="action-btn secondary" onclick="hpRefreshPayment()" id="hp-check-payment">重新確認付款狀態</button><button class="hp-link-btn" onclick="openOrderQuery()">查詢全部訂單</button></section><div class="hp-result-actions"><button class="action-btn secondary" onclick="hpCopyReceipt()">複製訂單資訊</button><a class="action-btn" href="https://lin.ee/UHEkfgW" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">聯絡好酪</a></div><button class="hp-link-btn" onclick="hpStartNewOrder()" style="width:100%;margin-top:20px">返回選購</button><p class="hp-quiet" style="margin-top:18px">已由系統確認的付款，不需再複製訂單傳送客服。人工核款或有特殊需求時，才需要聯絡。</p></div>';
   const actions=hpId('hp-result-actions');
   if(!paid&&!canceled&&receipt.total>0){if(manual)actions.innerHTML='<a class="action-btn" style="text-align:center;text-decoration:none" href="'+LINE_PAY_LINK+'" target="_blank" rel="noopener">開啟LINE Pay・付款 '+receipt.total+'元</a><a class="action-btn secondary" href="https://lin.ee/UHEkfgW" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">付款後聯絡核款</a>';else actions.innerHTML='<button class="action-btn" onclick="hpResumeLastOrder()">'+(receipt.payment==='ATM'?'接續取得轉帳帳號':'繼續原訂單付款')+'</button>';}
   window.scrollTo({top:0,behavior:'instant'});
@@ -290,7 +335,7 @@ function hpShowResult(receipt,state,order){
 async function hpRefreshPayment(){if(!hp.receipt)return;const btn=hpId('hp-check-payment');if(btn){btn.disabled=true;btn.textContent='正在查詢付款狀態…';}try{const data=await sendOrderServiceRequest({action:'queryOrder',name:hp.receipt.name,phone:hp.receipt.phone});const order=data.orders?.find(o=>String(o.orderId)===hp.receipt.orderId);if(!data.success||!order)throw new Error('目前查不到這筆訂單，請使用查詢訂單或聯絡好酪');hpShowResult(hp.receipt,order.paymentState||(/已確認付款|已出貨|已完成/.test(order.status)?'paid':'pending'),order);hpToast('最新狀態：'+order.status);}catch(e){hpId('hp-result-status-note').textContent=e.message;}finally{const b=hpId('hp-check-payment');if(b){b.disabled=false;b.textContent='重新確認付款狀態';}}}
 async function hpResumeLastOrder(){if(!hp.receipt||paymentResumeInProgress)return;const r=hp.receipt;paymentResumeInProgress=true;hpId('loading-overlay').style.display='flex';hpId('loading-text').textContent='正在取得原訂單付款資料…';try{const data=await sendOrderServiceRequest({action:'resumeEcpayPayment',name:r.name,phone:r.phone,orderId:r.orderId});if(!data.success){if(data.code==='ALREADY_PAID'){await hpRefreshPayment();return;}throw new Error(data.msg||'這筆訂單目前無法接續付款，請重新確認狀態');}if(data.atmInfo){hpShowAtmInfo(data.atmInfo);return;}prepareEcpayPostForm(data.ecpayParams,r.orderId,r.total,data.paymentMethod);if(hp.preview&&window.__HP_TEST_API){hpToast('測試：接續原訂單付款，未建立新單');return;}submitPreparedEcpayPayment();}catch(e){hpId('hp-result-status-note').textContent=e.message;}finally{paymentResumeInProgress=false;hpId('loading-overlay').style.display='none';}}
 async function hpCopyReceipt(){if(!hp.receipt)return;const r=hp.receipt,text='Hello 好酪訂單 #'+r.orderId+'\n'+r.name+' / '+r.phone+'\n'+r.delivery+' '+r.date+'\n'+r.items.map(i=>i.name+' × '+i.quantity).join('\n')+'\n應付總額：'+hpMoney(r.total);try{await navigator.clipboard.writeText(text);hpToast('訂單資訊已複製');}catch(e){hpToast('無法複製，可使用訂單編號聯絡好酪');}}
-function hpStartNewOrder(){cart=[];completedBoxes=[];currentBoxBuilding=[];usedPoints=0;memberMaxPoints=0;hp.benefits={};hp.benefitKey='';hp.selection='auto';orderSubmissionInProgress=false;hpId('receipt-view').style.display='none';hpId('shop-view').style.display='block';hpId('hp-mode-wrap').hidden=false;hpId('checkout-bottom-bar').style.display='flex';hpChanged();hpGoToStep(1);}
+function hpStartNewOrder(){cart=[];completedBoxes=[];currentBoxBuilding=[];usedPoints=0;memberMaxPoints=0;hpClearManualCoupon(false);orderSubmissionInProgress=false;hpId('receipt-view').style.display='none';hpId('shop-view').style.display='block';hpId('hp-mode-wrap').hidden=false;hpId('checkout-bottom-bar').style.display='flex';hpChanged();hpGoToStep(1);}
 function hpShowAtmInfo(info){hpShowDialog('<h2>原訂單ATM轉帳資訊</h2><dl class="hp-review-kv"><dt>銀行代碼</dt><dd>'+hpEsc(info.bankCode)+'</dd><dt>虛擬帳號</dt><dd>'+hpEsc(info.account)+'</dd><dt>繳款期限</dt><dd>'+hpEsc(info.expiresAt)+'</dd></dl><p class="hp-subtle">取號完成尚未付款，請依訂單金額於期限內轉帳。</p><button class="action-btn" style="width:100%" onclick="hpCloseDialog()">我知道了</button>','ATM轉帳帳號');}
 function hpInit(){
   hpMount();
@@ -301,7 +346,10 @@ function hpInit(){
   hpRestoreDraft();hp.initialized=true;hp.delivery=hpMode();hpRenderBundles();renderMenu();renderCart();
   if(hp.pendingRestoreDate&&[...hpId('pickup-slot-select').options].some(o=>o.value===hp.pendingRestoreDate)){hpId('pickup-slot-select').value=hp.pendingRestoreDate;hp.selectedDay=hp.pendingRestoreDate.slice(0,10);hp.calendarMonth=hp.pendingRestoreDate.slice(0,7);hpRenderCalendar();}
   history.replaceState({hpStep:1},'',location.href);hpGoToStep(1,false);
-  ['cust-name','cust-phone'].forEach(id=>hpId(id).addEventListener('input',()=>{hp.benefitSeq++;hp.benefits={};hp.benefitKey='';hp.selection='auto';hpRenderBundles();renderCart();}));
+  ['cust-name','cust-phone'].forEach(id=>hpId(id).addEventListener('input',()=>hpClearManualCoupon()));
+  hpId('coupon-code').addEventListener('input',hpCouponInputChanged);
+  hpId('coupon-code').placeholder='輸入8碼數字優惠券號或活動折扣碼';
+  const removeCoupon=hpEl('button','hp-link-btn','移除優惠碼／優惠券');removeCoupon.type='button';removeCoupon.onclick=async()=>{hpClearManualCoupon();await hpLoadBenefits(true);};hpId('coupon-msg').after(removeCoupon);
   document.querySelectorAll('#step-2 input,#step-2 select,#step-2 textarea').forEach(n=>{n.addEventListener('input',hpSaveDraft);n.addEventListener('change',()=>{hpSaveDraft();hpRenderReview(hpGetQuote());});});
   hpId('cust-phone').addEventListener('blur',()=>hpLoadBenefits(false));hpId('cust-name').addEventListener('blur',()=>hpLoadBenefits(false));
   hpId('hp-remember-contact').addEventListener('change',hpSaveDraft);
