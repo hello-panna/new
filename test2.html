@@ -62,7 +62,7 @@
             "Thursday",
             "Friday"
           ],
-          "opens": "12:00",
+          "opens": "10:00",
           "closes": "18:00"
         },
         {
@@ -499,7 +499,7 @@
                         </div>
                         <img src="101842.jpg" alt="門市照片" style="width: 100%; border-radius: 8px; margin-top: 15px; margin-bottom: 5px; display: block;">
                         <div style="margin-top:15px; font-weight:bold; color:var(--c-primary);">⏰ 開放時段</div>
-                        <div>週二~週五：12:00~18:00 | 週六：10:00~18:00 (週日、週一固定公休)</div>
+                        <div>週二至週六：10:00～18:00 (週日、週一固定公休)</div>
                     </div>
 
 <div id="delivery-info-box" class="info-box" style="display:none;">
@@ -1304,9 +1304,9 @@
                     if (checkDateStr === "2026/06/19") {
                         ['10:00~11:00', '11:00~12:00', '12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'].forEach(t => select.innerHTML += `<option value="${fullDateStr} ${t}">🌟 ${dateStr} ${t}</option>`);
                     }
-                    // 正常平日：週二到週五 12:00~18:00
+                    // 正常平日：週二到週五 10:00~18:00
                     else if (day >= 2 && day <= 5) {
-                        ['12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'].forEach(t => select.innerHTML += `<option value="${fullDateStr} ${t}">${dateStr} ${t}</option>`);
+                        ['10:00~11:00', '11:00~12:00', '12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'].forEach(t => select.innerHTML += `<option value="${fullDateStr} ${t}">${dateStr} ${t}</option>`);
                     } 
                     // 正常假日：週六 10:00~18:00
                     else if (day === 6) {

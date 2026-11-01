@@ -80,7 +80,7 @@
             "Thursday",
             "Friday"
           ],
-          "opens": "12:00",
+          "opens": "10:00",
           "closes": "18:00"
         },
         {
@@ -1031,7 +1031,7 @@
                         </div>
                         <img src="101842.jpg" alt="Hello 好酪彰化門市，位於中正路一段403號" loading="lazy" decoding="async" style="width: 100%; border-radius: 8px; margin-top: 15px; margin-bottom: 5px; display: block;">
                         <div style="margin-top:15px; font-weight:bold; color:var(--c-primary);">⏰ 開放時段</div>
-                        <div>週二~週五：12:00~18:00 | 週六：10:00~18:00 (週日、週一固定公休)</div>
+                        <div>週二至週六：10:00～18:00 (週日、週一固定公休)</div>
                     </div>
 
 <div id="delivery-info-box" class="info-box" style="display:none;">
@@ -1133,7 +1133,7 @@
                 <section class="seo-content-card" id="store-information" aria-labelledby="store-information-heading">
                     <h2 id="store-information-heading">彰化甜點門市與線上預訂</h2>
                     <p>Hello 好酪位於<strong>彰化市中正路一段403號</strong>，提供手工鮮奶酪、香草焦糖烤布丁與可混搭的六入禮盒。</p>
-                    <p>週二至週五 12:00–18:00；週六 10:00–18:00。週日、週一固定公休。客服電話：<a href="tel:0972005078">0972-005-078</a>。</p>
+                    <p>週二至週六 10:00–18:00。週日、週一固定公休。客服電話：<a href="tel:0972005078">0972-005-078</a>。</p>
                     <p>可選擇門市自取、冷藏宅配，或符合杯數與區域條件的彰化市預約外送。<a href="store.html">查看門市資訊與導航</a>。</p>
                 </section>
                 <section class="seo-content-card" id="ordering-faq" aria-labelledby="ordering-faq-heading">
@@ -2039,9 +2039,9 @@
                     if (checkDateStr === "2026/06/19") {
                         ['10:00~11:00', '11:00~12:00', '12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'].forEach(t => select.innerHTML += `<option value="${fullDateStr} ${t}">🌟 ${dateStr} ${t}</option>`);
                     }
-                    // 正常平日：週二到週五 12:00~18:00
+                    // 正常平日：週二到週五 10:00~18:00
                     else if (day >= 2 && day <= 5) {
-                        ['12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'].forEach(t => select.innerHTML += `<option value="${fullDateStr} ${t}">${dateStr} ${t}</option>`);
+                        ['10:00~11:00', '11:00~12:00', '12:00~13:00', '13:00~14:00', '14:00~15:00', '15:00~16:00', '16:00~17:00', '17:00~18:00'].forEach(t => select.innerHTML += `<option value="${fullDateStr} ${t}">${dateStr} ${t}</option>`);
                     } 
                     // 正常假日：週六 10:00~18:00
                     else if (day === 6) {
