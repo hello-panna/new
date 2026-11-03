@@ -208,15 +208,16 @@ function hpRenderCalendar(){
   hpRenderTimes(selected||hp.selectedDay||'');
 }
 function hpCalendarMove(delta){const [y,m]=hp.calendarMonth.split('/').map(Number),d=new Date(y,m-1+delta,1);hp.calendarMonth=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0');hpRenderCalendar();}
-function hpPickDate(key){hp.selectedDay=key;hpId('pickup-slot-select').value='';if(hpMode()==='宅配'&&hp.dateGroups[key]?.length)hpId('pickup-slot-select').value=hp.dateGroups[key][0].value;hpId('hp-date-error').textContent='';hpRenderCalendar();hpSaveDraft();}
+function hpPickDate(key){if(isFulfillmentDateClosed(hpMode(),key)){hpToast('此日期已停止目前的取貨方式，請重新選擇');return;}hp.selectedDay=key;hpId('pickup-slot-select').value='';if(hpMode()==='宅配'&&hp.dateGroups[key]?.length)hpId('pickup-slot-select').value=hp.dateGroups[key][0].value;hpId('hp-date-error').textContent='';hpRenderCalendar();hpSaveDraft();}
 function hpRenderTimes(key){const options=hp.dateGroups[key]||[],selected=hpId('pickup-slot-select').value;hpId('hp-times').innerHTML=hpMode()==='宅配'?'':options.map(o=>'<button type="button" aria-pressed="'+(selected===o.value)+'" onclick="hpPickSlot(\''+o.value+'\')">'+hpEsc(o.value.split(' ').slice(-1)[0])+'</button>').join('');hpId('hp-date-selection').hidden=!selected;hpId('hp-date-selection').textContent=selected?(hpMode()==='宅配'?'預計出貨：':hpMode()==='預約外送'?'希望送達：':'到店取貨：')+selected:'';}
-function hpPickSlot(value){hpId('pickup-slot-select').value=value;hpId('hp-date-error').textContent='';hpRenderCalendar();hpRenderReview(hpGetQuote());hpSaveDraft();}
+function hpPickSlot(value){if(isFulfillmentDateClosed(hpMode(),value)){hpToast('此日期已停止目前的取貨方式，請重新選擇');return;}hpId('pickup-slot-select').value=value;hpId('hp-date-error').textContent='';hpRenderCalendar();hpRenderReview(hpGetQuote());hpSaveDraft();}
 function hpError(id,message){const field=hpId(id);field?.classList.add('hp-invalid');if(field)field.setAttribute('aria-invalid','true');let n=hpId('error-'+id);if(!n&&field){n=hpEl('div','hp-error');n.id='error-'+id;field.after(n);field.setAttribute('aria-describedby',n.id);}if(n)n.textContent=message;return id;}
 function hpValidateDetails(focus=true){
   document.querySelectorAll('.hp-invalid').forEach(n=>{n.classList.remove('hp-invalid');n.removeAttribute('aria-invalid');});document.querySelectorAll('[id^="error-"]').forEach(n=>n.textContent='');
   const errors=[],name=hpId('cust-name').value.trim(),phone=hpId('cust-phone').value.trim(),email=hpId('cust-email').value.trim();
   if(!name)errors.push(hpError('cust-name','請填寫訂購人姓名'));if(!/^09\d{8}$/.test(phone))errors.push(hpError('cust-phone','請輸入09開頭的10碼手機號碼'));if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))errors.push(hpError('cust-email','Email格式不正確，請再確認'));
   if(cart.some(isSnowflakeItem)&&!hpSnowflakeDateValid(hpId('pickup-slot-select').value)){hpId('hp-date-error').textContent='含雪花酥的整筆訂單僅限門市取貨，請重新選擇開放的取貨日期與時段。';errors.push('hp-calendar');}
+  if(isFulfillmentDateClosed(hpMode(),hpId('pickup-slot-select').value)){hpId('hp-date-error').textContent='此日期已停止目前的取貨方式，請重新選擇日期與時段。';errors.push('hp-calendar');}
   if(!hpId('pickup-slot-select').value){hpId('hp-date-error').textContent=hpMode()==='宅配'?'請選擇出貨日期':'請選擇日期與時段';errors.push('hp-calendar');}
   if(hpMode()!=='自取'){
     if(!hpId('hp-other-recipient').checked)toggleRecipientSame();
@@ -232,7 +233,20 @@ function hpValidateDetails(focus=true){
   return !errors.length;
 }
 function hpValidateCart(){if(cart.some(isSnowflakeItem)&&hpMode()!=='自取'){hpToast('含雪花酥的整筆訂單僅限門市取貨');return false;}const q=hpGetQuote();if(!cart.length){hpToast('先挑一杯喜歡的甜點吧');return false;}if(hpMode()==='宅配'&&(q.cups<6||q.cups%6)){hpToast('宅配甜點需6杯的倍數，目前'+q.cups+'杯');openCartModal();return false;}if(hpMode()==='預約外送'&&q.cups<12){hpToast('預約外送12杯起，目前還差'+(12-q.cups)+'杯');openCartModal();return false;}return true;}
+function hpAvailabilityUpdated(){
+  const select=hpId('pickup-slot-select');if(!select||!hp.initialized)return;
+  const previous=select.value;updateDateSettings(getSelectedDeliveryMode());
+  if(previous&&!select.value){hpId('hp-date-error').textContent='所選日期已停止此取貨方式，請重新選擇日期與時段。';hpToast('取貨日期設定已更新，請重新選擇日期與時段');hpSaveDraft();}
+}
+async function hpConfirmLatestDates(){
+  if(typeof refreshFulfillmentAvailability!=='function'){hpToast('取貨日期暫時無法確認，請重新整理後再試。');return false;}
+  if(hp.dateCheckBusy)return false;hp.dateCheckBusy=true;
+  const button=hpId('btn-next'),text=button.textContent;button.disabled=true;button.textContent='正在確認取貨日期…';
+  try{const ok=await refreshFulfillmentAvailability(true);if(!ok)hpToast('暫時無法確認取貨日期，請稍後再試。');return ok;}
+  finally{hp.dateCheckBusy=false;button.textContent=text;button.disabled=orderSubmissionInProgress||!cart.length;}
+}
 async function hpNext(){
+  if(currentStep<3&&!await hpConfirmLatestDates())return;
   if(currentStep===1){if(hpValidateCart()){closeCartModal();goToStep(2);trackInitiateCheckout();}}
   else if(currentStep===2){if(!hpValidateCart()||!hpValidateDetails())return;hpId('btn-next').disabled=true;hpId('btn-next').textContent='正在確認優惠…';await hpLoadBenefits(true);goToStep(3);}
   else await hpSubmit();
@@ -334,7 +348,7 @@ function hpBuildOrder(){
   return {payload,q,receipt:{at:Date.now(),name,phone,email,delivery,payment,date:orderData.date,address:uiAddress,rcptName,rcptPhone,items:q.items,total:q.total,quote:q,remarks}};
 }
 async function hpSubmit(){
-  if(orderSubmissionInProgress)return;if(!hpValidateCart()||!hpValidateDetails())return;
+  if(orderSubmissionInProgress)return;if(!await hpConfirmLatestDates()||orderSubmissionInProgress)return;if(!hpValidateCart()||!hpValidateDetails())return;
   if(!hp.backendReady||hp.benefitKey!==hpBenefitsKey()){const ok=await hpLoadBenefits(true);if(!ok){hpId('hp-submit-error').textContent='訂單服務暫時無法確認，請稍後重新確認優惠與金額，再送出。';return;}hpToast('優惠與金額已更新，請確認後再次按付款');return;}
   const {payload,q,receipt}=hpBuildOrder();orderSubmissionInProgress=true;hpId('btn-next').disabled=true;hpId('hp-submit-error').textContent='';hpId('loading-text').textContent='正在建立訂單，請稍候…';hpId('loading-overlay').style.display='flex';hpSaveDraft();
   let confirmed='';
@@ -379,6 +393,7 @@ function hpInit(){
   closeBoxingModal=()=>{hpOriginalCloseBoxing();hpSaveDraft();};saveCurrentBox=()=>{hpOriginalSaveBox();hpSaveDraft();};unpackBox=i=>{hpOriginalUnpackBox(i);hpSaveDraft();};autoFillBoxes=()=>{hpOriginalAutoBoxes();hpSaveDraft();};
   updateItemQty=(id,delta,temp='')=>{const i=cart.findIndex(p=>p.id===id&&(!isCoffeeItem(p)||p.temperature===temp));if(i>=0)hpSetQty(i,cart[i].quantity+delta);};changeQty=(i,d)=>hpSetQty(i,cart[i].quantity+d);
   sendOrderServiceRequest=payload=>{if(hp.preview){if(typeof window.__HP_TEST_API==='function')return Promise.resolve(window.__HP_TEST_API(payload));return Promise.reject(new Error('目前是預覽頁面，正式下單請使用好酪官網'));}return hpOriginalBridge(payload);};
+  window.onFulfillmentAvailabilityUpdated=hpAvailabilityUpdated;
   hpRestoreDraft();hpEnsureSnowflakePickup();hp.initialized=true;hp.delivery=hpMode();hpRenderBundles();renderMenu();renderCart();
   if(hp.pendingRestoreDate&&[...hpId('pickup-slot-select').options].some(o=>o.value===hp.pendingRestoreDate)){hpId('pickup-slot-select').value=hp.pendingRestoreDate;hp.selectedDay=hp.pendingRestoreDate.slice(0,10);hp.calendarMonth=hp.pendingRestoreDate.slice(0,7);hpRenderCalendar();}
   history.replaceState({hpStep:1},'',location.href);hpGoToStep(1,false);
@@ -395,7 +410,7 @@ function hpInit(){
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeCartModal();closeOrderQuery();if(hpId('boxing-modal-overlay').style.display==='flex')closeBoxingModal();}});
   if(hp.receipt){const recovery=hpEl('div','hp-recovery','<span>上次訂單 #'+hpEsc(hp.receipt.orderId)+'<br>可以查詢狀態或接續付款。</span><button onclick="hpShowResult(hp.receipt,\'pending\');hpRefreshPayment()">查看訂單</button>');hpId('step-1').prepend(recovery);}
   if(new URLSearchParams(location.search).get('payment')==='return'){if(hp.receipt){hpShowResult(hp.receipt,'pending');hpRefreshPayment();}else{openOrderQuery();hpToast('輸入訂購人姓名與手機，即可確認付款狀態');}}
-  if(!hp.preview)logVisit();
+  if(!hp.preview){logVisit();initializeFulfillmentAvailability();}else if(window.__HP_TEST_API)initializeFulfillmentAvailability();
   document.documentElement.classList.remove('hp-pending');
   window.__hpReady=true;
 }

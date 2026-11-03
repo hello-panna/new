@@ -2100,6 +2100,7 @@
                     Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
                 ) / 86400000);
                 if (
+                    (typeof isFulfillmentDateClosed==='function'?isFulfillmentDateClosed(mode, checkDateStr):checkDateStr==='2026/11/17') ||
                     (checkDateStr >= "2026/07/05" && checkDateStr <= "2026/07/10") ||
                     checkDateStr === "2026/08/25" ||
                     checkDateStr === "2026/09/09" ||
@@ -3452,5 +3453,6 @@
         </div>
     </div>
 <script src="assets/pricing-20261029.js?v=20261103-snowflake-copy-v2"></script>
-<script src="assets/shop-20261029.js?v=20261103-snowflake-copy-v2"></script></body>
+<script src="assets/fulfillment-availability-20261103.js?v=20261103-availability-v1"></script>
+<script src="assets/shop-20261029.js?v=20261103-availability-v1"></script></body>
 </html>
