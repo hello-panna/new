@@ -32,7 +32,6 @@
     <div class="member-head"><strong id="member-name" class="name"></strong><span class="badge">好酪會員</span></div>
     <p id="member-phone" class="subtle phone"></p>
     <div class="balance"><strong id="member-points">0</strong><span>可用點數</span></div>
-    <p id="member-visits" class="subtle"></p>
     <div id="member-qr" class="qr" aria-label="請將會員碼出示給門市掃描"></div>
     <p class="center">請出示給店員掃描</p><p id="member-expiry" class="center expiry"></p>
     <button id="refresh-card" type="button">重新整理會員卡／點數</button>
@@ -91,7 +90,7 @@
     if(!data.bound){cardExpiry=0;byId('member-qr').innerHTML='';status('首次綁定一次，之後來店即可出示會員卡。');return;}
     bindingExpiry=0;byId('binding-qr').innerHTML='';byId('binding-code').hidden=true;
     byId('member-name').textContent=data.displayName||'好酪會員';byId('member-phone').textContent=data.phoneMasked||'';
-    byId('member-points').textContent=String(data.points);byId('member-visits').textContent='歷史來店消費：'+data.purchaseCount+' 次';
+    byId('member-points').textContent=String(data.points);
     cardExpiry=Number(data.cardExpiresAt)||0;qr('member-qr',data.cardCode);status('會員卡已更新，來店時出示給店員即可。');countdown();
   }
   function failure(error){status(error.message||'無法連線，請稍後再試。',true);byId('retry').hidden=false;if(error.code==='LINE_AUTH_REQUIRED')byId('open-line').hidden=false;}
