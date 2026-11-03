@@ -16,13 +16,13 @@ function hpEl(tag,cls,content){const n=document.createElement(tag);if(cls)n.clas
 function hpToast(message){const el=hpId('hp-toast');el.textContent=message;el.hidden=false;clearTimeout(hp.toastTimer);hp.toastTimer=setTimeout(()=>el.hidden=true,3200);}
 function hpShowDialog(content,label){const d=hpId('hp-dialog');hp.lastFocus=document.activeElement;d.innerHTML='<div class="hp-dialog-content">'+content+'</div>';d.setAttribute('aria-label',label||'選購設定');d.showModal();}
 function hpCloseDialog(){hpId('hp-dialog').close();hp.lastFocus?.focus();}
-function hpFood(item){if(item.id===13)return '可重複使用・另計件數';if(item.id===14||item.id===21)return '蛋奶素・含蛋、乳';if(isCoffeeItem(item))return item.id===18?'12oz・含乳':'12oz・黑咖啡';return '葷食・含乳'+(item.id===3?'、芝麻':item.id===15?'、蕎麥':item.id===9?'・含酒精':'');}
+function hpFood(item){if(isSnowflakeItem(item))return '淨重 '+item.weight+'g／包・常溫保存';if(item.id===13)return '可重複使用・另計件數';if(item.id===14||item.id===21)return '蛋奶素・含蛋、乳';if(isCoffeeItem(item))return item.id===18?'12oz・含乳':'12oz・黑咖啡';return '葷食・含乳'+(item.id===3?'、芝麻':item.id===15?'、蕎麥':item.id===9?'・含酒精':'');}
 function hpGetQuote(){
   try{
     const q=HelloPannaPricing.quote(cart,{delivery:hpMode(),benefits:hp.benefits,selection:hp.selection,manualCouponCode:hp.manualCouponCode,usedPoints});
     usedPoints=q.usedPoints;hp.quote=q;
     currentRawTotal=q.raw;currentTotalCups=q.cups;currentCoffeeCups=q.coffee;currentPannaCottaCups=q.panna;currentCoffeeDiscountCups=q.coffeeCups;currentCoffeeDiscount=q.coffeeDiscount;currentShippingFee=q.shipping;currentDiscountAmount=q.discount;currentFinalTotal=q.total;
-    currentDiscountName=[q.coffeeDiscount?'咖啡加購折'+q.coffeeDiscount+'元':'',q.promo?q.promo.name:'',q.usedPoints?'點數折抵'+q.usedPoints+'元':''].filter(Boolean).join('＋');
+    currentDiscountName=[q.snowflakeDiscount?'雪花酥三包組合折'+q.snowflakeDiscount+'元':'',q.coffeeDiscount?'咖啡加購折'+q.coffeeDiscount+'元':'',q.promo?q.promo.name:'',q.usedPoints?'點數折抵'+q.usedPoints+'元':''].filter(Boolean).join('＋');
     appliedCoupon=q.promo?{code:q.promo.code,name:q.promo.name,type:q.promo.code==='VIP95'?'rate':'minus',value:q.promo.code==='VIP95'?.95:q.promo.amount}:null;
     return q;
   }catch(error){hpToast(error.message);return hp.quote||{items:[],raw:0,cups:0,coffee:0,panna:0,freeBags:0,total:0,shipping:0,candidates:[],discount:0,coffeeDiscount:0,usedPoints:0};}
@@ -50,9 +50,10 @@ function hpMount(){
   const combo=hpEl('section','','<div id="hp-coffee-combos"></div>');
   const categories=hpEl('nav','hp-category-nav');categories.id='hp-categories';categories.setAttribute('aria-label','商品分類');
   const menuTitle=hpEl('h2','section-header','挑選喜歡的口味');menuTitle.id='hp-menu-title';
+  const snowNote=hpEl('aside','hp-snow-note','<strong>雪花酥｜任選三包 450 元</strong><p>每包155元，每滿三包享組合價。外包裝袋顏色隨機搭配不指定。</p><p>含雪花酥的整筆訂單僅限門市取貨，最快下單兩天後（D+2），遇店休順延。常溫保存期限：取貨日起10天。</p>');snowNote.id='hp-snow-note';
   const about=hpEl('details','hp-after-shopping','<summary>關於好酪、成分與訂購說明</summary>');aboutNodes.forEach(n=>about.append(n));
   const footer=hpEl('footer','hp-footer','<div>甲賀食品｜統編 94427773<br>彰化市中正路一段403號<br><a href="tel:0972005078">0972-005-078</a>・食品登錄 N-194427773-00000-4<br>已投保產品責任險</div><nav><a href="menu.html">完整菜單</a><a href="store.html">門市資訊</a><a href="gifts.html">送禮指南</a><button class="hp-link-btn" onclick="openRefundPolicy()">退貨與退款</button></nav>');
-  s1.replaceChildren(hero,bundles,combo,categories,menuTitle,menu,cartList,about,footer);
+  s1.replaceChildren(hero,bundles,combo,categories,menuTitle,snowNote,menu,cartList,about,footer);
   const deliveryCard=hpEl('section','hp-panel','<h2>取貨安排</h2><p class="hp-subtle" id="hp-mode-summary"></p>');deliveryCard.append(delivery);
   const buyerCard=hpEl('section','hp-panel','<h2>聯絡資料</h2><p class="hp-subtle">免註冊即可訂購。請留下可以聯絡到你的姓名與手機。</p>');buyerCard.append(buyer);
   const noteDisclosure=hpEl('details','hp-disclosure','<summary>特殊需求備註（選填）</summary>');noteDisclosure.append(notes);notes.style.margin='0';notes.style.padding='0 16px 16px';
@@ -60,7 +61,7 @@ function hpMount(){
   const err=hpEl('div','hp-error-summary');err.id='hp-form-error';err.setAttribute('role','alert');
   const formLayout=hpEl('div','hp-form-layout');formLayout.append(deliveryCard,buyerCard);s2.replaceChildren(err,formLayout);
   const select=hpId('pickup-slot-select');select.hidden=true;select.setAttribute('tabindex','-1');
-  const picker=hpEl('div','','<div class="hp-date-top"><button type="button" onclick="hpCalendarMove(-1)" aria-label="上一個月">‹</button><strong id="hp-calendar-month"></strong><button type="button" onclick="hpCalendarMove(1)" aria-label="下一個月">›</button></div><div class="hp-calendar" id="hp-calendar" aria-label="可選日期"></div><div class="hp-date-legend">淡色日期目前未開放；訂購達18杯，需多一天備料。</div><div class="hp-times" id="hp-times" aria-label="取貨時段"></div><div id="hp-date-selection" class="hp-date-selection" hidden></div><div class="hp-error" id="hp-date-error"></div>');select.after(picker);
+  const picker=hpEl('div','','<div class="hp-date-top"><button type="button" onclick="hpCalendarMove(-1)" aria-label="上一個月">‹</button><strong id="hp-calendar-month"></strong><button type="button" onclick="hpCalendarMove(1)" aria-label="下一個月">›</button></div><div class="hp-calendar" id="hp-calendar" aria-label="可選日期"></div><div class="hp-date-legend">淡色日期目前未開放；訂購達18杯或含雪花酥，最早D+2；雪花酥訂單僅限門市取貨。</div><div class="hp-times" id="hp-times" aria-label="取貨時段"></div><div id="hp-date-selection" class="hp-date-selection" hidden></div><div class="hp-error" id="hp-date-error"></div>');select.after(picker);
   const same=hpId('same-as-cust');same.checked=true;same.closest('label').hidden=true;
   const other=hpEl('label','hp-switch','<input type="checkbox" id="hp-other-recipient" onchange="hpToggleRecipient()">寄給別人／由其他人收件');same.closest('label').after(other);hpToggleRecipient();
   const review=hpEl('div','hp-review-layout','<div><section class="hp-panel"><div class="hp-edit-heading"><h2>選購內容</h2><button class="hp-edit" onclick="openCartModal()">修改商品</button></div><div id="hp-review-items"></div><details class="hp-disclosure"><summary>裝盒方式：預設由好酪安排</summary><div style="padding:0 16px 16px"><p class="hp-subtle">有分盒或送禮需求時再設定；未設定會依口味混裝。</p><button class="action-btn secondary" onclick="openBoxingModal()">自訂每盒口味</button><div id="hp-box-summary" class="hp-subtle"></div></div></details></section><section class="hp-panel"><div class="hp-edit-heading"><h2>取貨與聯絡資料</h2><button class="hp-edit" onclick="hpEditDelivery()">修改資料</button></div><div id="hp-review-fulfillment"></div></section></div><section class="hp-panel" id="hp-payment-panel"><h2>確認金額與付款</h2><div id="hp-review-totals"></div><div id="hp-benefits"></div><div id="hp-discounts"></div><div id="hp-payments"></div><p class="hp-subtle">按下確認後，會先建立訂單，再帶你前往所選的付款頁面。</p><div class="hp-error" id="hp-submit-error" role="alert"></div></section>');
@@ -96,23 +97,54 @@ function hpAddBundle(kind){
 function hpChooseCombo(id){hpShowDialog('<h2>原味奶酪＋'+(id===16?'美式':'拿鐵')+'</h2><p class="hp-subtle">選擇咖啡的溫度，一次加入兩項商品。</p><div class="hp-dialog-actions"><button class="action-btn secondary" onclick="hpAddCombo('+id+',\'冰\')">冰咖啡</button><button class="action-btn" onclick="hpAddCombo('+id+',\'熱\')">熱咖啡</button></div><button class="hp-link-btn" style="width:100%;margin-top:10px" onclick="hpCloseDialog()">返回選購</button>','選擇咖啡溫度');}
 function hpAddCombo(id,temp){hpAddRaw(1,1);hpAddRaw(id,1,temp);hpChanged();hpCloseDialog();hpToast('已加入奶酪與'+temp+'咖啡，優惠自動計算');}
 function hpAddRaw(id,quantity,temp){const p=menuData.find(x=>x.id===Number(id));if(!p)return;if(isCoffeeItem(p)&&hpMode()==='宅配')return;const item=cart.find(x=>x.id===p.id&&(!isCoffeeItem(p)||x.temperature===temp));if(item)item.quantity=Math.min(999,item.quantity+quantity);else cart.push({...p,name:p.name+(isCoffeeItem(p)?'（'+temp+'）':''),temperature:temp||'',quantity});if(hp.initialized&&!hp.preview){try{if(typeof fbq==='function')fbq('track','AddToCart',{content_name:p.name,value:p.price*quantity,currency:'TWD'});}catch(ignore){}}}
+
+function hpQuantitySummary(q){return [q.cups?'奶酪／布丁 '+q.cups+'杯':'',q.snowflake?'雪花酥 '+q.snowflake+'包':'',q.coffee?'咖啡 '+q.coffee+'杯':''].filter(Boolean).join('・')||'選購商品';}
+function hpEnsureSnowflakePickup(){
+  const locked=cart.some(isSnowflakeItem),previous=hpMode();
+  if(locked&&previous!=='自取'){
+    document.querySelector('input[name="deliveryMethod"][value="自取"]').checked=true;hp.delivery='自取';
+    hpId('pickup-slot-select').value='';hp.selectedDay='';hp.calendarMonth='';clearScheduledDeliveryConfirmation();
+  }
+  document.querySelectorAll('input[name="deliveryMethod"]').forEach(input=>{
+    if(input.value==='自取')return;input.disabled=locked;input.closest('label')?.classList.toggle('hp-mode-unavailable',locked);
+  });
+}
+function hpSnowflakeDateValid(value,now=new Date()){
+  const m=String(value).match(/^(\d{4})\/(\d{2})\/(\d{2}) \(([日一二三四五六])\) (1[0-7]):00~(1[1-8]):00$/);if(!m||Number(m[6])!==Number(m[5])+1)return false;
+  const day=new Date(Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3]))),today=new Date(now.getTime()+8*3600000).toISOString().slice(0,10),ahead=(day.getTime()-new Date(today+'T00:00:00Z').getTime())/86400000;
+  return day.getUTCFullYear()===Number(m[1])&&day.getUTCMonth()+1===Number(m[2])&&day.getUTCDate()===Number(m[3])&&ahead>=2&&ahead<62&&day.getUTCDay()>=2&&day.getUTCDay()<=6&&m[4]===['日','一','二','三','四','五','六'][day.getUTCDay()];
+}
+function hpProductMedia(p,context){
+  const images=p.images||[p.image];
+  if(images.length<2)return context==='detail'?'<img src="'+p.image+'" alt="'+hpEsc(p.name)+'">':'<button class="hp-image-button" onclick="hpProductDetails('+p.id+')" aria-label="查看'+hpEsc(p.name)+'詳細介紹"><div class="menu-img-container">'+renderMenuImage(p)+'</div>'+(p.badge?'<span class="hp-badge">'+hpEsc(p.badge)+'</span>':'')+'</button>';
+  const id='hp-gallery-'+context+'-'+p.id;
+  return '<div class="hp-product-gallery"><div class="hp-swipe-gallery" id="'+id+'" tabindex="0" aria-label="'+hpEsc(p.name)+'，可左右滑動查看'+images.length+'張照片" onscroll="hpGallerySync(this)" onkeydown="hpGalleryKey(event,this)">'+images.map((src,i)=>{
+    const image='<img src="'+hpEsc(src)+'" alt="'+hpEsc(p.name)+'商品照片 '+(i+1)+'／'+images.length+'" width="600" height="600" loading="lazy" decoding="async" draggable="false">';
+    return context==='menu'?'<button type="button" class="hp-gallery-slide" onclick="hpProductDetails('+p.id+')" aria-label="查看'+hpEsc(p.name)+'詳細介紹，照片'+(i+1)+'">'+image+'</button>':'<div class="hp-gallery-slide">'+image+'</div>';
+  }).join('')+'</div><div class="hp-gallery-controls"><button type="button" onclick="hpGalleryGo(\''+id+'\',-1)" aria-label="'+hpEsc(p.name)+'上一張照片">‹</button><span id="'+id+'-count" aria-live="polite">1 / '+images.length+'</span><button type="button" onclick="hpGalleryGo(\''+id+'\',1)" aria-label="'+hpEsc(p.name)+'下一張照片">›</button></div><small class="hp-gallery-hint">左右滑動看照片</small></div>';
+}
+function hpGallerySync(gallery){const count=hpId(gallery.id+'-count');if(count&&gallery.clientWidth)count.textContent=(Math.round(gallery.scrollLeft/gallery.clientWidth)+1)+' / '+gallery.children.length;}
+function hpGalleryGo(id,delta){const gallery=hpId(id);if(!gallery||!gallery.clientWidth)return;const page=Math.max(0,Math.min(gallery.children.length-1,Math.round(gallery.scrollLeft/gallery.clientWidth)+delta));gallery.scrollTo({left:page*gallery.clientWidth,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
+function hpGalleryKey(event,gallery){if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();hpGalleryGo(gallery.id,event.key==='ArrowLeft'?-1:1);}}
+
 function hpRenderMenu(){
-  const cats=[['all','全部'],['popular','人氣'],['dessert','鮮奶酪'],['pudding','烤布丁'],['coffee','咖啡'],['bag','保冷袋']];
+  const cats=[['all','全部'],['popular','人氣'],['dessert','鮮奶酪'],['pudding','烤布丁'],['coffee','咖啡'],['snowflake','雪花酥'],['bag','保冷袋']];
   hpId('hp-categories').innerHTML=cats.map(([k,v])=>'<button type="button" role="tab" aria-selected="'+(hp.category===k)+'" onclick="hpCategory(\''+k+'\')">'+v+'</button>').join('');
-  const selected=menuData.filter(p=>hp.category==='all'||(hp.category==='popular'&&[1,2,7].includes(p.id))||(hp.category==='dessert'&&isPannaCottaItem(p))||(hp.category==='pudding'&&[14,21].includes(p.id))||(hp.category==='coffee'&&isCoffeeItem(p))||(hp.category==='bag'&&p.id===13));
+  const selected=menuData.filter(p=>hp.category==='all'||(hp.category==='popular'&&[1,2,7].includes(p.id))||(hp.category==='dessert'&&isPannaCottaItem(p))||(hp.category==='pudding'&&[14,21].includes(p.id))||(hp.category==='coffee'&&isCoffeeItem(p))||(hp.category==='snowflake'&&isSnowflakeItem(p))||(hp.category==='bag'&&p.id===13));
   hpId('hp-menu-title').textContent=hp.category==='all'?'挑選喜歡的口味':cats.find(x=>x[0]===hp.category)[1];
+  hpId('hp-snow-note').hidden=!['all','snowflake'].includes(hp.category);
   hpId('menu-list').innerHTML=selected.map(p=>{
     const coffee=isCoffeeItem(p),temp=coffeeTemperatureSelections[p.id]||'',blocked=coffee&&hpMode()==='宅配';
     const idx=cart.findIndex(x=>x.id===p.id&&(!coffee||x.temperature===temp));
     const q=idx>=0?cart[idx].quantity:0;
     let action=blocked?'<button class="add-btn" disabled>咖啡不提供宅配</button>':coffee&&!temp?'<button class="add-btn" disabled>請先選冰／熱</button>':q?hpQtyHtml(idx,q,p.name):'<button class="add-btn" onclick="hpAddProduct('+p.id+')">＋ 加入購物車</button>';
-    return '<article class="menu-item" id="menu-item-'+p.id+'"><button class="hp-image-button" onclick="hpProductDetails('+p.id+')" aria-label="查看'+hpEsc(p.name)+'詳細介紹"><div class="menu-img-container">'+renderMenuImage(p)+'</div>'+(p.badge?'<span class="hp-badge">'+hpEsc(p.badge)+'</span>':'')+'</button><div class="hp-product-title"><h3 class="menu-name">'+hpEsc(p.name)+'</h3><div class="menu-price">$'+p.price+'</div></div><div class="hp-food-note">'+hpFood(p)+'</div><button class="hp-detail-link" onclick="hpProductDetails('+p.id+')">口味介紹・完整成分</button>'+(coffee?'<div class="hp-temperature" role="group" aria-label="'+p.name+'溫度">'+['冰','熱'].map(t=>'<button aria-pressed="'+(temp===t)+'" onclick="selectCoffeeTemperature('+p.id+',\''+t+'\')" '+(blocked?'disabled':'')+'>'+t+'</button>').join('')+'</div>':'')+action+'</article>';
+    return '<article class="menu-item" id="menu-item-'+p.id+'">'+hpProductMedia(p,'menu')+'<div class="hp-product-title"><h3 class="menu-name">'+hpEsc(p.name)+'</h3><div class="menu-price">$'+p.price+'</div></div><div class="hp-food-note">'+hpFood(p)+'</div><button class="hp-detail-link" onclick="hpProductDetails('+p.id+')">口味介紹・完整成分</button>'+(coffee?'<div class="hp-temperature" role="group" aria-label="'+p.name+'溫度">'+['冰','熱'].map(t=>'<button aria-pressed="'+(temp===t)+'" onclick="selectCoffeeTemperature('+p.id+',\''+t+'\')" '+(blocked?'disabled':'')+'>'+t+'</button>').join('')+'</div>':'')+action+'</article>';
   }).join('');
 }
 function hpQtyHtml(index,q,name){return '<div class="hp-qty"><button onclick="hpSetQty('+index+','+(q-1)+')" aria-label="減少'+hpEsc(name)+'">−</button><input type="number" min="0" max="999" value="'+q+'" inputmode="numeric" aria-label="'+hpEsc(name)+'數量" oninput="hpSetQty('+index+',this.value,true)" onchange="hpSetQty('+index+',this.value)"><button onclick="hpSetQty('+index+','+(q+1)+')" aria-label="增加'+hpEsc(name)+'">＋</button></div>';}
 function hpCategory(category){hp.category=category;renderMenu();hpId('hp-categories').scrollIntoView({block:'start',behavior:'smooth'});}
-function hpProductDetails(id){const p=menuData.find(x=>x.id===id);if(!p)return;hpShowDialog('<button class="hp-dialog-close" onclick="hpCloseDialog()" aria-label="關閉">×</button><img src="'+p.image+'" alt="'+hpEsc(p.name)+'"><h2 style="margin-top:18px">'+hpEsc(p.name)+'　'+hpMoney(p.price)+'</h2><div class="hp-small-tag" style="display:inline-block">'+hpFood(p)+'</div><p>'+p.desc+'</p><p class="hp-subtle"><strong>'+(id===13?'材質':'成分')+'：</strong>'+hpEsc(p.ingredients)+'</p>'+(id===9?'<p class="hp-error">含蘭姆酒，未滿18歲請勿購買。</p>':'')+'<button class="action-btn" style="width:100%" onclick="hpCloseDialog()">返回挑選口味</button>',p.name);}
-function hpAddProduct(id){const p=menuData.find(x=>x.id===id);const temp=coffeeTemperatureSelections[id]||'';if(isCoffeeItem(p)&&!temp)return;hpAddRaw(id,1,temp);hpChanged();hpToast('已加入'+p.name);}
+function hpProductDetails(id){const p=menuData.find(x=>x.id===id);if(!p)return;hpShowDialog('<button class="hp-dialog-close" onclick="hpCloseDialog()" aria-label="關閉">×</button>'+hpProductMedia(p,'detail')+'<h2 style="margin-top:18px">'+hpEsc(p.name)+'　'+hpMoney(p.price)+'</h2><div class="hp-small-tag" style="display:inline-block">'+hpFood(p)+'</div><p>'+p.desc+'</p><p class="hp-subtle"><strong>'+(id===13?'材質':'成分')+'：</strong>'+hpEsc(p.ingredients)+'</p>'+(id===9?'<p class="hp-error">含蘭姆酒，未滿18歲請勿購買。</p>':'')+'<button class="action-btn" style="width:100%" onclick="hpCloseDialog()">返回挑選口味</button>',p.name);}
+function hpAddProduct(id){const p=menuData.find(x=>x.id===id);const temp=coffeeTemperatureSelections[id]||'';if(isCoffeeItem(p)&&!temp)return;hpAddRaw(id,1,temp);hpChanged();hpToast('已加入'+p.name+(isSnowflakeItem(p)?'，整筆訂單僅限門市取貨，最早D+2':''));}
 function hpReconcileBoxes(){
   const remaining={};cart.filter(isDessertItem).forEach(i=>remaining[i.id]=(remaining[i.id]||0)+i.quantity);
   const kept=[];let removed=0;
@@ -122,24 +154,24 @@ function hpReconcileBoxes(){
   if(removed)hpToast('已保留其餘裝盒設定；受數量影響的'+removed+'盒可重新安排');
 }
 function hpSetQty(index,value,typing=false){if(typing&&String(value).trim()==='')return;const n=Number(value);if(!Number.isInteger(n)||n<0||n>999){if(!typing)hpToast('數量請填0～999的整數');return;}if(!cart[index]||cart[index].quantity===n)return;const active=document.activeElement,scope=active?.closest('#modal-cart-list')?'#modal-cart-list':'#menu-list';const label=active?.getAttribute('aria-label');cart[index].quantity=n;if(!n)cart.splice(index,1);hpReconcileBoxes();hpChanged();if(typing&&n&&label)document.querySelector(scope+' input[aria-label="'+CSS.escape(label)+'"]')?.focus();}
-function hpChanged(){renderMenu();renderCart();hpSaveDraft();}
-function hpTotalsHtml(q,delivery=hpMode()){return '<div class="hp-money-row"><span>商品小計</span><span>'+hpMoney(q.raw)+'</span></div>'+(q.coffeeDiscount?'<div class="hp-money-row discount"><span>咖啡加購 '+q.coffeeCups+'杯</span><span>−'+q.coffeeDiscount+'元</span></div>':'')+(q.promo?'<div class="hp-money-row discount"><span>'+hpEsc(q.promo.name)+'</span><span>−'+q.promo.amount+'元</span></div>':'')+(q.usedPoints?'<div class="hp-money-row discount"><span>點數折抵</span><span>−'+q.usedPoints+'元</span></div>':'')+(delivery==='宅配'?'<div class="hp-money-row"><span>冷藏運費'+(q.shippingDiscount?'（已折'+q.shippingDiscount+'元）':'')+'</span><span>'+hpMoney(q.shipping)+'</span></div>':'<div class="hp-money-row"><span>'+(delivery==='預約外送'?'預約外送費':'門市自取')+'</span><span>NT$ 0</span></div>')+'<div class="hp-money-row total"><span>應付總額</span><span>'+hpMoney(q.total)+'</span></div>';}
+function hpChanged(){hpEnsureSnowflakePickup();renderMenu();renderCart();hpSaveDraft();}
+function hpTotalsHtml(q,delivery=hpMode()){return '<div class="hp-money-row"><span>商品小計</span><span>'+hpMoney(q.raw)+'</span></div>'+(q.snowflakeDiscount?'<div class="hp-money-row discount"><span>雪花酥任選三包450元 × '+q.snowflakeGroups+'組</span><span>−'+q.snowflakeDiscount+'元</span></div>':'')+(q.coffeeDiscount?'<div class="hp-money-row discount"><span>咖啡加購 '+q.coffeeCups+'杯</span><span>−'+q.coffeeDiscount+'元</span></div>':'')+(q.promo?'<div class="hp-money-row discount"><span>'+hpEsc(q.promo.name)+'</span><span>−'+q.promo.amount+'元</span></div>':'')+(q.usedPoints?'<div class="hp-money-row discount"><span>點數折抵</span><span>−'+q.usedPoints+'元</span></div>':'')+(delivery==='宅配'?'<div class="hp-money-row"><span>冷藏運費'+(q.shippingDiscount?'（已折'+q.shippingDiscount+'元）':'')+'</span><span>'+hpMoney(q.shipping)+'</span></div>':'<div class="hp-money-row"><span>'+(delivery==='預約外送'?'預約外送費':'門市自取')+'</span><span>NT$ 0</span></div>')+'<div class="hp-money-row total"><span>應付總額</span><span>'+hpMoney(q.total)+'</span></div>';}
 function hpCartHtml(q){
   if(!cart.length)return '<div class="hp-empty">購物車還空著，先挑一杯喜歡的口味吧。</div>';
-  let content=cart.map((p,i)=>'<div class="hp-cart-line"><img src="'+p.image+'" alt="'+hpEsc(p.name)+'" width="50" height="50"><div><div class="hp-cart-name">'+hpEsc(p.name)+'</div><div class="hp-cart-extra">每'+(p.id===13?'只':'杯')+' '+p.price+'元</div>'+hpQtyHtml(i,p.quantity,p.name)+'</div><div class="hp-cart-price">'+hpMoney(p.price*p.quantity)+'</div></div>').join('');
+  let content=cart.map((p,i)=>'<div class="hp-cart-line"><img src="'+p.image+'" alt="'+hpEsc(p.name)+'" width="50" height="50"><div><div class="hp-cart-name">'+hpEsc(p.name)+'</div><div class="hp-cart-extra">每'+(p.id===13?'只':isSnowflakeItem(p)?'包':'杯')+' '+p.price+'元</div>'+hpQtyHtml(i,p.quantity,p.name)+'</div><div class="hp-cart-price">'+hpMoney(p.price*p.quantity)+'</div></div>').join('');
   if(q.freeBags)content+='<div class="hp-gift-row">贈品｜保冷袋 '+q.freeBags+'只（不計甜點杯數）</div>';
   if(hpMode()==='宅配'&&q.cups%6)content+='<div class="hp-cart-progress">宅配需整盒出貨，目前'+q.cups+'杯，再挑'+(6-q.cups%6)+'杯就能裝滿下一盒。</div>';
   if(hpMode()==='預約外送'&&q.cups<12)content+='<div class="hp-cart-progress">預約外送12杯起，目前還差'+(12-q.cups)+'杯。</div>';
   if(hpMode()==='宅配'&&q.raw<2000){const target=q.raw<1200?1200:2000;content+='<div class="hp-cart-progress">再買 '+hpMoney(target-q.raw)+'，'+(target===1200?'運費可折50元':'即可享宅配免運')+'。<progress max="'+target+'" value="'+q.raw+'"></progress>'+(q.raw===1980&&cart.filter(p=>p.price===55&&isDessertItem(p)).reduce((a,p)=>a+p.quantity,0)>=4?'<button class="hp-link-btn" onclick="hpUpgradeDialog()">選4杯升級抹茶烤布丁，剛好達免運</button>':'')+'</div>';}
   if(q.cups&&q.cups%12)content+='<div class="hp-cart-extra" style="margin:12px 0">再挑'+(12-q.cups%12)+'杯甜點，多送一只保冷袋。</div>';
-  content+='<div class="hp-subtle" style="margin:16px 0">甜點 '+q.cups+'杯'+(q.coffee?'・咖啡 '+q.coffee+'杯':'')+'。裝盒由好酪安排，分盒需求可在確認頁設定。</div>'+hpTotalsHtml(q);
+  content+='<div class="hp-subtle" style="margin:16px 0">'+hpQuantitySummary(q)+(q.cups?'。奶酪與布丁裝盒由好酪安排。':'')+'</div>'+(q.snowflake?'<p class="hp-snow-note">雪花酥常溫保存期限：取貨日起10天。外包裝袋顏色隨機搭配不指定。含雪花酥訂單僅限門市取貨，最早D+2。</p>':'')+hpTotalsHtml(q);
   return content;
 }
 function hpRenderCart(){
-  const q=hpGetQuote();updateDateSettings(getSelectedDeliveryMode());
+  hpEnsureSnowflakePickup();const q=hpGetQuote();updateDateSettings(getSelectedDeliveryMode());
   hpId('cart-list').innerHTML=hpCartHtml(q);
   if(hpId('cart-modal-overlay').style.display==='flex')hpId('modal-cart-list').innerHTML=hpId('cart-list').innerHTML;
-  hpId('hp-bar-count').textContent=q.cups||q.coffee?'甜點 '+q.cups+'杯'+(q.coffee?'・咖啡 '+q.coffee+'杯':'')+(cart.some(p=>p.id===13)?'・保冷袋另計':''):'尚未選購商品';
+  hpId('hp-bar-count').textContent=cart.length?hpQuantitySummary(q)+(cart.some(p=>p.id===13)?'・保冷袋另計':''):'尚未選購商品';
   hpId('hp-bar-total').textContent=hpMoney(q.total);
   hpId('hp-bar-note').textContent=hpMode()==='宅配'?(q.cups?'含冷藏運費'+q.shipping+'元':'選購後自動計算運費'):(hpMode()==='預約外送'?'外送時段需由店家確認':'門市自取・免註冊下單');
   hpId('hp-cart-next').disabled=!cart.length;hpId('btn-next').disabled=!cart.length||orderSubmissionInProgress;
@@ -149,11 +181,13 @@ function hpUpgradeDialog(){const candidates=cart.map((p,i)=>({...p,index:i})).fi
 function hpApplyUpgrade(){const selected=[...document.querySelectorAll('.hp-upgrade-qty')].map(n=>({index:Number(n.dataset.index),quantity:Number(n.value)}));if(selected.some(s=>!Number.isInteger(s.quantity)||s.quantity<0||s.quantity>cart[s.index].quantity)||selected.reduce((a,s)=>a+s.quantity,0)!==4){hpToast('請選擇剛好4杯');return;}selected.forEach(s=>cart[s.index].quantity-=s.quantity);cart=cart.filter(p=>p.quantity>0);hpAddRaw(21,4);hpReconcileBoxes();hpChanged();hpCloseDialog();hpToast('已替換4杯，更新後總額與運費請見購物車');}
 function hpToggleRecipient(){const other=hpId('hp-other-recipient')?.checked||false;hpId('same-as-cust').checked=!other;['rcpt-name','rcpt-phone'].forEach(id=>hpId(id).closest('.form-group').hidden=!other);if(!other)toggleRecipientSame();hpSaveDraft();}
 function hpRequestMode(value){
+  if(value!=='自取'&&cart.some(isSnowflakeItem)){hpEnsureSnowflakePickup();hpToast('含雪花酥的整筆訂單僅限門市取貨；移除雪花酥後可改選配送。');return;}
   const old=hp.delivery||'自取';document.querySelector('input[name="deliveryMethod"][value="'+old+'"]').checked=true;
   const apply=()=>{document.querySelector('input[name="deliveryMethod"][value="'+value+'"]').checked=true;hp.delivery=value;if(value==='宅配')cart=cart.filter(p=>!isCoffeeItem(p));hpReconcileBoxes();clearScheduledDeliveryConfirmation();hp.calendarMonth='';hpChanged();hpRenderBundles();};
   if(value==='宅配'&&cart.some(isCoffeeItem)){hpShowDialog('<h2>改成冷藏宅配？</h2><p>咖啡不提供宅配。確認後會移除購物車中的咖啡，甜點會保留。</p><div class="hp-dialog-actions"><button class="action-btn secondary" id="hp-keep-mode">保留目前取貨方式</button><button class="action-btn" id="hp-confirm-mode">移除咖啡並改宅配</button></div>','變更取貨方式');hpId('hp-keep-mode').onclick=hpCloseDialog;hpId('hp-confirm-mode').onclick=()=>{apply();hpCloseDialog();};}else apply();
 }
 function hpUpdateDateSettings(mode){
+  if(cart.some(isSnowflakeItem)){hpEnsureSnowflakePickup();mode='pickup';}
   const previous=hpId('pickup-slot-select').value;hpOldDateSettings(mode);hpId('pickup-slot-select').hidden=true;
   const groups={};[...hpId('pickup-slot-select').options].filter(o=>o.value).forEach(o=>{const key=o.value.slice(0,10);(groups[key]||(groups[key]=[])).push({value:o.value,label:o.textContent});});hp.dateGroups=groups;if(hp.selectedDay&&!groups[hp.selectedDay])hp.selectedDay='';
   const dates=Object.keys(groups);if(!hp.calendarMonth||!dates.some(d=>d.slice(0,7)===hp.calendarMonth))hp.calendarMonth=(hpId('pickup-slot-select').value||dates[0]||'').slice(0,7);
@@ -182,6 +216,7 @@ function hpValidateDetails(focus=true){
   document.querySelectorAll('.hp-invalid').forEach(n=>{n.classList.remove('hp-invalid');n.removeAttribute('aria-invalid');});document.querySelectorAll('[id^="error-"]').forEach(n=>n.textContent='');
   const errors=[],name=hpId('cust-name').value.trim(),phone=hpId('cust-phone').value.trim(),email=hpId('cust-email').value.trim();
   if(!name)errors.push(hpError('cust-name','請填寫訂購人姓名'));if(!/^09\d{8}$/.test(phone))errors.push(hpError('cust-phone','請輸入09開頭的10碼手機號碼'));if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))errors.push(hpError('cust-email','Email格式不正確，請再確認'));
+  if(cart.some(isSnowflakeItem)&&!hpSnowflakeDateValid(hpId('pickup-slot-select').value)){hpId('hp-date-error').textContent='含雪花酥的訂單僅限門市取貨，請重新選擇下單兩天後（D+2）起的開放時段。';errors.push('hp-calendar');}
   if(!hpId('pickup-slot-select').value){hpId('hp-date-error').textContent=hpMode()==='宅配'?'請選擇出貨日期':'請選擇日期與時段';errors.push('hp-calendar');}
   if(hpMode()!=='自取'){
     if(!hpId('hp-other-recipient').checked)toggleRecipientSame();
@@ -196,7 +231,7 @@ function hpValidateDetails(focus=true){
   if(errors.length&&focus){goToStep(2);const el=hpId(errors[0]);el?.scrollIntoView({behavior:'smooth',block:'center'});el?.focus();}
   return !errors.length;
 }
-function hpValidateCart(){const q=hpGetQuote();if(!cart.length){hpToast('先挑一杯喜歡的甜點吧');return false;}if(hpMode()==='宅配'&&(q.cups<6||q.cups%6)){hpToast('宅配甜點需6杯的倍數，目前'+q.cups+'杯');openCartModal();return false;}if(hpMode()==='預約外送'&&q.cups<12){hpToast('預約外送12杯起，目前還差'+(12-q.cups)+'杯');openCartModal();return false;}return true;}
+function hpValidateCart(){if(cart.some(isSnowflakeItem)&&hpMode()!=='自取'){hpToast('含雪花酥的整筆訂單僅限門市取貨');return false;}const q=hpGetQuote();if(!cart.length){hpToast('先挑一杯喜歡的甜點吧');return false;}if(hpMode()==='宅配'&&(q.cups<6||q.cups%6)){hpToast('宅配甜點需6杯的倍數，目前'+q.cups+'杯');openCartModal();return false;}if(hpMode()==='預約外送'&&q.cups<12){hpToast('預約外送12杯起，目前還差'+(12-q.cups)+'杯');openCartModal();return false;}return true;}
 async function hpNext(){
   if(currentStep===1){if(hpValidateCart()){closeCartModal();goToStep(2);trackInitiateCheckout();}}
   else if(currentStep===2){if(!hpValidateCart()||!hpValidateDetails())return;hpId('btn-next').disabled=true;hpId('btn-next').textContent='正在確認優惠…';await hpLoadBenefits(true);goToStep(3);}
@@ -212,6 +247,7 @@ function hpCartContinue(){const fields=[...hpId('modal-cart-list').querySelector
 function hpRenderReview(q){
   if(!hpId('hp-review-items'))return;
   hpId('hp-review-items').innerHTML=cart.length?'<div class="hp-review-items">'+cart.map(p=>'<div class="hp-review-item"><div><img src="'+p.image+'" alt="'+hpEsc(p.name)+'" width="44" height="44"><span>'+hpEsc(p.name)+' × '+p.quantity+'</span></div><span>'+hpMoney(p.price*p.quantity)+'</span></div>').join('')+'</div>':'<p class="hp-subtle">尚未選購商品</p>';
+  if(q.snowflake)hpId('hp-review-items').innerHTML+='<p class="hp-snow-note">雪花酥 '+q.snowflake+'包｜常溫保存期限：取貨日起10天。外包裝袋顏色隨機搭配不指定。整筆訂單僅限門市取貨，最早D+2。</p>';
   if(q.freeBags)hpId('hp-review-items').innerHTML+='<div class="hp-gift-row">滿額贈保冷袋 '+q.freeBags+'只</div>';
   hpId('hp-box-summary').textContent=completedBoxes.length?'已設定 '+completedBoxes.length+'盒，其餘由店家安排。':'目前由店家安排混裝。';
   const addr=hpMode()==='宅配'?hpId('cust-city').value+hpId('cust-addr-detail').value.trim():hpMode()==='預約外送'?'彰化市'+hpId('scheduled-delivery-village').value+hpId('scheduled-delivery-address-detail').value.trim():'彰化市中正路一段403號';
@@ -343,7 +379,7 @@ function hpInit(){
   closeBoxingModal=()=>{hpOriginalCloseBoxing();hpSaveDraft();};saveCurrentBox=()=>{hpOriginalSaveBox();hpSaveDraft();};unpackBox=i=>{hpOriginalUnpackBox(i);hpSaveDraft();};autoFillBoxes=()=>{hpOriginalAutoBoxes();hpSaveDraft();};
   updateItemQty=(id,delta,temp='')=>{const i=cart.findIndex(p=>p.id===id&&(!isCoffeeItem(p)||p.temperature===temp));if(i>=0)hpSetQty(i,cart[i].quantity+delta);};changeQty=(i,d)=>hpSetQty(i,cart[i].quantity+d);
   sendOrderServiceRequest=payload=>{if(hp.preview){if(typeof window.__HP_TEST_API==='function')return Promise.resolve(window.__HP_TEST_API(payload));return Promise.reject(new Error('目前是預覽頁面，正式下單請使用好酪官網'));}return hpOriginalBridge(payload);};
-  hpRestoreDraft();hp.initialized=true;hp.delivery=hpMode();hpRenderBundles();renderMenu();renderCart();
+  hpRestoreDraft();hpEnsureSnowflakePickup();hp.initialized=true;hp.delivery=hpMode();hpRenderBundles();renderMenu();renderCart();
   if(hp.pendingRestoreDate&&[...hpId('pickup-slot-select').options].some(o=>o.value===hp.pendingRestoreDate)){hpId('pickup-slot-select').value=hp.pendingRestoreDate;hp.selectedDay=hp.pendingRestoreDate.slice(0,10);hp.calendarMonth=hp.pendingRestoreDate.slice(0,7);hpRenderCalendar();}
   history.replaceState({hpStep:1},'',location.href);hpGoToStep(1,false);
   ['cust-name','cust-phone'].forEach(id=>hpId(id).addEventListener('input',()=>hpClearManualCoupon()));
