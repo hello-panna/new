@@ -19,7 +19,7 @@ var HelloPannaPricing = (function () {
       var temperature=p.coffee?String(item.temperature||''):'';
       if(p.coffee&&['冰','熱'].indexOf(temperature)<0)throw new Error('請選擇咖啡的冰／熱');
       if(p.coffee&&delivery==='宅配')throw new Error('咖啡不提供冷藏宅配');
-      if(p.snowflake&&delivery!=='自取')throw new Error('含雪花酥的訂單僅限門市取貨');
+      if(p.snowflake&&delivery!=='自取')throw new Error('含雪花酥的整筆訂單僅限門市取貨');
       raw+=p.price*quantity;counts[id]=(counts[id]||0)+quantity;
       if(p.snowflake)snowflake+=quantity;else if(p.coffee)coffee+=quantity;else if(!p.bag){cups+=quantity;dessertAmount+=p.price*quantity;if(id!==14&&id!==21)panna+=quantity;}
       items.push({id:id,name:p.name+(p.coffee?'（'+temperature+'）':''),price:p.price,quantity:quantity,temperature:temperature,category:p.snowflake?'snowflake':(p.coffee?'coffee':(p.bag?'bag':'dessert'))});

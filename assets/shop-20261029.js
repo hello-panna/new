@@ -50,7 +50,7 @@ function hpMount(){
   const combo=hpEl('section','','<div id="hp-coffee-combos"></div>');
   const categories=hpEl('nav','hp-category-nav');categories.id='hp-categories';categories.setAttribute('aria-label','商品分類');
   const menuTitle=hpEl('h2','section-header','挑選喜歡的口味');menuTitle.id='hp-menu-title';
-  const snowNote=hpEl('aside','hp-snow-note','<strong>雪花酥｜任選三包 450 元</strong><p>每包155元，每滿三包享組合價。外包裝袋顏色隨機搭配不指定。</p><p>含雪花酥的整筆訂單僅限門市取貨，最快下單兩天後（D+2），遇店休順延。常溫保存期限：取貨日起10天。</p>');snowNote.id='hp-snow-note';
+  const snowNote=hpEl('aside','hp-snow-note','<strong>雪花酥｜任選三包 450 元</strong><p>每包155元，每滿三包享組合價。外包裝袋顏色隨機搭配不指定。</p><p>含雪花酥的整筆訂單僅限門市取貨</p>');snowNote.id='hp-snow-note';
   const about=hpEl('details','hp-after-shopping','<summary>關於好酪、成分與訂購說明</summary>');aboutNodes.forEach(n=>about.append(n));
   const footer=hpEl('footer','hp-footer','<div>甲賀食品｜統編 94427773<br>彰化市中正路一段403號<br><a href="tel:0972005078">0972-005-078</a>・食品登錄 N-194427773-00000-4<br>已投保產品責任險</div><nav><a href="menu.html">完整菜單</a><a href="store.html">門市資訊</a><a href="gifts.html">送禮指南</a><button class="hp-link-btn" onclick="openRefundPolicy()">退貨與退款</button></nav>');
   s1.replaceChildren(hero,bundles,combo,categories,menuTitle,snowNote,menu,cartList,about,footer);
@@ -61,7 +61,7 @@ function hpMount(){
   const err=hpEl('div','hp-error-summary');err.id='hp-form-error';err.setAttribute('role','alert');
   const formLayout=hpEl('div','hp-form-layout');formLayout.append(deliveryCard,buyerCard);s2.replaceChildren(err,formLayout);
   const select=hpId('pickup-slot-select');select.hidden=true;select.setAttribute('tabindex','-1');
-  const picker=hpEl('div','','<div class="hp-date-top"><button type="button" onclick="hpCalendarMove(-1)" aria-label="上一個月">‹</button><strong id="hp-calendar-month"></strong><button type="button" onclick="hpCalendarMove(1)" aria-label="下一個月">›</button></div><div class="hp-calendar" id="hp-calendar" aria-label="可選日期"></div><div class="hp-date-legend">淡色日期目前未開放；訂購達18杯或含雪花酥，最早D+2；雪花酥訂單僅限門市取貨。</div><div class="hp-times" id="hp-times" aria-label="取貨時段"></div><div id="hp-date-selection" class="hp-date-selection" hidden></div><div class="hp-error" id="hp-date-error"></div>');select.after(picker);
+  const picker=hpEl('div','','<div class="hp-date-top"><button type="button" onclick="hpCalendarMove(-1)" aria-label="上一個月">‹</button><strong id="hp-calendar-month"></strong><button type="button" onclick="hpCalendarMove(1)" aria-label="下一個月">›</button></div><div class="hp-calendar" id="hp-calendar" aria-label="可選日期"></div><div class="hp-date-legend">淡色日期目前未開放；訂購達18杯，需多一天備料。含雪花酥的整筆訂單僅限門市取貨。</div><div class="hp-times" id="hp-times" aria-label="取貨時段"></div><div id="hp-date-selection" class="hp-date-selection" hidden></div><div class="hp-error" id="hp-date-error"></div>');select.after(picker);
   const same=hpId('same-as-cust');same.checked=true;same.closest('label').hidden=true;
   const other=hpEl('label','hp-switch','<input type="checkbox" id="hp-other-recipient" onchange="hpToggleRecipient()">寄給別人／由其他人收件');same.closest('label').after(other);hpToggleRecipient();
   const review=hpEl('div','hp-review-layout','<div><section class="hp-panel"><div class="hp-edit-heading"><h2>選購內容</h2><button class="hp-edit" onclick="openCartModal()">修改商品</button></div><div id="hp-review-items"></div><details class="hp-disclosure"><summary>裝盒方式：預設由好酪安排</summary><div style="padding:0 16px 16px"><p class="hp-subtle">有分盒或送禮需求時再設定；未設定會依口味混裝。</p><button class="action-btn secondary" onclick="openBoxingModal()">自訂每盒口味</button><div id="hp-box-summary" class="hp-subtle"></div></div></details></section><section class="hp-panel"><div class="hp-edit-heading"><h2>取貨與聯絡資料</h2><button class="hp-edit" onclick="hpEditDelivery()">修改資料</button></div><div id="hp-review-fulfillment"></div></section></div><section class="hp-panel" id="hp-payment-panel"><h2>確認金額與付款</h2><div id="hp-review-totals"></div><div id="hp-benefits"></div><div id="hp-discounts"></div><div id="hp-payments"></div><p class="hp-subtle">按下確認後，會先建立訂單，再帶你前往所選的付款頁面。</p><div class="hp-error" id="hp-submit-error" role="alert"></div></section>');
@@ -144,7 +144,7 @@ function hpRenderMenu(){
 function hpQtyHtml(index,q,name){return '<div class="hp-qty"><button onclick="hpSetQty('+index+','+(q-1)+')" aria-label="減少'+hpEsc(name)+'">−</button><input type="number" min="0" max="999" value="'+q+'" inputmode="numeric" aria-label="'+hpEsc(name)+'數量" oninput="hpSetQty('+index+',this.value,true)" onchange="hpSetQty('+index+',this.value)"><button onclick="hpSetQty('+index+','+(q+1)+')" aria-label="增加'+hpEsc(name)+'">＋</button></div>';}
 function hpCategory(category){hp.category=category;renderMenu();hpId('hp-categories').scrollIntoView({block:'start',behavior:'smooth'});}
 function hpProductDetails(id){const p=menuData.find(x=>x.id===id);if(!p)return;hpShowDialog('<button class="hp-dialog-close" onclick="hpCloseDialog()" aria-label="關閉">×</button>'+hpProductMedia(p,'detail')+'<h2 style="margin-top:18px">'+hpEsc(p.name)+'　'+hpMoney(p.price)+'</h2><div class="hp-small-tag" style="display:inline-block">'+hpFood(p)+'</div><p>'+p.desc+'</p><p class="hp-subtle"><strong>'+(id===13?'材質':'成分')+'：</strong>'+hpEsc(p.ingredients)+'</p>'+(id===9?'<p class="hp-error">含蘭姆酒，未滿18歲請勿購買。</p>':'')+'<button class="action-btn" style="width:100%" onclick="hpCloseDialog()">返回挑選口味</button>',p.name);}
-function hpAddProduct(id){const p=menuData.find(x=>x.id===id);const temp=coffeeTemperatureSelections[id]||'';if(isCoffeeItem(p)&&!temp)return;hpAddRaw(id,1,temp);hpChanged();hpToast('已加入'+p.name+(isSnowflakeItem(p)?'，整筆訂單僅限門市取貨，最早D+2':''));}
+function hpAddProduct(id){const p=menuData.find(x=>x.id===id);const temp=coffeeTemperatureSelections[id]||'';if(isCoffeeItem(p)&&!temp)return;hpAddRaw(id,1,temp);hpChanged();hpToast('已加入'+p.name+(isSnowflakeItem(p)?'，含雪花酥的整筆訂單僅限門市取貨':''));}
 function hpReconcileBoxes(){
   const remaining={};cart.filter(isDessertItem).forEach(i=>remaining[i.id]=(remaining[i.id]||0)+i.quantity);
   const kept=[];let removed=0;
@@ -164,7 +164,7 @@ function hpCartHtml(q){
   if(hpMode()==='預約外送'&&q.cups<12)content+='<div class="hp-cart-progress">預約外送12杯起，目前還差'+(12-q.cups)+'杯。</div>';
   if(hpMode()==='宅配'&&q.raw<2000){const target=q.raw<1200?1200:2000;content+='<div class="hp-cart-progress">再買 '+hpMoney(target-q.raw)+'，'+(target===1200?'運費可折50元':'即可享宅配免運')+'。<progress max="'+target+'" value="'+q.raw+'"></progress>'+(q.raw===1980&&cart.filter(p=>p.price===55&&isDessertItem(p)).reduce((a,p)=>a+p.quantity,0)>=4?'<button class="hp-link-btn" onclick="hpUpgradeDialog()">選4杯升級抹茶烤布丁，剛好達免運</button>':'')+'</div>';}
   if(q.cups&&q.cups%12)content+='<div class="hp-cart-extra" style="margin:12px 0">再挑'+(12-q.cups%12)+'杯甜點，多送一只保冷袋。</div>';
-  content+='<div class="hp-subtle" style="margin:16px 0">'+hpQuantitySummary(q)+(q.cups?'。奶酪與布丁裝盒由好酪安排。':'')+'</div>'+(q.snowflake?'<p class="hp-snow-note">雪花酥常溫保存期限：取貨日起10天。外包裝袋顏色隨機搭配不指定。含雪花酥訂單僅限門市取貨，最早D+2。</p>':'')+hpTotalsHtml(q);
+  content+='<div class="hp-subtle" style="margin:16px 0">'+hpQuantitySummary(q)+(q.cups?'。奶酪與布丁裝盒由好酪安排。':'')+'</div>'+(q.snowflake?'<p class="hp-snow-note">雪花酥常溫保存期限：取貨日起8-10天。外包裝袋顏色隨機搭配不指定。含雪花酥的整筆訂單僅限門市取貨。</p>':'')+hpTotalsHtml(q);
   return content;
 }
 function hpRenderCart(){
@@ -216,7 +216,7 @@ function hpValidateDetails(focus=true){
   document.querySelectorAll('.hp-invalid').forEach(n=>{n.classList.remove('hp-invalid');n.removeAttribute('aria-invalid');});document.querySelectorAll('[id^="error-"]').forEach(n=>n.textContent='');
   const errors=[],name=hpId('cust-name').value.trim(),phone=hpId('cust-phone').value.trim(),email=hpId('cust-email').value.trim();
   if(!name)errors.push(hpError('cust-name','請填寫訂購人姓名'));if(!/^09\d{8}$/.test(phone))errors.push(hpError('cust-phone','請輸入09開頭的10碼手機號碼'));if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))errors.push(hpError('cust-email','Email格式不正確，請再確認'));
-  if(cart.some(isSnowflakeItem)&&!hpSnowflakeDateValid(hpId('pickup-slot-select').value)){hpId('hp-date-error').textContent='含雪花酥的訂單僅限門市取貨，請重新選擇下單兩天後（D+2）起的開放時段。';errors.push('hp-calendar');}
+  if(cart.some(isSnowflakeItem)&&!hpSnowflakeDateValid(hpId('pickup-slot-select').value)){hpId('hp-date-error').textContent='含雪花酥的整筆訂單僅限門市取貨，請重新選擇開放的取貨日期與時段。';errors.push('hp-calendar');}
   if(!hpId('pickup-slot-select').value){hpId('hp-date-error').textContent=hpMode()==='宅配'?'請選擇出貨日期':'請選擇日期與時段';errors.push('hp-calendar');}
   if(hpMode()!=='自取'){
     if(!hpId('hp-other-recipient').checked)toggleRecipientSame();
@@ -247,7 +247,7 @@ function hpCartContinue(){const fields=[...hpId('modal-cart-list').querySelector
 function hpRenderReview(q){
   if(!hpId('hp-review-items'))return;
   hpId('hp-review-items').innerHTML=cart.length?'<div class="hp-review-items">'+cart.map(p=>'<div class="hp-review-item"><div><img src="'+p.image+'" alt="'+hpEsc(p.name)+'" width="44" height="44"><span>'+hpEsc(p.name)+' × '+p.quantity+'</span></div><span>'+hpMoney(p.price*p.quantity)+'</span></div>').join('')+'</div>':'<p class="hp-subtle">尚未選購商品</p>';
-  if(q.snowflake)hpId('hp-review-items').innerHTML+='<p class="hp-snow-note">雪花酥 '+q.snowflake+'包｜常溫保存期限：取貨日起10天。外包裝袋顏色隨機搭配不指定。整筆訂單僅限門市取貨，最早D+2。</p>';
+  if(q.snowflake)hpId('hp-review-items').innerHTML+='<p class="hp-snow-note">雪花酥 '+q.snowflake+'包｜常溫保存期限：取貨日起8-10天。外包裝袋顏色隨機搭配不指定。含雪花酥的整筆訂單僅限門市取貨。</p>';
   if(q.freeBags)hpId('hp-review-items').innerHTML+='<div class="hp-gift-row">滿額贈保冷袋 '+q.freeBags+'只</div>';
   hpId('hp-box-summary').textContent=completedBoxes.length?'已設定 '+completedBoxes.length+'盒，其餘由店家安排。':'目前由店家安排混裝。';
   const addr=hpMode()==='宅配'?hpId('cust-city').value+hpId('cust-addr-detail').value.trim():hpMode()==='預約外送'?'彰化市'+hpId('scheduled-delivery-village').value+hpId('scheduled-delivery-address-detail').value.trim():'彰化市中正路一段403號';
