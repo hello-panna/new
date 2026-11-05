@@ -1,11 +1,13 @@
 /* Hello 好酪：官網與 Apps Script 共用的價格規則。金額均為整數新台幣。 */
 var HelloPannaPricing = (function () {
   'use strict';
-  var version='2026-11-03-snowflake-v1';
-  var catalog={1:{name:'經典原味鮮奶酪',price:50},2:{name:'巧克力鮮奶酪',price:55},7:{name:'伯爵紅茶鮮奶酪',price:55},10:{name:'十薰茉綠鮮奶酪',price:55},3:{name:'芝麻鮮奶酪',price:55},20:{name:'草莓鮮奶酪',price:55},4:{name:'抹茶鮮奶酪',price:55},6:{name:'泰式奶茶鮮奶酪',price:55},8:{name:'芋香紫薯鮮奶酪',price:55},9:{name:'微醺蘭姆鮮奶酪',price:55},5:{name:'咖啡鮮奶酪',price:55},15:{name:'黃金蕎麥鮮奶酪',price:55},14:{name:'烤布丁',price:55},21:{name:'抹茶烤布丁',price:60},16:{name:'美式咖啡',price:60,coffee:true},18:{name:'拿鐵咖啡',price:75,coffee:true},13:{name:'質感保冷袋',price:15,bag:true}};
+  var version='2026-11-05-pudding-v1';
+  var catalog={1:{name:'經典原味鮮奶酪',price:50},2:{name:'巧克力鮮奶酪',price:55},7:{name:'伯爵紅茶鮮奶酪',price:55},10:{name:'十薰茉綠鮮奶酪',price:55},3:{name:'芝麻鮮奶酪',price:55},20:{name:'草莓鮮奶酪',price:55},4:{name:'抹茶鮮奶酪',price:55},6:{name:'泰式奶茶鮮奶酪',price:55},8:{name:'芋香紫薯鮮奶酪',price:55},9:{name:'微醺蘭姆鮮奶酪',price:55},5:{name:'咖啡鮮奶酪',price:55},15:{name:'黃金蕎麥鮮奶酪',price:55},14:{name:'烤布丁',price:55,pudding:true},21:{name:'抹茶烤布丁',price:60,pudding:true},16:{name:'美式咖啡',price:60,coffee:true},18:{name:'拿鐵咖啡',price:75,coffee:true},13:{name:'質感保冷袋',price:15,bag:true}};
   catalog[22]={name:'蔓越莓雪花酥',price:155,snowflake:true};
   catalog[23]={name:'伯爵茶雪花酥',price:155,snowflake:true};
   catalog[24]={name:'OREO雪花酥',price:155,snowflake:true};
+  catalog[25]={name:'鐵觀音烤布丁',price:65,pudding:true};
+  catalog[26]={name:'烤布布',price:50,pudding:true};
   function integer(n,min,max,label){n=Number(n);if(!Number.isSafeInteger(n)||n<min||n>max)throw new Error(label+'不正確');return n;}
   function quote(input,options){
     options=options||{};var benefits=options.benefits||{},delivery=options.delivery||'自取';
@@ -21,7 +23,7 @@ var HelloPannaPricing = (function () {
       if(p.coffee&&delivery==='宅配')throw new Error('咖啡不提供冷藏宅配');
       if(p.snowflake&&delivery!=='自取')throw new Error('含雪花酥的整筆訂單僅限門市取貨');
       raw+=p.price*quantity;counts[id]=(counts[id]||0)+quantity;
-      if(p.snowflake)snowflake+=quantity;else if(p.coffee)coffee+=quantity;else if(!p.bag){cups+=quantity;dessertAmount+=p.price*quantity;if(id!==14&&id!==21)panna+=quantity;}
+      if(p.snowflake)snowflake+=quantity;else if(p.coffee)coffee+=quantity;else if(!p.bag){cups+=quantity;dessertAmount+=p.price*quantity;if(!p.pudding)panna+=quantity;}
       items.push({id:id,name:p.name+(p.coffee?'（'+temperature+'）':''),price:p.price,quantity:quantity,temperature:temperature,category:p.snowflake?'snowflake':(p.coffee?'coffee':(p.bag?'bag':'dessert'))});
     });
     var snowflakeGroups=Math.floor(snowflake/3),snowflakeDiscount=snowflakeGroups*15;

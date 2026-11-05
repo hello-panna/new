@@ -16,7 +16,7 @@ function hpEl(tag,cls,content){const n=document.createElement(tag);if(cls)n.clas
 function hpToast(message){const el=hpId('hp-toast');el.textContent=message;el.hidden=false;clearTimeout(hp.toastTimer);hp.toastTimer=setTimeout(()=>el.hidden=true,3200);}
 function hpShowDialog(content,label){const d=hpId('hp-dialog');hp.lastFocus=document.activeElement;d.innerHTML='<div class="hp-dialog-content">'+content+'</div>';d.setAttribute('aria-label',label||'選購設定');d.showModal();}
 function hpCloseDialog(){hpId('hp-dialog').close();hp.lastFocus?.focus();}
-function hpFood(item){if(isSnowflakeItem(item))return '淨重 '+item.weight+'g／包・常溫保存';if(item.id===13)return '可重複使用・另計件數';if(item.id===14||item.id===21)return '蛋奶素・含蛋、乳';if(isCoffeeItem(item))return item.id===18?'12oz・含乳':'12oz・黑咖啡';return '葷食・含乳'+(item.id===3?'、芝麻':item.id===15?'、蕎麥':item.id===9?'・含酒精':'');}
+function hpFood(item){if(isSnowflakeItem(item))return '淨重 '+item.weight+'g／包・常溫保存';if(item.id===13)return '可重複使用・另計件數';if(isPuddingItem(item))return '蛋奶素・含蛋、乳';if(isCoffeeItem(item))return item.id===18?'12oz・含乳':'12oz・黑咖啡';return '葷食・含乳'+(item.id===3?'、芝麻':item.id===15?'、蕎麥':item.id===9?'・含酒精':'');}
 function hpGetQuote(){
   try{
     const q=HelloPannaPricing.quote(cart,{delivery:hpMode(),benefits:hp.benefits,selection:hp.selection,manualCouponCode:hp.manualCouponCode,usedPoints});
@@ -130,7 +130,7 @@ function hpGalleryKey(event,gallery){if(event.key==='ArrowLeft'||event.key==='Ar
 function hpRenderMenu(){
   const cats=[['all','全部'],['popular','人氣'],['dessert','鮮奶酪'],['pudding','烤布丁'],['coffee','咖啡'],['snowflake','雪花酥'],['bag','保冷袋']];
   hpId('hp-categories').innerHTML=cats.map(([k,v])=>'<button type="button" role="tab" aria-selected="'+(hp.category===k)+'" onclick="hpCategory(\''+k+'\')">'+v+'</button>').join('');
-  const selected=menuData.filter(p=>hp.category==='all'||(hp.category==='popular'&&[1,2,7].includes(p.id))||(hp.category==='dessert'&&isPannaCottaItem(p))||(hp.category==='pudding'&&[14,21].includes(p.id))||(hp.category==='coffee'&&isCoffeeItem(p))||(hp.category==='snowflake'&&isSnowflakeItem(p))||(hp.category==='bag'&&p.id===13));
+  const selected=menuData.filter(p=>hp.category==='all'||(hp.category==='popular'&&[1,2,7].includes(p.id))||(hp.category==='dessert'&&isPannaCottaItem(p))||(hp.category==='pudding'&&isPuddingItem(p))||(hp.category==='coffee'&&isCoffeeItem(p))||(hp.category==='snowflake'&&isSnowflakeItem(p))||(hp.category==='bag'&&p.id===13));
   hpId('hp-menu-title').textContent=hp.category==='all'?'挑選喜歡的口味':cats.find(x=>x[0]===hp.category)[1];
   hpId('hp-snow-note').hidden=!['all','snowflake'].includes(hp.category);
   hpId('menu-list').innerHTML=selected.map(p=>{
