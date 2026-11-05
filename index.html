@@ -2004,7 +2004,7 @@
             
             // 備料與外送門檻只計算奶酪、烤布丁杯數
             let totalCups = cart.reduce((sum, item) => isDessertItem(item) ? sum + item.quantity : sum, 0);
-            const today = new Date();
+            const today = typeof fulfillmentToday==='function'?fulfillmentToday():new Date();
             const todayKey = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
             hint.style.color = 'var(--c-danger)';
 
@@ -2024,9 +2024,9 @@
                 let daysToAdd = 1; // 預設改為 D+1
                 if (cart.some(i => i.id === 12)) {
                     hint.innerText = "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 出貨。";
-                } else if (totalCups >= 18) {
-                    daysToAdd = 2; // 18 杯以上強制 D+2
-                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>達 18 杯以上</strong> (需較長備料時間)，最快出貨日改為<strong>兩天後</strong> (週六至週一不出貨)";
+                } else if (totalCups > 18) {
+                    daysToAdd = 2; // 超過 18 杯強制 D+2
+                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>超過 18 杯</strong> (需較長備料時間)，最快出貨日改為<strong>兩天後</strong> (週六至週一不出貨)";
                 } else if (todayKey >= "2026/09/19" && todayKey <= "2026/09/23") {
                     daysToAdd = 2;
                     hint.innerText = "提醒：9/22～9/23 宅配出貨需提前兩天完成下單；9/24、9/25 暫停宅配出貨。";
@@ -2056,9 +2056,9 @@
                 }
 
                 let daysToAdd = 1;
-                if (totalCups >= 18) {
+                if (totalCups > 18) {
                     daysToAdd = 2;
-                    hint.innerHTML = '訂購數量<strong>達 18 杯以上</strong>，最快可選擇兩天後；所選時段為希望送達時段，實際時間將由店家聯絡確認。';
+                    hint.innerHTML = '訂購數量<strong>超過 18 杯</strong>，最快可選擇兩天後；所選時段為希望送達時段，實際時間將由店家聯絡確認。';
                 } else {
                     hint.innerText = '最快可選擇隔天；所選時段為希望送達時段，實際時間可能依當日訂單與路線調整。';
                 }
@@ -2081,9 +2081,9 @@
                 let daysToAdd = 1;
                 if (cart.some(i => i.id === 12)) {
                     hint.innerText = "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。";
-                } else if (totalCups >= 18) {
-                    daysToAdd = 2; // 18 杯以上改為 D+2
-                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>達 18 杯以上</strong> (需較長備料時間)，最快取貨日改為<strong>兩天後</strong> (週日、一公休)";
+                } else if (totalCups > 18) {
+                    daysToAdd = 2; // 超過 18 杯改為 D+2
+                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>超過 18 杯</strong> (需較長備料時間)，最快取貨日改為<strong>兩天後</strong> (週日、一公休)";
                 } else if (todayKey >= "2026/09/19" && todayKey <= "2026/09/23") {
                     daysToAdd = 2;
                     hint.innerText = "提醒：9/22～9/24 門市取貨需於取貨日前兩天完成下單。";
@@ -2107,11 +2107,22 @@
             const optionLabel = mode === 'delivery' ? '出貨日期' : (mode === 'scheduled' ? '外送日期與時段' : '自取時段');
             select.innerHTML = `<option value="" disabled selected>請選擇${optionLabel}...</option>`;
             
+            if(typeof fulfillmentAvailability!=='undefined'&&!fulfillmentAvailability.loaded){
+                select.innerHTML='<option value="" disabled selected>正在同步取貨日期與備貨天數…</option>';
+                hint.innerText=fulfillmentAvailability.lastError?'暫時無法同步備貨天數，請稍後重新整理再試。':'正在同步取貨日期與備貨天數…';return;
+            }
+            const preparation=typeof getFulfillmentLeadTime==='function'?getFulfillmentLeadTime(cart):{days:1,productDays:1,names:[]};
+            startDays=Math.max(Number(startDays)||1,preparation.days);
+            if(preparation.productDays>1){
+                const names=preparation.names.slice(0,3).join('、')+(preparation.names.length>3?'等商品':'');
+                hint.innerText='訂單含'+names+'，整筆訂單最快可選擇下單後 '+startDays+' 天；遇公休或停用日期順延。';
+            }
+
             const hasSnowflake = cart.some(isSnowflakeItem);
             if (hasSnowflake) {
                 if (mode !== 'pickup') { select.innerHTML = '<option value="" disabled selected>含雪花酥的整筆訂單僅限門市取貨</option>'; return; }
                 startDays = Math.max(Number(startDays) || 1, 2);
-                hint.innerText = '含雪花酥的整筆訂單僅限門市取貨';
+                hint.innerText = '含雪花酥的整筆訂單僅限門市取貨'+(startDays>2?'；此訂單最快可選擇下單後 '+startDays+' 天，遇公休或停用日期順延。':'');
             }
 
             const hasStrawberry = cart.some(item => item.id === 11);
@@ -2138,7 +2149,7 @@
                 return;
             }
 
-            const now = new Date(); let startDate = new Date(now); startDate.setDate(startDate.getDate() + startDays);
+            const now = typeof fulfillmentToday==='function'?fulfillmentToday():new Date(); let startDate = new Date(now); startDate.setDate(startDate.getDate() + startDays);
             for(let i=0; i<60; i++) {
                 let current = new Date(startDate); current.setDate(startDate.getDate() + i);
                 let day = current.getDay(); let month = current.getMonth() + 1; let date = current.getDate();
@@ -3503,6 +3514,6 @@
         </div>
     </div>
 <script src="assets/pricing-20261029.js?v=20261105-pudding-v1"></script>
-<script src="assets/fulfillment-availability-20261103.js?v=20261103-availability-v1"></script>
-<script src="assets/shop-20261029.js?v=20261105-pudding-v1"></script></body>
+<script src="assets/fulfillment-availability-20261103.js?v=20261105-product-lead-v1"></script>
+<script src="assets/shop-20261029.js?v=20261105-product-lead-v1"></script></body>
 </html>

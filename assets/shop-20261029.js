@@ -61,7 +61,7 @@ function hpMount(){
   const err=hpEl('div','hp-error-summary');err.id='hp-form-error';err.setAttribute('role','alert');
   const formLayout=hpEl('div','hp-form-layout');formLayout.append(deliveryCard,buyerCard);s2.replaceChildren(err,formLayout);
   const select=hpId('pickup-slot-select');select.hidden=true;select.setAttribute('tabindex','-1');
-  const picker=hpEl('div','','<div class="hp-date-top"><button type="button" onclick="hpCalendarMove(-1)" aria-label="上一個月">‹</button><strong id="hp-calendar-month"></strong><button type="button" onclick="hpCalendarMove(1)" aria-label="下一個月">›</button></div><div class="hp-calendar" id="hp-calendar" aria-label="可選日期"></div><div class="hp-date-legend">淡色日期目前未開放；訂購達18杯，需多一天備料。含雪花酥的整筆訂單僅限門市取貨。</div><div class="hp-times" id="hp-times" aria-label="取貨時段"></div><div id="hp-date-selection" class="hp-date-selection" hidden></div><div class="hp-error" id="hp-date-error"></div>');select.after(picker);
+  const picker=hpEl('div','','<div class="hp-date-top"><button type="button" onclick="hpCalendarMove(-1)" aria-label="上一個月">‹</button><strong id="hp-calendar-month"></strong><button type="button" onclick="hpCalendarMove(1)" aria-label="下一個月">›</button></div><div class="hp-calendar" id="hp-calendar" aria-label="可選日期"></div><div class="hp-date-legend">淡色日期目前未開放；訂購超過18杯至少需D+2，部分菜色依備貨天數開放。含雪花酥的整筆訂單僅限門市取貨。</div><div class="hp-times" id="hp-times" aria-label="取貨時段"></div><div id="hp-date-selection" class="hp-date-selection" hidden></div><div class="hp-error" id="hp-date-error"></div>');select.after(picker);
   const same=hpId('same-as-cust');same.checked=true;same.closest('label').hidden=true;
   const other=hpEl('label','hp-switch','<input type="checkbox" id="hp-other-recipient" onchange="hpToggleRecipient()">寄給別人／由其他人收件');same.closest('label').after(other);hpToggleRecipient();
   const review=hpEl('div','hp-review-layout','<div><section class="hp-panel"><div class="hp-edit-heading"><h2>選購內容</h2><button class="hp-edit" onclick="openCartModal()">修改商品</button></div><div id="hp-review-items"></div><details class="hp-disclosure"><summary>裝盒方式：預設由好酪安排</summary><div style="padding:0 16px 16px"><p class="hp-subtle">有分盒或送禮需求時再設定；未設定會依口味混裝。</p><button class="action-btn secondary" onclick="openBoxingModal()">自訂每盒口味</button><div id="hp-box-summary" class="hp-subtle"></div></div></details></section><section class="hp-panel"><div class="hp-edit-heading"><h2>取貨與聯絡資料</h2><button class="hp-edit" onclick="hpEditDelivery()">修改資料</button></div><div id="hp-review-fulfillment"></div></section></div><section class="hp-panel" id="hp-payment-panel"><h2>確認金額與付款</h2><div id="hp-review-totals"></div><div id="hp-benefits"></div><div id="hp-discounts"></div><div id="hp-payments"></div><p class="hp-subtle">按下確認後，會先建立訂單，再帶你前往所選的付款頁面。</p><div class="hp-error" id="hp-submit-error" role="alert"></div></section>');
@@ -112,7 +112,7 @@ function hpEnsureSnowflakePickup(){
 function hpSnowflakeDateValid(value,now=new Date()){
   const m=String(value).match(/^(\d{4})\/(\d{2})\/(\d{2}) \(([日一二三四五六])\) (1[0-7]):00~(1[1-8]):00$/);if(!m||Number(m[6])!==Number(m[5])+1)return false;
   const day=new Date(Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3]))),today=new Date(now.getTime()+8*3600000).toISOString().slice(0,10),ahead=(day.getTime()-new Date(today+'T00:00:00Z').getTime())/86400000;
-  return day.getUTCFullYear()===Number(m[1])&&day.getUTCMonth()+1===Number(m[2])&&day.getUTCDate()===Number(m[3])&&ahead>=2&&ahead<62&&day.getUTCDay()>=2&&day.getUTCDay()<=6&&m[4]===['日','一','二','三','四','五','六'][day.getUTCDay()];
+  return day.getUTCFullYear()===Number(m[1])&&day.getUTCMonth()+1===Number(m[2])&&day.getUTCDate()===Number(m[3])&&ahead>=getFulfillmentLeadTime(cart).days&&ahead<getFulfillmentLeadTime(cart).days+60&&day.getUTCDay()>=2&&day.getUTCDay()<=6&&m[4]===['日','一','二','三','四','五','六'][day.getUTCDay()];
 }
 function hpProductMedia(p,context){
   const images=p.images||[p.image];
@@ -192,7 +192,7 @@ function hpUpdateDateSettings(mode){
   const groups={};[...hpId('pickup-slot-select').options].filter(o=>o.value).forEach(o=>{const key=o.value.slice(0,10);(groups[key]||(groups[key]=[])).push({value:o.value,label:o.textContent});});hp.dateGroups=groups;if(hp.selectedDay&&!groups[hp.selectedDay])hp.selectedDay='';
   const dates=Object.keys(groups);if(!hp.calendarMonth||!dates.some(d=>d.slice(0,7)===hp.calendarMonth))hp.calendarMonth=(hpId('pickup-slot-select').value||dates[0]||'').slice(0,7);
   hpRenderCalendar();
-  if(previous&&!hpId('pickup-slot-select').value){hpId('hp-date-error').textContent='因取貨方式或杯數調整，原日期已不適用，請重新選擇。';}
+  if(previous&&!hpId('pickup-slot-select').value){hpId('hp-date-error').textContent='因商品、杯數或取貨設定調整，原日期已不適用，請重新選擇。';}
   hpId('hp-mode-summary').textContent=hpMode()==='自取'?'門市自取｜彰化市中正路一段403號':hpMode()==='宅配'?'冷藏宅配｜選擇的是出貨日，實際到貨依物流安排。':'彰化市預約外送｜12杯起，實際時段由店家確認。';
   const deliveryInfo=hpId('delivery-info-box');deliveryInfo.innerHTML='<strong>新竹物流・冷藏宅配</strong><div>1–2盒130元，3–8盒170元，9盒以上210元。</div><div>折扣前商品滿1,200元，運費折50元；滿2,000元免運。</div><div>甜點以6杯的倍數出貨，咖啡不提供宅配。</div>';
 }
@@ -217,6 +217,7 @@ function hpValidateDetails(focus=true){
   const errors=[],name=hpId('cust-name').value.trim(),phone=hpId('cust-phone').value.trim(),email=hpId('cust-email').value.trim();
   if(!name)errors.push(hpError('cust-name','請填寫訂購人姓名'));if(!/^09\d{8}$/.test(phone))errors.push(hpError('cust-phone','請輸入09開頭的10碼手機號碼'));if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))errors.push(hpError('cust-email','Email格式不正確，請再確認'));
   if(cart.some(isSnowflakeItem)&&!hpSnowflakeDateValid(hpId('pickup-slot-select').value)){hpId('hp-date-error').textContent='含雪花酥的整筆訂單僅限門市取貨，請重新選擇開放的取貨日期與時段。';errors.push('hp-calendar');}
+  if(hpId('pickup-slot-select').value&&!isFulfillmentLeadDateValid(cart,hpId('pickup-slot-select').value)){hpId('hp-date-error').textContent='此訂單所需備貨天數已更新，請重新選擇開放的日期與時段。';errors.push('hp-calendar');}
   if(isFulfillmentDateClosed(hpMode(),hpId('pickup-slot-select').value)){hpId('hp-date-error').textContent='此日期已停止目前的取貨方式，請重新選擇日期與時段。';errors.push('hp-calendar');}
   if(!hpId('pickup-slot-select').value){hpId('hp-date-error').textContent=hpMode()==='宅配'?'請選擇出貨日期':'請選擇日期與時段';errors.push('hp-calendar');}
   if(hpMode()!=='自取'){
@@ -236,7 +237,7 @@ function hpValidateCart(){if(cart.some(isSnowflakeItem)&&hpMode()!=='自取'){hp
 function hpAvailabilityUpdated(){
   const select=hpId('pickup-slot-select');if(!select||!hp.initialized)return;
   const previous=select.value;updateDateSettings(getSelectedDeliveryMode());
-  if(previous&&!select.value){hpId('hp-date-error').textContent='所選日期已停止此取貨方式，請重新選擇日期與時段。';hpToast('取貨日期設定已更新，請重新選擇日期與時段');hpSaveDraft();}
+  if(previous&&!select.value){hpId('hp-date-error').textContent='日期或備貨天數已更新，原日期已不適用，請重新選擇日期與時段。';hpToast('日期或備貨天數已更新，請重新選擇日期與時段');hpSaveDraft();}
 }
 async function hpConfirmLatestDates(){
   if(typeof refreshFulfillmentAvailability!=='function'){hpToast('取貨日期暫時無法確認，請重新整理後再試。');return false;}
