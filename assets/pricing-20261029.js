@@ -9,15 +9,24 @@ var HelloPannaPricing = (function () {
   catalog[25]={name:'鐵觀音烤布丁',price:65,pudding:true};
   catalog[26]={name:'烤布布',price:50,pudding:true};
   function integer(n,min,max,label){n=Number(n);if(!Number.isSafeInteger(n)||n<min||n>max)throw new Error(label+'不正確');return n;}
+  function productCategory(product) {
+    if (product.bag) return 'bag';
+    if (product.snowflake) return 'snowflake';
+    if (product.coffee) return 'coffee';
+    return product.pudding ? 'pudding' : 'panna';
+  }
+  function productDefinition(name,price,category) {
+    return {name:name, price:price, snowflake:category==='snowflake', coffee:category==='coffee', pudding:category==='pudding'};
+  }
   function quote(input,options){
     options=options||{};var benefits=options.benefits||{},delivery=options.delivery||'自取';
     var manual=String(options.manualCouponCode||'').trim().toUpperCase().replace(/\s/g,'');
     if(['自取','宅配','預約外送'].indexOf(delivery)<0)throw new Error('取貨方式不正確');
     var counts={},raw=0,cups=0,coffee=0,panna=0,dessertAmount=0,snowflake=0,items=[];
-    var productSettings = options.productSettings || {};
+    var productSettings = options.productSettings || {}, products = options.catalog || catalog;
     (input||[]).forEach(function(item){
       if(item.isGift===true)return;
-      var id=Number(item.id),p=catalog[id];if(!p)throw new Error('有商品已調整，請重新選購');
+      var id=Number(item.id),p=products[id];if(!p)throw new Error('有商品已調整，請重新選購');
       var quantity=integer(item.quantity,1,999,'商品數量');
       var temperature=p.coffee?String(item.temperature||''):'';
       if(p.coffee&&['冰','熱'].indexOf(temperature)<0)throw new Error('請選擇咖啡的冰／熱');
@@ -88,6 +97,6 @@ var HelloPannaPricing = (function () {
     var shipping=shippingBase-shippingDiscount;
     return {version:version,items:items,raw:raw,cups:cups,coffee:coffee,panna:panna,snowflake:snowflake,snowflakeGroups:snowflakeGroups,snowflakeDiscount:snowflakeDiscount,coffeeCups:coffeeCups,coffeeDiscount:coffeeDiscount,promo:chosen,candidates:candidates,usedPoints:used,discount:snowflakeDiscount+coffeeDiscount+promo+used,shippingBase:shippingBase,shippingDiscount:shippingDiscount,shipping:shipping,freeBags:Math.floor(cups/12),total:Math.max(0,base-promo-used)+shipping};
   }
-  return {version:version,catalog:catalog,quote:quote};
+  return {version:version,catalog:catalog,quote:quote,productCategory:productCategory,productDefinition:productDefinition};
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=HelloPannaPricing;

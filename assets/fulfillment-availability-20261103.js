@@ -6,7 +6,7 @@ function fulfillmentDateKey(value){const m=String(value||'').match(/^(\d{4})[-/]
 function fulfillmentToday(now=new Date()){const parts=new Date(now.getTime()+8*3600000).toISOString().slice(0,10).split('-').map(Number);return new Date(parts[0],parts[1]-1,parts[2],12);}
 function isFulfillmentDateClosed(mode,date){const key=fulfillmentDateKey(date),bit=fulfillmentModeBit(mode);return !!(key&&bit&&(fulfillmentAvailability.closed[key]&bit));}
 function getFulfillmentLeadTime(items){
-  const catalog=HelloPannaPricing.catalog;let cups=0,productDays=1,names=[];
+  const catalog=webOrderCatalog();let cups=0,productDays=1,names=[];
   (Array.isArray(items)?items:[]).forEach(item=>{
     if(!item||item.isGift===true)return;
     const product=catalog[Number(item.id)],quantity=Number(item.quantity??item.qty);
@@ -26,16 +26,15 @@ function isFulfillmentLeadDateValid(items,value,now=new Date()){
 }
 function applyFulfillmentAvailability(data){
   if(!data||data.success!==true||data.version!=='FULFILLMENT_DATES_20261103_1'||!Number.isSafeInteger(data.revision)||data.revision<0||!Array.isArray(data.closed)||data.closed.length>400)throw new Error('取貨日期設定尚未同步，請稍後再試');
-  if(data.productLeadTimeVersion!=='PRODUCT_LEAD_DAYS_20261105_1'||!Array.isArray(data.productLeadDays))throw new Error('備貨天數服務尚未更新，請店家更新 Apps Script 部署');
-  const next=Object.create(null),leads=Object.create(null),catalog=HelloPannaPricing.catalog;
+  const next=Object.create(null),leads=Object.create(null);
   data.closed.forEach(row=>{if(!row||!/^\d{4}-\d{2}-\d{2}$/.test(row.date)||!Number.isSafeInteger(row.mask)||row.mask<1||row.mask>7||next[row.date]!==undefined)throw new Error('取貨日期設定格式異常');next[row.date]=row.mask;});
-  data.productLeadDays.forEach(row=>{const p=row&&catalog[row.id];if(!row||!Number.isSafeInteger(row.id)||!p||p.bag||leads[row.id]!==undefined||!Number.isSafeInteger(row.days)||row.days<(p.snowflake?2:1)||row.days>30)throw new Error('商品備貨天數格式異常');leads[row.id]=row.days;});
-  if(Object.keys(catalog).some(id=>!catalog[id].bag&&leads[id]===undefined))throw new Error('商品備貨天數不完整，請重新整理');
   const catalogChanged = applyWebProductCatalog(data.catalog);
+  Object.values(webCatalogProducts).forEach(product => { leads[product.id] = product.leadDays; });
   const calendarDay=new Date(Date.now()+8*3600000).toISOString().slice(0,10),changed=!fulfillmentAvailability.loaded||calendarDay!==fulfillmentAvailability.calendarDay||data.revision!==fulfillmentAvailability.revision||JSON.stringify(next)!==JSON.stringify(fulfillmentAvailability.closed)||JSON.stringify(leads)!==JSON.stringify(fulfillmentAvailability.productLeadDays);
+  const firstLoad = !fulfillmentAvailability.loaded;
   fulfillmentAvailability.closed=next;fulfillmentAvailability.productLeadDays=leads;fulfillmentAvailability.calendarDay=calendarDay;fulfillmentAvailability.revision=data.revision;fulfillmentAvailability.loaded=true;fulfillmentAvailability.lastFetch=Date.now();fulfillmentAvailability.lastError='';
   if ((changed || catalogChanged) && typeof window.onFulfillmentAvailabilityUpdated === 'function') {
-    window.onFulfillmentAvailabilityUpdated({catalogChanged});
+    window.onFulfillmentAvailabilityUpdated({catalogChanged,firstLoad});
   }
 }
 async function refreshFulfillmentAvailability(force=false){

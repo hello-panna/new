@@ -29,6 +29,7 @@ function hpFood(item) {
     return (weight ? '淨重 ' + hpEsc(weight) + '・' : '') + '常溫保存';
   }
   if (item.id === 13) return '可重複使用・另計件數';
+  if (webCatalogProducts[item.id]?.custom) return WEB_PRODUCT_CATEGORIES[item.category];
   if (isPuddingItem(item)) return '蛋奶素・含蛋、乳';
   if (isCoffeeItem(item)) return item.id === 18 ? '12oz・含乳' : '12oz・黑咖啡';
   return '葷食・含乳' + (item.id === 3 ? '、芝麻' : item.id === 15 ? '、蕎麥' : item.id === 9 ? '・含酒精' : '');
@@ -56,7 +57,7 @@ function hpCartPriceSignature() {
 
 function hpGetQuote(){
   try{
-    const q=HelloPannaPricing.quote(cart,{delivery:hpMode(),benefits:hp.benefits,selection:hp.selection,manualCouponCode:hp.manualCouponCode,usedPoints,productSettings:webProductSettings});
+    const q=HelloPannaPricing.quote(cart,{delivery:hpMode(),benefits:hp.benefits,selection:hp.selection,manualCouponCode:hp.manualCouponCode,usedPoints,catalog:webOrderCatalog(),productSettings:webProductSettings});
     usedPoints=q.usedPoints;hp.quote=q;
     currentRawTotal=q.raw;currentTotalCups=q.cups;currentCoffeeCups=q.coffee;currentPannaCottaCups=q.panna;currentCoffeeDiscountCups=q.coffeeCups;currentCoffeeDiscount=q.coffeeDiscount;currentShippingFee=q.shipping;currentDiscountAmount=q.discount;currentFinalTotal=q.total;
     currentDiscountName=[q.snowflakeDiscount?'雪花酥三包組合折'+q.snowflakeDiscount+'元':'',q.coffeeDiscount?'咖啡加購折'+q.coffeeDiscount+'元':'',q.promo?q.promo.name:'',q.usedPoints?'點數折抵'+q.usedPoints+'元':''].filter(Boolean).join('＋');
@@ -315,23 +316,75 @@ function hpValidateDetails(focus=true){
   return !errors.length;
 }
 function hpValidateCart(){if(cart.some(isSnowflakeItem)&&hpMode()!=='自取'){hpToast('含雪花酥的整筆訂單僅限門市取貨');return false;}const q=hpGetQuote();if(!cart.length){hpToast('先挑一杯喜歡的甜點吧');return false;}if(hpMode()==='宅配'&&(q.cups<6||q.cups%6)){hpToast('宅配甜點需6杯的倍數，目前'+q.cups+'杯');openCartModal();return false;}if(hpMode()==='預約外送'&&q.cups<12){hpToast('預約外送12杯起，目前還差'+(12-q.cups)+'杯');openCartModal();return false;}return true;}
+function hpSyncShopCatalog() {
+  const fixed = menuData.filter(item => HelloPannaPricing.catalog[item.id]);
+  const custom = Object.values(webCatalogProducts).filter(product => product.custom).map(product => ({
+    id:product.id, name:product.name, category:product.category, desc:'',
+    ingredients:webProductSettings[product.id].ingredients
+  }));
+  const products = [...fixed, ...custom];
+  const catalog = webOrderCatalog();
+  for (const item of products) {
+    const record = webCatalogProducts[item.id];
+    item.price = webProductSettings[item.id]?.price ?? catalog[item.id].price;
+    if (record) {
+      item.images = record.images.map(productImageUrl);
+      item.image = item.images[0];
+      item.category = record.category;
+    }
+  }
+  menuData.splice(0,menuData.length,...products);
+  const byId = new Map(products.map(product => [product.id,product]));
+  const cartLength = cart.length;
+  cart = cart.filter(item => byId.has(item.id));
+  for (const item of cart) {
+    const product = byId.get(item.id);
+    item.price = product.price;
+    item.image = product.image;
+    item.images = product.images;
+  }
+  const pending = hp.pendingCatalogItems || [];
+  hp.pendingCatalogItems = [];
+  pending.forEach(hpRestoreCartLine);
+  if (pending.length || cartLength !== cart.length) hpReconcileBoxes();
+}
+
+function hpRestoreCartLine(line) {
+  const product = menuData.find(item => item.id === line.id);
+  if (!product || (isCoffeeItem(product) && !['冰','熱'].includes(line.temperature))) return;
+  hpAddRaw(line.id,line.quantity,line.temperature);
+}
+
 function hpAvailabilityUpdated(change = {}) {
   const select = hpId('pickup-slot-select');
   if (!select || !hp.initialized) return;
   const previous = select.value;
   if (change.catalogChanged) {
     const previousPrices = hpCartPriceSignature();
-    [...menuData, ...cart].forEach(item => {
-      item.price = webProductSettings[item.id]?.price ?? HelloPannaPricing.catalog[item.id].price;
-    });
+    hpSyncShopCatalog();
     hpRenderBundles();
     renderMenu();
     renderCart();
+    if (change.firstLoad && /^#menu-item-\d+$/.test(location.hash || '')) {
+      hpId(location.hash.slice(1))?.scrollIntoView({block:'start'});
+    }
     if (currentStep === 3 && previousPrices !== hpCartPriceSignature()) {
       hpId('hp-submit-error').textContent = '商品價格已更新，請確認購物車的新金額。';
     }
   } else {
     updateDateSettings(getSelectedDeliveryMode());
+  }
+  if (hp.pendingRestoreDate && fulfillmentAvailability.loaded) {
+    const restoreDate = hp.pendingRestoreDate;
+    hp.pendingRestoreDate = '';
+    if ([...select.options].some(option => option.value === restoreDate)) {
+      select.value = restoreDate;
+      hp.selectedDay = restoreDate.slice(0,10);
+      hp.calendarMonth = restoreDate.slice(0,7);
+      hpRenderCalendar();
+      hpRenderReview(hpGetQuote());
+    }
+    hpSaveDraft();
   }
   if (previous && !select.value) {
     hpId('hp-date-error').textContent = '日期或備貨天數已更新，原日期已不適用，請重新選擇日期與時段。';
@@ -427,13 +480,32 @@ async function hpCheckPoints(){const name=hpId('cust-name').value.trim(),phone=h
 function hpSaveDraft(){
   if(!hp.initialized||!hpId('cust-name')||!hpId('hp-remember-contact'))return;
   const ids=['cust-name','cust-phone','cust-email','rcpt-name','rcpt-phone','cust-city','cust-addr-detail','scheduled-delivery-village','scheduled-delivery-address-detail','cust-remarks'];const contact={};ids.forEach(id=>contact[id]=hpId(id).value);
-  try{localStorage.setItem('hp-cart-v20261029',JSON.stringify({at:Date.now(),items:cart.map(p=>({id:p.id,quantity:p.quantity,temperature:p.temperature||''})),boxes:completedBoxes,building:currentBoxBuilding,mode:hpMode(),date:hpId('pickup-slot-select').value,other:hpId('hp-other-recipient').checked}));sessionStorage.setItem('hp-contact-v20261029',JSON.stringify(contact));if(hpId('hp-remember-contact').checked)localStorage.setItem('hp-saved-contact-v20261029',JSON.stringify(contact));else localStorage.removeItem('hp-saved-contact-v20261029');}catch(ignore){}
+  try{localStorage.setItem('hp-cart-v20261029',JSON.stringify({at:Date.now(),items:[...cart.map(p=>({id:p.id,quantity:p.quantity,temperature:p.temperature||''})),...(hp.pendingCatalogItems||[])],boxes:completedBoxes,building:currentBoxBuilding,mode:hpMode(),date:hpId('pickup-slot-select').value||hp.pendingRestoreDate||'',other:hpId('hp-other-recipient').checked}));sessionStorage.setItem('hp-contact-v20261029',JSON.stringify(contact));if(hpId('hp-remember-contact').checked)localStorage.setItem('hp-saved-contact-v20261029',JSON.stringify(contact));else localStorage.removeItem('hp-saved-contact-v20261029');}catch(ignore){}
 }
-function hpRestoreDraft(){
-  try{const draft=JSON.parse(localStorage.getItem('hp-cart-v20261029')||'null');if(draft&&Date.now()-draft.at<86400000){cart=[];(draft.items||[]).forEach(i=>{if(menuData.some(p=>p.id===i.id)&&Number.isInteger(i.quantity)&&i.quantity>0&&i.quantity<=999){if([16,18].includes(i.id)&&!['冰','熱'].includes(i.temperature))return;hpAddRaw(i.id,i.quantity,i.temperature);}});completedBoxes=Array.isArray(draft.boxes)?draft.boxes:[];currentBoxBuilding=[];hpReconcileBoxes();if(['自取','宅配','預約外送'].includes(draft.mode)){document.querySelector('input[name="deliveryMethod"][value="'+draft.mode+'"]').checked=true;hp.delivery=draft.mode;}if(draft.other)hpId('hp-other-recipient').checked=true;hp.pendingRestoreDate=draft.date||'';}
+function hpRestoreDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem('hp-cart-v20261029') || 'null');
+    if (draft && Date.now()-draft.at<86400000) {
+      cart = [];
+      hp.pendingCatalogItems = [];
+      if (['自取','宅配','預約外送'].includes(draft.mode)) {
+        document.querySelector('input[name="deliveryMethod"][value="'+draft.mode+'"]').checked = true;
+        hp.delivery = draft.mode;
+      }
+      (Array.isArray(draft.items) ? draft.items : []).forEach(line => {
+        if (!line || !Number.isSafeInteger(line.id) || !Number.isInteger(line.quantity) || line.quantity<1 || line.quantity>999) return;
+        if (menuData.some(product => product.id === line.id)) hpRestoreCartLine(line);
+        else if (line.id>=100) hp.pendingCatalogItems.push(line);
+      });
+      completedBoxes = Array.isArray(draft.boxes) ? draft.boxes : [];
+      currentBoxBuilding = [];
+      if (!hp.pendingCatalogItems.length) hpReconcileBoxes();
+      if (draft.other) hpId('hp-other-recipient').checked = true;
+      hp.pendingRestoreDate = draft.date || '';
+    }
     const saved=localStorage.getItem('hp-saved-contact-v20261029'),contact=JSON.parse(sessionStorage.getItem('hp-contact-v20261029')||saved||'{}');Object.entries(contact).forEach(([id,value])=>{if(hpId(id)&&typeof value==='string')hpId(id).value=value;});hpId('hp-remember-contact').checked=!!saved;hpToggleRecipient();
     const receipt=JSON.parse(sessionStorage.getItem('hp-last-order-v20261029')||'null');if(receipt&&Date.now()-receipt.at<86400000)hp.receipt=receipt;
-  }catch(ignore){cart=[];completedBoxes=[];currentBoxBuilding=[];}
+  }catch(ignore){cart=[];completedBoxes=[];currentBoxBuilding=[];hp.pendingCatalogItems=[];hp.pendingRestoreDate='';}
 }
 function hpBuildOrder(){
   const q=hpGetQuote(),name=hpId('cust-name').value.trim(),phone=hpId('cust-phone').value.trim(),email=hpId('cust-email').value.trim(),delivery=hpMode(),payment=document.querySelector('input[name="paymentMethod"]:checked').value;
@@ -494,7 +566,7 @@ function hpShowResult(receipt,state,order){
 async function hpRefreshPayment(){if(!hp.receipt)return;const btn=hpId('hp-check-payment');if(btn){btn.disabled=true;btn.textContent='正在查詢付款狀態…';}try{const data=await sendOrderServiceRequest({action:'queryOrder',name:hp.receipt.name,phone:hp.receipt.phone});const order=data.orders?.find(o=>String(o.orderId)===hp.receipt.orderId);if(!data.success||!order)throw new Error('目前查不到這筆訂單，請使用查詢訂單或聯絡好酪');hpShowResult(hp.receipt,order.paymentState||(/已確認付款|已出貨|已完成/.test(order.status)?'paid':'pending'),order);hpToast('最新狀態：'+order.status);}catch(e){hpId('hp-result-status-note').textContent=e.message;}finally{const b=hpId('hp-check-payment');if(b){b.disabled=false;b.textContent='重新確認付款狀態';}}}
 async function hpResumeLastOrder(){if(!hp.receipt||paymentResumeInProgress)return;const r=hp.receipt;paymentResumeInProgress=true;hpId('loading-overlay').style.display='flex';hpId('loading-text').textContent='正在取得原訂單付款資料…';try{const data=await sendOrderServiceRequest({action:'resumeEcpayPayment',name:r.name,phone:r.phone,orderId:r.orderId});if(!data.success){if(data.code==='ALREADY_PAID'){await hpRefreshPayment();return;}throw new Error(data.msg||'這筆訂單目前無法接續付款，請重新確認狀態');}if(data.atmInfo){hpShowAtmInfo(data.atmInfo);return;}prepareEcpayPostForm(data.ecpayParams,r.orderId,r.total,data.paymentMethod);if(hp.preview&&window.__HP_TEST_API){hpToast('測試：接續原訂單付款，未建立新單');return;}submitPreparedEcpayPayment();}catch(e){hpId('hp-result-status-note').textContent=e.message;}finally{paymentResumeInProgress=false;hpId('loading-overlay').style.display='none';}}
 async function hpCopyReceipt(){if(!hp.receipt)return;const r=hp.receipt,text='Hello 好酪訂單 #'+r.orderId+'\n'+r.name+' / '+r.phone+'\n'+r.delivery+' '+r.date+'\n'+r.items.map(i=>(i.displayName||i.name)+' × '+i.quantity).join('\n')+'\n應付總額：'+hpMoney(r.total);try{await navigator.clipboard.writeText(text);hpToast('訂單資訊已複製');}catch(e){hpToast('無法複製，可使用訂單編號聯絡好酪');}}
-function hpStartNewOrder(){cart=[];completedBoxes=[];currentBoxBuilding=[];usedPoints=0;memberMaxPoints=0;hpClearManualCoupon(false);orderSubmissionInProgress=false;hpId('receipt-view').style.display='none';hpId('shop-view').style.display='block';hpId('hp-mode-wrap').hidden=false;hpId('checkout-bottom-bar').style.display='flex';hpChanged();hpGoToStep(1);}
+function hpStartNewOrder(){hp.pendingCatalogItems=[];hp.pendingRestoreDate='';cart=[];completedBoxes=[];currentBoxBuilding=[];usedPoints=0;memberMaxPoints=0;hpClearManualCoupon(false);orderSubmissionInProgress=false;hpId('receipt-view').style.display='none';hpId('shop-view').style.display='block';hpId('hp-mode-wrap').hidden=false;hpId('checkout-bottom-bar').style.display='flex';hpChanged();hpGoToStep(1);}
 function hpShowAtmInfo(info){hpShowDialog('<h2>原訂單ATM轉帳資訊</h2><dl class="hp-review-kv"><dt>銀行代碼</dt><dd>'+hpEsc(info.bankCode)+'</dd><dt>虛擬帳號</dt><dd>'+hpEsc(info.account)+'</dd><dt>繳款期限</dt><dd>'+hpEsc(info.expiresAt)+'</dd></dl><p class="hp-subtle">取號完成尚未付款，請依訂單金額於期限內轉帳。</p><button class="action-btn" style="width:100%" onclick="hpCloseDialog()">我知道了</button>','ATM轉帳帳號');}
 function hpInit(){
   hpMount();
@@ -504,7 +576,6 @@ function hpInit(){
   sendOrderServiceRequest=payload=>{if(hp.preview){if(typeof window.__HP_TEST_API==='function')return Promise.resolve(window.__HP_TEST_API(payload));return Promise.reject(new Error('目前是預覽頁面，正式下單請使用好酪官網'));}return hpOriginalBridge(payload);};
   window.onFulfillmentAvailabilityUpdated=hpAvailabilityUpdated;
   hpRestoreDraft();hpEnsureSnowflakePickup();hp.initialized=true;hp.delivery=hpMode();hpRenderBundles();renderMenu();renderCart();
-  if(hp.pendingRestoreDate&&[...hpId('pickup-slot-select').options].some(o=>o.value===hp.pendingRestoreDate)){hpId('pickup-slot-select').value=hp.pendingRestoreDate;hp.selectedDay=hp.pendingRestoreDate.slice(0,10);hp.calendarMonth=hp.pendingRestoreDate.slice(0,7);hpRenderCalendar();}
   history.replaceState({hpStep:1},'',location.href);hpGoToStep(1,false);
   ['cust-name','cust-phone'].forEach(id=>hpId(id).addEventListener('input',()=>hpClearManualCoupon()));
   hpId('coupon-code').addEventListener('input',hpCouponInputChanged);
