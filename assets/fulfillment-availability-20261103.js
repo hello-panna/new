@@ -13,7 +13,8 @@ function getFulfillmentLeadTime(items){
     if(!product||product.bag||!Number.isSafeInteger(quantity)||quantity<=0)return;
     if(!product.coffee&&!product.snowflake)cups+=quantity;
     const days=fulfillmentAvailability.productLeadDays[item.id]||(product.snowflake?2:1);
-    if(days>productDays){productDays=days;names=[product.name];}else if(days===productDays&&days>1&&!names.includes(product.name))names.push(product.name);
+    const name = webProductSettings[item.id]?.title ?? product.name;
+    if(days>productDays){productDays=days;names=[name];}else if(days===productDays&&days>1&&!names.includes(name))names.push(name);
   });
   const quantityDays=cups>18?2:1;return {days:Math.max(quantityDays,productDays),cups,quantityDays,productDays,names};
 }
@@ -30,9 +31,12 @@ function applyFulfillmentAvailability(data){
   data.closed.forEach(row=>{if(!row||!/^\d{4}-\d{2}-\d{2}$/.test(row.date)||!Number.isSafeInteger(row.mask)||row.mask<1||row.mask>7||next[row.date]!==undefined)throw new Error('取貨日期設定格式異常');next[row.date]=row.mask;});
   data.productLeadDays.forEach(row=>{const p=row&&catalog[row.id];if(!row||!Number.isSafeInteger(row.id)||!p||p.bag||leads[row.id]!==undefined||!Number.isSafeInteger(row.days)||row.days<(p.snowflake?2:1)||row.days>30)throw new Error('商品備貨天數格式異常');leads[row.id]=row.days;});
   if(Object.keys(catalog).some(id=>!catalog[id].bag&&leads[id]===undefined))throw new Error('商品備貨天數不完整，請重新整理');
+  const catalogChanged = applyWebProductCatalog(data.catalog);
   const calendarDay=new Date(Date.now()+8*3600000).toISOString().slice(0,10),changed=!fulfillmentAvailability.loaded||calendarDay!==fulfillmentAvailability.calendarDay||data.revision!==fulfillmentAvailability.revision||JSON.stringify(next)!==JSON.stringify(fulfillmentAvailability.closed)||JSON.stringify(leads)!==JSON.stringify(fulfillmentAvailability.productLeadDays);
   fulfillmentAvailability.closed=next;fulfillmentAvailability.productLeadDays=leads;fulfillmentAvailability.calendarDay=calendarDay;fulfillmentAvailability.revision=data.revision;fulfillmentAvailability.loaded=true;fulfillmentAvailability.lastFetch=Date.now();fulfillmentAvailability.lastError='';
-  if(changed&&typeof window.onFulfillmentAvailabilityUpdated==='function')window.onFulfillmentAvailabilityUpdated();
+  if ((changed || catalogChanged) && typeof window.onFulfillmentAvailabilityUpdated === 'function') {
+    window.onFulfillmentAvailabilityUpdated({catalogChanged});
+  }
 }
 async function refreshFulfillmentAvailability(force=false){
   if(fulfillmentAvailability.pending)return fulfillmentAvailability.pending;

@@ -14,6 +14,7 @@ var HelloPannaPricing = (function () {
     var manual=String(options.manualCouponCode||'').trim().toUpperCase().replace(/\s/g,'');
     if(['自取','宅配','預約外送'].indexOf(delivery)<0)throw new Error('取貨方式不正確');
     var counts={},raw=0,cups=0,coffee=0,panna=0,dessertAmount=0,snowflake=0,items=[];
+    var productSettings = options.productSettings || {};
     (input||[]).forEach(function(item){
       if(item.isGift===true)return;
       var id=Number(item.id),p=catalog[id];if(!p)throw new Error('有商品已調整，請重新選購');
@@ -22,12 +23,48 @@ var HelloPannaPricing = (function () {
       if(p.coffee&&['冰','熱'].indexOf(temperature)<0)throw new Error('請選擇咖啡的冰／熱');
       if(p.coffee&&delivery==='宅配')throw new Error('咖啡不提供冷藏宅配');
       if(p.snowflake&&delivery!=='自取')throw new Error('含雪花酥的整筆訂單僅限門市取貨');
-      raw+=p.price*quantity;counts[id]=(counts[id]||0)+quantity;
-      if(p.snowflake)snowflake+=quantity;else if(p.coffee)coffee+=quantity;else if(!p.bag){cups+=quantity;dessertAmount+=p.price*quantity;if(!p.pudding)panna+=quantity;}
-      items.push({id:id,name:p.name+(p.coffee?'（'+temperature+'）':''),price:p.price,quantity:quantity,temperature:temperature,category:p.snowflake?'snowflake':(p.coffee?'coffee':(p.bag?'bag':'dessert'))});
+      var settings = productSettings[id] || {};
+      var price = settings.price === undefined ? p.price : integer(settings.price, 1, 99999, '商品單價');
+      var temperatureLabel = p.coffee ? '（' + temperature + '）' : '';
+      raw += price * quantity;
+      counts[id] = (counts[id] || 0) + quantity;
+      if (p.snowflake) snowflake += quantity;
+      else if (p.coffee) coffee += quantity;
+      else if (!p.bag) {
+        cups += quantity;
+        dessertAmount += price * quantity;
+        if (!p.pudding) panna += quantity;
+      }
+      var line = {id:id, name:p.name + temperatureLabel, price:price, quantity:quantity,
+        temperature:temperature, category:p.snowflake ? 'snowflake' : p.coffee ? 'coffee' : p.bag ? 'bag' : 'dessert'};
+      if (settings.title && settings.title !== p.name) line.displayName = settings.title + temperatureLabel;
+      items.push(line);
     });
-    var snowflakeGroups=Math.floor(snowflake/3),snowflakeDiscount=snowflakeGroups*15;
-    var coffeeCups=Math.min(panna,coffee),coffeeDiscount=coffeeCups*10,base=raw-coffeeDiscount-snowflakeDiscount;
+    var snowflakeGroups = 0, snowflakeDiscount = 0, bagsInGroup = 0, groupAmount = 0;
+    // 先把單價較高的雪花酥排進組合，每組三包最多收 450 元。
+    items.filter(function(line) { return line.category === 'snowflake'; })
+      .sort(function(a,b) { return b.price - a.price; }).forEach(function(line) {
+        for (var bag = 0; bag < line.quantity; bag++) {
+          groupAmount += line.price;
+          bagsInGroup++;
+          if (bagsInGroup === 3) {
+            if (groupAmount > 450) {
+              snowflakeGroups++;
+              snowflakeDiscount += groupAmount - 450;
+            }
+            groupAmount = 0;
+            bagsInGroup = 0;
+          }
+        }
+      });
+    var coffeeCups = Math.min(panna, coffee), coffeeDiscount = 0, coffeeLeft = coffeeCups;
+    items.filter(function(line) { return line.category === 'coffee'; })
+      .sort(function(a,b) { return b.price - a.price; }).forEach(function(line) {
+        var discountQuantity = Math.min(coffeeLeft, line.quantity);
+        coffeeDiscount += discountQuantity * Math.min(10, line.price);
+        coffeeLeft -= discountQuantity;
+      });
+    var base = raw - coffeeDiscount - snowflakeDiscount;
     var candidates=[];
     if(benefits.first===true&&(counts[1]||0)>=2&&(counts[2]||0)>=2&&(counts[7]||0)>=2)candidates.push({code:'FIRST20',name:'首購人氣六入折20元',amount:Math.min(20,base)});
     // 舊訂單後台重算仍保留其原折抵；新版結帳不會傳回 rewardId。
