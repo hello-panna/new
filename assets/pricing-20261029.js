@@ -18,6 +18,27 @@ var HelloPannaPricing = (function () {
   function productDefinition(name,price,category) {
     return {name:name, price:price, snowflake:category==='snowflake', coffee:category==='coffee', pudding:category==='pudding'};
   }
+  function minimumQuantityShortfalls(items, options) {
+    options = options || {};
+    var products = options.catalog || catalog, settings = options.productSettings || {};
+    var quantities = Object.create(null);
+    (Array.isArray(items) ? items : []).forEach(function(item) {
+      if (!item || item.isGift === true) return;
+      var id = Number(item.id), product = products[id];
+      if (!product || !(product.minimumQuantity > 1)) return;
+      quantities[id] = (quantities[id] || 0) + integer(item.quantity, 1, 999, '商品數量');
+    });
+    var shortfalls = [];
+    Object.keys(quantities).forEach(function(id) {
+      var product = products[id], quantity = quantities[id], minimum = product.minimumQuantity;
+      if (quantity >= minimum) return;
+      var title = settings[id] && settings[id].title || product.name;
+      var unit = product.snowflake ? '包' : product.bag ? '只' : '杯';
+      shortfalls.push({id:Number(id), quantity:quantity, minimum:minimum, unit:unit,
+        message:'「' + title + '」每筆至少訂購 ' + minimum + ' ' + unit + '，還差 ' + (minimum - quantity) + ' ' + unit});
+    });
+    return shortfalls;
+  }
   function quote(input,options){
     options=options||{};var benefits=options.benefits||{},delivery=options.delivery||'自取';
     var manual=String(options.manualCouponCode||'').trim().toUpperCase().replace(/\s/g,'');
@@ -97,6 +118,7 @@ var HelloPannaPricing = (function () {
     var shipping=shippingBase-shippingDiscount;
     return {version:version,items:items,raw:raw,cups:cups,coffee:coffee,panna:panna,snowflake:snowflake,snowflakeGroups:snowflakeGroups,snowflakeDiscount:snowflakeDiscount,coffeeCups:coffeeCups,coffeeDiscount:coffeeDiscount,promo:chosen,candidates:candidates,usedPoints:used,discount:snowflakeDiscount+coffeeDiscount+promo+used,shippingBase:shippingBase,shippingDiscount:shippingDiscount,shipping:shipping,freeBags:Math.floor(cups/12),total:Math.max(0,base-promo-used)+shipping};
   }
-  return {version:version,catalog:catalog,quote:quote,productCategory:productCategory,productDefinition:productDefinition};
+  return {version:version,catalog:catalog,quote:quote,productCategory:productCategory,productDefinition:productDefinition,
+    minimumQuantityShortfalls:minimumQuantityShortfalls};
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=HelloPannaPricing;

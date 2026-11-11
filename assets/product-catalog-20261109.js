@@ -119,6 +119,20 @@ function webOrderCatalog() {
   return webCheckoutCatalog || HelloPannaPricing.catalog;
 }
 
+function webProductMinimumQuantity(id) {
+  return webOrderCatalog()[id]?.minimumQuantity ?? 1;
+}
+
+function webProductOrderUnit(id) {
+  const product = webOrderCatalog()[id];
+  return product?.snowflake ? '包' : product?.bag ? '只' : '杯';
+}
+
+function webProductMinimumLabel(id) {
+  const minimum = webProductMinimumQuantity(id);
+  return minimum > 1 ? '每筆 ' + minimum + webProductOrderUnit(id) + '起訂' : '';
+}
+
 function readProductFields(fields, complete = false) {
   if (!fields || typeof fields !== 'object' || Array.isArray(fields)) throw new Error('商品資料格式異常');
   if (complete && ['price', ...Object.keys(WEB_PRODUCT_TEXT_LIMITS)].some(key => fields[key] === undefined)) {
@@ -151,11 +165,13 @@ function applyWebProductCatalog(snapshot) {
     settings[id] = readProductFields(fields);
   }
   for (const record of snapshot.products) {
+    const minimumQuantity = record?.minimumQuantity === undefined ? 1 : record.minimumQuantity;
     if (!record || !Number.isSafeInteger(record.id) || record.id < 1 || products[record.id] ||
         typeof record.name !== 'string' || !record.name ||
         !Object.prototype.hasOwnProperty.call(WEB_PRODUCT_CATEGORIES,record.category) ||
         !Number.isSafeInteger(record.leadDays) || record.leadDays < (record.category === 'snowflake' ? 2 : 1) ||
-        record.leadDays > 30 || !Array.isArray(record.images) || record.images.length < 1 || record.images.length > 8) {
+        record.leadDays > 30 || !Number.isSafeInteger(minimumQuantity) || minimumQuantity < 1 || minimumQuantity > 999 ||
+        !Array.isArray(record.images) || record.images.length < 1 || record.images.length > 8) {
       throw new Error('商品資料格式異常，請重新整理');
     }
     const {id,name,category,leadDays} = record;
@@ -171,7 +187,8 @@ function applyWebProductCatalog(snapshot) {
       settings[id] = readProductFields(record.fields,true);
       catalog[id] = HelloPannaPricing.productDefinition(name,settings[id].price,category);
     }
-    products[id] = {id,name,category,images,leadDays,custom:!base};
+    if (minimumQuantity > 1) catalog[id] = {...catalog[id], minimumQuantity};
+    products[id] = {id,name,category,images,leadDays,minimumQuantity,custom:!base};
   }
   if (Object.keys(defaults).some(id => !defaults[id].bag && !products[id])) throw new Error('商品資料不完整');
   const changed = JSON.stringify(products) !== JSON.stringify(webCatalogProducts) ||
@@ -301,6 +318,10 @@ function readPublicProductCard(card) {
     description:card.querySelector('.product-description'), ingredients:card.querySelector('.ingredients'),
     link:card.querySelector('.order-link')
   };
+  nodes.minimum = document.createElement('p');
+  nodes.minimum.className = 'catalog-subtitle';
+  nodes.minimum.hidden = true;
+  nodes.price.after(nodes.minimum);
   const original = Object.fromEntries(Object.entries(nodes).map(([key,node]) => [key,node.textContent]));
   const media = card.firstElementChild;
   const images = media.tagName === 'IMG' ? [media] : [...media.querySelectorAll('img')];
@@ -349,6 +370,7 @@ function startPublicProductCatalog() {
         nodes.title.textContent = edits.title ?? original.title;
         nodes.price.textContent = edits.price === undefined ? original.price :
           'NT$ ' + edits.price.toLocaleString('zh-TW') + (product.category === 'snowflake' ? '／包' : '／杯');
+        nodes.minimum.textContent = webProductMinimumLabel(id);
         nodes.subtitle.textContent = edits.subtitle ?? original.subtitle;
         nodes.netWeight.textContent = edits.netWeight === undefined ? original.netWeight :
           (edits.netWeight ? '淨重 ' + edits.netWeight : '');
@@ -357,7 +379,7 @@ function startPublicProductCatalog() {
         nodes.ingredients.textContent = edits.ingredients === undefined ? original.ingredients :
           (edits.ingredients ? '成分：' + edits.ingredients : '');
         nodes.link.textContent = edits.title === undefined ? original.link : '前往選購' + edits.title;
-        for (const field of ['subtitle','netWeight','description','ingredients']) nodes[field].hidden = !nodes[field].textContent;
+        for (const field of ['minimum','subtitle','netWeight','description','ingredients']) nodes[field].hidden = !nodes[field].textContent;
         const imageKey = JSON.stringify(product.images);
         if (imageKey !== view.imageKey) {
           const media = publicProductMedia(product.images,nodes.title.textContent);
