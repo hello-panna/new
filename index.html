@@ -1342,6 +1342,16 @@
                     </div>
                     <div id="linepay-payment-help" class="payment-help" style="display:none;">LINE Pay 採付款連結方式，請依結帳頁顯示的應付總額自行輸入金額；付款後由好酪人工核對入帳。</div>
                 </div>
+                <div id="google-ads-payment-attribution" class="payment-help" hidden>
+                    <label>
+                        <input id="google-ads-payment-consent" type="checkbox" autocomplete="off" aria-describedby="google-ads-payment-notice">
+                        我同意好酪使用本筆訂單的收款資料衡量 Google 廣告成效（選填）
+                    </label>
+                    <div id="google-ads-payment-notice">
+                        勾選後，好酪會在確認收款時，將廣告點擊識別碼、訂單編號、確認收款時間、實收金額與幣別提供給 Google Ads，用於衡量廣告成效。
+                        勾選與否皆可下單。您也可以透過<a href="https://lin.ee/UHEkfgW" target="_blank" rel="noopener noreferrer">官方 LINE</a>聯絡好酪撤回同意。
+                    </div>
+                </div>
             </div>
             
         </div> <div class="bottom-bar" id="checkout-bottom-bar">
@@ -1560,6 +1570,11 @@
         let onlineOrderRequestId = '';
         let onlineOrderFingerprint = '';
         let orderSubmissionInProgress = false;
+        const landingGoogleAdsClickId = new URLSearchParams(window.location.search).get('gclid') || '';
+        const googleAdsPaymentClickId = /^[A-Za-z0-9_-]{1,512}$/.test(landingGoogleAdsClickId) ? landingGoogleAdsClickId : '';
+        const googleAdsPaymentConsent = document.getElementById('google-ads-payment-consent');
+        googleAdsPaymentConsent.checked = false;
+        document.getElementById('google-ads-payment-attribution').hidden = !googleAdsPaymentClickId;
         let queriedOnlineOrders = [];
         let queriedOrderBuyer = null;
         let orderQuerySequence = 0;
@@ -3010,6 +3025,11 @@
                 // 同一筆訂單只送一個固定請求編號；台灣時間單號由後端在正式送單時產生。
                 const requestPayload = { action: "createEcpayOrder", clientVersion: ONLINE_CHECKOUT_FRONTEND_VERSION, phone: phone, email: email, name: name, points: earnedPoints, usedPoints: usedPoints, requestId: onlineOrderRequestId, orderData: backendOrderData, paymentMethod: payment };
 
+                // 同意選項獨立於訂單內容指紋，重試仍沿用同一張訂單。
+                if (googleAdsPaymentClickId && googleAdsPaymentConsent.checked) {
+                    requestPayload.googleAdsPaymentAttribution = { clickId: googleAdsPaymentClickId, consent: true };
+                }
+
                 const result = await sendOrderServiceRequest(requestPayload);
 
                 if (result.success) {
@@ -3022,6 +3042,7 @@
 
                     const orderId = String(result.orderId);
                     confirmedOrderId = orderId;
+                    googleAdsPaymentConsent.checked = false;
                     const needsEcpayRedirect = payment !== 'LinePay' && Number(currentFinalTotal) > 0;
                     if (needsEcpayRedirect) prepareEcpayPostForm(result.ecpayParams, orderId, currentFinalTotal, payment);
 
