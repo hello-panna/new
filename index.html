@@ -3284,13 +3284,15 @@
                 if (querySequence !== orderQuerySequence) return;
 
                 if (data.success && data.orders && data.orders.length > 0) {
-                    queriedOnlineOrders = data.orders;
+                    queriedOnlineOrders = data.orders.slice().sort((a, b) =>
+                        (Number(b.createdAtMs) || 0) - (Number(a.createdAtMs) || 0)
+                        || String(b.orderId || '').localeCompare(String(a.orderId || ''), undefined, {numeric:true}));
                     queriedOrderBuyer = {name, phone};
-                    let html = '<div style="font-weight:700; color:var(--c-text); margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">近期的訂單紀錄 (點擊可看明細)：</div>';
+                    let html = '<div style="font-weight:700; color:var(--c-text); margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">歷史訂單紀錄（最新在前，點擊可看明細）：</div>';
                     
-                    data.orders.forEach((rawOrder, index) => {
+                    queriedOnlineOrders.forEach((rawOrder, index) => {
                         const order = {...rawOrder};
-                        for (const field of ['orderId','date','status','total','paymentMethod','cups','items']) {
+                        for (const field of ['orderId','date','status','paymentStatus','total','paymentMethod','cups','items']) {
                             order[field] = escapeOrderQueryText(order[field]);
                         }
                         const resumeButton = rawOrder.canResumePayment === true && /^\d{14}$/.test(String(rawOrder.orderId))
@@ -3303,13 +3305,14 @@
                                 <div style="font-family:monospace; font-size:1.05rem; font-weight:bold; color:var(--c-text); margin-bottom:5px;">#${order.orderId || '未知單號'}</div>
                                 <div style="color:#888; font-size:0.85rem; margin-bottom:8px;">預定日期：${order.date || '無'}</div>
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                    <span>狀態</span>
+                                    <span>訂單狀態</span>
                                     <strong style="background:var(--c-accent); color:white; padding:2px 8px; border-radius:4px; font-size:0.85rem;">${order.status || '處理中'}</strong>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; align-items:center;">
                                     <span>總額</span>
                                     <strong style="color:var(--c-danger);">NT$ ${order.total || 0}</strong>
                                 </div>
+                                ${order.paymentStatus ? `<div style="color:#888; font-size:0.85rem; margin-top:8px;">付款狀態：${order.paymentStatus}</div>` : ''}
                                 <div class="toggle-icon" style="position:absolute; top:15px; right:15px; color:#BCAAA4; font-size:0.8rem;">▼</div>
                             </div>
                             ${resumeButton ? `<div style="padding:0 15px 12px;">${resumeButton}</div>` : ''}
