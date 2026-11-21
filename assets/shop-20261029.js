@@ -574,6 +574,20 @@ function hpBuildOrder(){
   const payload={action:'createEcpayOrder',clientVersion:ONLINE_CHECKOUT_FRONTEND_VERSION,name,phone,email,points:email?q.cups:0,usedPoints:q.usedPoints,requestId,orderData,paymentMethod:payment};
   return {payload,q,receipt:{at:Date.now(),name,phone,email,delivery,payment,date:orderData.date,address:uiAddress,rcptName,rcptPhone,items:q.items,total:q.total,quote:q,remarks}};
 }
+function hpTrackOrderPlaced(receipt){
+  if(hp.preview||!receipt)return;
+  const orderId=String(receipt.orderId||''),total=Number(receipt.total);
+  if(!/^\d{14}$/.test(orderId)||!Number.isFinite(total)||total<0||typeof gtag!=='function')return;
+  const key='hp-order-tracked-'+orderId;
+  hp.trackedOrders=hp.trackedOrders||{};
+  if(hp.trackedOrders[orderId])return;
+  try{if(localStorage.getItem(key))return;}catch(ignore){}
+  try{
+    gtag('event','conversion',{'send_to':'AW-18531924540/kiYUCP2m5rkdELz02oRF','value':total,'currency':'TWD','transaction_id':orderId});
+  }catch(ignore){return;}
+  hp.trackedOrders[orderId]=true;
+  try{localStorage.setItem(key,'1');}catch(ignore){}
+}
 async function hpSubmit(){
   if (orderSubmissionInProgress) return;
   const reviewedPrices = hpCartPriceSignature();
@@ -589,6 +603,7 @@ async function hpSubmit(){
   try{
     const result=await sendOrderServiceRequest(payload);if(!result.success){orderSubmissionInProgress=false;throw Object.assign(new Error(result.msg||result.error||'訂單尚未完成，請重新確認'),{knownFailure:true});}
     if(!/^\d{14}$/.test(String(result.orderId||'')))throw new Error('訂單結果待確認，請先查詢訂單');confirmed=String(result.orderId);receipt.orderId=confirmed;hp.receipt=receipt;sessionStorage.setItem('hp-last-order-v20261029',JSON.stringify(receipt));
+    try{hpTrackOrderPlaced(receipt);}catch(ignore){}
     localStorage.removeItem('hp-cart-v20261029');hpShowResult(receipt,'pending');clearOnlineOrderRequestId(payload.requestId);
     const needsPayment=receipt.payment!=='LinePay'&&q.total>0;
     if(needsPayment){prepareEcpayPostForm(result.ecpayParams,confirmed,q.total,receipt.payment);if(hp.preview&&window.__HP_TEST_API){hpToast('測試：已準備金流表單，未送往真實付款');return;}submitPreparedEcpayPayment();}
@@ -604,7 +619,6 @@ function hpTrackPaid(receipt){
   const key='hp-paid-tracked-'+receipt.orderId;hp.trackedPaid=hp.trackedPaid||{};
   try{if(localStorage.getItem(key))return;}catch(ignore){}
   if(hp.trackedPaid[receipt.orderId])return;
-  try{if(typeof gtag==='function')gtag('event','conversion',{'send_to':'AW-17855729381/9La6CO6XneybEOWdo8JC','value':receipt.total,'currency':'TWD','transaction_id':receipt.orderId});}catch(ignore){}
   try{if(typeof fbq==='function')fbq('track','Purchase',{value:receipt.total,currency:'TWD',content_name:'鮮奶酪訂單',num_items:receipt.quote.cups,transaction_id:receipt.orderId},{eventID:'purchase_'+receipt.orderId});}catch(ignore){}
   hp.trackedPaid[receipt.orderId]=true;try{localStorage.setItem(key,'1');}catch(ignore){}
 }
