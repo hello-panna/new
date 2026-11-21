@@ -1443,7 +1443,11 @@
                 <label class="form-label">手機號碼 <span class="req-star">*</span></label>
                 <input type="tel" id="query-phone" class="form-input" placeholder="09xx-xxx-xxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric">
             </div>
-            <div class="field-help" style="margin: -2px 0 22px; text-align:center;">使用「訂購人姓名＋手機號碼」即可查詢，不需要 Email。</div>
+            <div class="field-help" style="margin: -2px 0 22px; text-align:center;">使用「訂購人姓名＋手機號碼」查詢最近6個月內的訂單。<br>更早的訂單，請透過「聯絡好酪」洽詢。</div>
+            <div id="query-security-area" style="display:none; margin-bottom:15px;">
+                <div id="query-security-widget"></div>
+                <div id="query-security-status" aria-live="polite" style="font-size:0.85rem; color:#777; margin-top:6px;"></div>
+            </div>
             <button id="btn-do-query" onclick="executeOrderQuery()" style="display: block; width: 100%; padding: 14px; background: var(--c-primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; letter-spacing: 1px;">開始查詢</button>
             
             <div id="query-result-area" style="margin-top: 20px; display: none;"></div>
@@ -3239,12 +3243,103 @@
         // ==========================================
         // 訂單查詢功能
         // ==========================================
+        // Loaded only for order lookup, after server-side activation.
+        var hpOrderQuerySecurityRequest = null;
+        var hpOrderQueryTurnstileLoad = null;
+        var hpOrderQueryWidget = null;
+        var hpOrderQueryPending = null;
+
+        function hpResetOrderQueryVerification() {
+            if (hpOrderQueryPending) hpOrderQueryPending.fail(new Error('查詢已取消'));
+            if (hpOrderQueryWidget !== null && window.turnstile) {
+                try { window.turnstile.remove(hpOrderQueryWidget); } catch (ignore) {}
+            }
+            hpOrderQueryWidget = null;
+            const area = document.getElementById('query-security-area');
+            if (area) area.style.display = 'none';
+        }
+
+        function hpLoadOrderQueryVerification() {
+            if (window.turnstile && typeof window.turnstile.render === 'function') return Promise.resolve();
+            if (hpOrderQueryTurnstileLoad) return hpOrderQueryTurnstileLoad;
+            hpOrderQueryTurnstileLoad = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                const timer = setTimeout(() => finish(false), 20000);
+                let finished = false;
+                function finish(ok) {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timer);
+                    script.onload = script.onerror = null;
+                    if (ok && window.turnstile) resolve();
+                    else {
+                        script.remove();
+                        reject(new Error('安全驗證暫時無法載入，請稍後再試，或聯絡好酪。'));
+                    }
+                }
+                script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+                script.async = true;
+                script.defer = true;
+                script.onload = () => finish(true);
+                script.onerror = () => finish(false);
+                document.head.appendChild(script);
+            }).catch(error => { hpOrderQueryTurnstileLoad = null; throw error; });
+            return hpOrderQueryTurnstileLoad;
+        }
+
+        async function hpGetOrderQueryVerification(querySequence) {
+            const config = await (hpOrderQuerySecurityRequest || sendOrderServiceRequest({action:'getOrderQuerySecurity'}));
+            if (querySequence !== orderQuerySequence) throw new Error('查詢已取消');
+            if (!config || config.success !== true) throw new Error('安全檢查暫時無法完成，請稍後再試。');
+            if (config.enabled !== true) return '';
+            if (!config.ready || !config.sitekey) throw new Error('安全驗證暫時無法使用，請稍後再試，或聯絡好酪。');
+            await hpLoadOrderQueryVerification();
+            if (querySequence !== orderQuerySequence) throw new Error('查詢已取消');
+            hpResetOrderQueryVerification();
+            document.getElementById('query-security-area').style.display = 'block';
+            document.getElementById('query-security-status').textContent = '安全檢查中，若出現提示，請依畫面操作。';
+            return new Promise((resolve, reject) => {
+                let settled = false;
+                const timer = setTimeout(() => finish('', new Error('安全驗證已逾時，請再按一次「開始查詢」。')), 120000);
+                function finish(token, error) {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    hpOrderQueryPending = null;
+                    if (error) reject(error);
+                    else {
+                        document.getElementById('query-security-status').textContent = '安全驗證完成';
+                        resolve(token);
+                    }
+                }
+                hpOrderQueryPending = {fail:error => finish('', error)};
+                try {
+                    const container = document.getElementById('query-security-widget');
+                    hpOrderQueryWidget = window.turnstile.render(container, {
+                        sitekey:config.sitekey, action:'order_lookup', theme:'light',
+                        size:container.clientWidth < 300 ? 'compact' : 'flexible',
+                        execution:'execute', appearance:'interaction-only', retry:'never',
+                        callback:token => token ? finish(token) : finish('', new Error('請重新完成安全驗證。')),
+                        'error-callback':() => finish('', new Error('安全驗證未完成，請稍後重試，或聯絡好酪。')),
+                        'expired-callback':() => finish('', new Error('安全驗證已失效，請重新查詢。')),
+                        'timeout-callback':() => finish('', new Error('安全驗證已逾時，請重新查詢。'))
+                    });
+                    window.turnstile.execute(hpOrderQueryWidget);
+                } catch (error) {
+                    finish('', new Error('安全驗證暫時無法使用，請稍後再試。'));
+                }
+            });
+        }
+
         function openOrderQuery() { 
-            document.getElementById('order-query-modal').style.display = 'flex'; 
+            document.getElementById('order-query-modal').style.display = 'flex';
+            hpOrderQuerySecurityRequest = sendOrderServiceRequest({action:'getOrderQuerySecurity'}).catch(() => null); 
         }
         
         function closeOrderQuery() { 
             orderQuerySequence++;
+            hpOrderQuerySecurityRequest = null;
+            hpResetOrderQueryVerification();
             queriedOnlineOrders = [];
             queriedOrderBuyer = null;
             document.getElementById('order-query-modal').style.display = 'none'; 
@@ -3280,15 +3375,20 @@
             resultArea.innerHTML = '<div style="text-align:center; color:#888; margin-top:10px;">資料庫連線比對中，請稍候...</div>';
 
             try {
-                const data = await sendOrderServiceRequest({action:'queryOrder', name, phone});
+                btn.innerText = '安全檢查中...';
+                const turnstileToken = await hpGetOrderQueryVerification(querySequence);
+                if (querySequence !== orderQuerySequence) return;
+                btn.innerText = '系統查詢中...';
+                const data = await sendOrderServiceRequest({action:'queryOrder', name, phone, turnstileToken});
                 if (querySequence !== orderQuerySequence) return;
 
+                if (data.errorCode) throw new Error(data.msg || '查詢暫時無法完成，請稍後再試。');
                 if (data.success && data.orders && data.orders.length > 0) {
                     queriedOnlineOrders = data.orders.slice().sort((a, b) =>
                         (Number(b.createdAtMs) || 0) - (Number(a.createdAtMs) || 0)
                         || String(b.orderId || '').localeCompare(String(a.orderId || ''), undefined, {numeric:true}));
                     queriedOrderBuyer = {name, phone};
-                    let html = '<div style="font-weight:700; color:var(--c-text); margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">歷史訂單紀錄（最新在前，點擊可看明細）：</div>';
+                    let html = '<div style="font-weight:700; color:var(--c-text); margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:8px;">近6個月訂單紀錄（最新在前，點擊可看明細）：</div>';
                     
                     queriedOnlineOrders.forEach((rawOrder, index) => {
                         const order = {...rawOrder};
@@ -3336,7 +3436,7 @@
                     });
                     resultArea.innerHTML = html;
                 } else {
-                    resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">❌ 查無符合的訂單資料。<br><span style="font-size:0.85rem; color:#888;">請確認輸入的資料與訂購時是否完全一致。</span></div>`;
+                    resultArea.innerHTML = `<div style="text-align:center; color:var(--c-danger); margin-top:10px;">❌ 查無近6個月內符合的訂單資料。<br><span style="font-size:0.85rem; color:#888;">請確認輸入的資料與訂購時是否完全一致。</span></div>`;
                 }
             } catch (e) {
                 if (querySequence !== orderQuerySequence) return;
