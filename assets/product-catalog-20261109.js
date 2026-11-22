@@ -356,7 +356,7 @@ function startPublicProductCatalog() {
       const result = await sendOrderServiceRequest({action:'getWebProductCatalog'});
       if (!applyWebProductCatalog(result)) return;
       for (const product of Object.values(webCatalogProducts)) {
-        const grid = grids.get(product.category === 'pudding' ? 'panna' : product.category);
+        const grid = grids.get(product.category) || (product.category === 'pudding' ? grids.get('panna') : null);
         if (product.custom && grid && !cards.has(product.id)) cards.set(product.id,addPublicProductCard(grid,product));
       }
       for (const [id, view] of cards) {
