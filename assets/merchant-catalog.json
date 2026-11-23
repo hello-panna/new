@@ -1,0 +1,494 @@
+{
+  "contentHash": "79ceddfc44c40a50710f8d08a9ef9f297994c46f90c4e3bcc305f013ca7571a2",
+  "updatedAt": "2026-11-23T10:16:14+00:00",
+  "products": [
+    {
+      "id": 1,
+      "sku": "HP-1",
+      "slug": "1",
+      "name": "經典原味鮮奶酪",
+      "title": "經典原味鮮奶酪",
+      "category": "panna",
+      "unitPrice": 50,
+      "quantity": 1,
+      "price": 50,
+      "images": [
+        "230242.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "濃郁奶香、綿密滑順，熱賣必買的人氣口味。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 2,
+      "sku": "HP-2",
+      "slug": "2",
+      "name": "巧克力鮮奶酪",
+      "title": "巧克力鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "230240_0.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "選用法芙娜可可，可可香濃郁，大人小孩都愛。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、法國法芙娜可可粉",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 7,
+      "sku": "HP-7",
+      "slug": "7",
+      "name": "伯爵紅茶鮮奶酪",
+      "title": "伯爵紅茶鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "230241_0.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "大人系口味，佛手柑清香，茶香與奶香圓潤融合。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 10,
+      "sku": "HP-10",
+      "slug": "10",
+      "name": "十薰茉綠鮮奶酪",
+      "title": "十薰茉綠鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "230243.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "茉莉花香與綠茶柔和交織，淡雅茶韻，搭配滑順奶酪。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 3,
+      "sku": "HP-3",
+      "slug": "3",
+      "name": "芝麻鮮奶酪",
+      "title": "芝麻鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "230239_0.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "嚴選 100% 黑芝麻研磨，芝麻香氣濃厚，口感微顆粒。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣薌園黑芝麻",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 20,
+      "sku": "HP-20",
+      "slug": "20",
+      "name": "草莓鮮奶酪",
+      "title": "草莓鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "20261016.png"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "天然草莓凍乾粉搭配濃郁奶香，酸甜柔和、綿密滑順。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、天然草莓凍乾粉",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 4,
+      "sku": "HP-4",
+      "slug": "4",
+      "name": "抹茶鮮奶酪",
+      "title": "抹茶鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "230234_0.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "抹茶香氣醇厚，微苦甜平衡，綿密不膩。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 6,
+      "sku": "HP-6",
+      "slug": "6",
+      "name": "泰式奶茶鮮奶酪",
+      "title": "泰式奶茶鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "230235_0.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "手標泰式紅茶先炒出茶香，泰奶香氣濃郁，甜而不膩。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、泰國紅標紅茶",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 8,
+      "sku": "HP-8",
+      "slug": "8",
+      "name": "芋香紫薯鮮奶酪",
+      "title": "芋香紫薯鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "230237_0.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "細火熬煮，口感細綿，淡淡芋香與自然紫薯色。",
+      "ingredients": "",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 9,
+      "sku": "HP-9",
+      "slug": "9",
+      "name": "微醺蘭姆鮮奶酪",
+      "title": "微醺蘭姆鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "230233_0.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "成年人的微醺快樂，淡淡酒香，奶香中帶醉人餘韻。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、菲律賓蘭姆酒RUM",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 5,
+      "sku": "HP-5",
+      "slug": "5",
+      "name": "咖啡鮮奶酪",
+      "title": "咖啡鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "230236_0.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "嚴選阿拉比卡咖啡豆，帶柑橘果香，咖啡與奶香完美融合。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本NestleGold",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 15,
+      "sku": "HP-15",
+      "slug": "15",
+      "name": "黃金蕎麥鮮奶酪",
+      "title": "黃金蕎麥鮮奶酪",
+      "category": "panna",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "2026082701.png"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "嚴選黃金蕎麥，獨特焙炒穀香與濃郁奶香完美融合。",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、台灣黃金蕎麥",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 14,
+      "sku": "HP-14",
+      "slug": "14",
+      "name": "烤布丁",
+      "title": "烤布丁",
+      "category": "pudding",
+      "unitPrice": 55,
+      "quantity": 1,
+      "price": 55,
+      "images": [
+        "12356211.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "滑嫩香濃，焦糖微苦，口感綿密。(杯裝出貨)",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、新鮮雞蛋、天然香草籽醬",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 21,
+      "sku": "HP-21",
+      "slug": "21",
+      "name": "抹茶烤布丁",
+      "title": "抹茶烤布丁",
+      "category": "pudding",
+      "unitPrice": 60,
+      "quantity": 1,
+      "price": 60,
+      "images": [
+        "20261023.png"
+      ],
+      "leadDays": 2,
+      "subtitle": "",
+      "description": "靜岡抹茶香氣醇厚，微苦回甘，布丁滑嫩細緻。 (杯裝出貨)",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、新鮮雞蛋、日本靜岡原產抹茶粉",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 25,
+      "sku": "HP-25",
+      "slug": "25",
+      "name": "鐵觀音烤布丁",
+      "title": "鐵觀音烤布丁",
+      "category": "pudding",
+      "unitPrice": 65,
+      "quantity": 1,
+      "price": 65,
+      "images": [
+        "110501.png"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "(杯裝出貨)",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、新鮮雞蛋、茶葉",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 26,
+      "sku": "HP-26",
+      "slug": "26",
+      "name": "烤布布",
+      "title": "烤布布",
+      "category": "pudding",
+      "unitPrice": 50,
+      "quantity": 1,
+      "price": 50,
+      "images": [
+        "110502.png"
+      ],
+      "leadDays": 2,
+      "subtitle": "",
+      "description": "(杯裝出貨)",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、新鮮雞蛋",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": 16,
+      "sku": "HP-16",
+      "slug": "16",
+      "name": "美式咖啡",
+      "title": "美式咖啡",
+      "category": "coffee",
+      "unitPrice": 60,
+      "quantity": 1,
+      "price": 60,
+      "images": [
+        "2026100801.png"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "12oz (350 ml) 購買奶酪加購咖啡每杯-10元。",
+      "ingredients": "咖啡豆、水",
+      "netWeight": "12oz (350 ml)",
+      "shipping": false
+    },
+    {
+      "id": 18,
+      "sku": "HP-18",
+      "slug": "18",
+      "name": "拿鐵咖啡",
+      "title": "拿鐵咖啡",
+      "category": "coffee",
+      "unitPrice": 75,
+      "quantity": 1,
+      "price": 75,
+      "images": [
+        "2026100802.png"
+      ],
+      "leadDays": 1,
+      "subtitle": "",
+      "description": "12oz (350 ml) 購買奶酪加購咖啡每杯-10元。",
+      "ingredients": "咖啡豆、鮮奶、水",
+      "netWeight": "12oz (350ml)",
+      "shipping": false
+    },
+    {
+      "id": 22,
+      "sku": "HP-22",
+      "slug": "22",
+      "name": "蔓越莓雪花酥",
+      "title": "蔓越莓雪花酥",
+      "category": "snowflake",
+      "unitPrice": 155,
+      "quantity": 1,
+      "price": 155,
+      "images": [
+        "01_01.png",
+        "01_02.png"
+      ],
+      "leadDays": 2,
+      "subtitle": "",
+      "description": "淨重155g／包。任選三包組合價450元。 常溫保存期限：取貨日起8-10天。 外包裝袋顏色隨機搭配不指定。 含雪花酥的整筆訂單僅限門市取貨。",
+      "ingredients": "美國蔓越莓果乾、奇福餅、棉花糖、紐西蘭特級奶粉、法國無鹽奶油",
+      "netWeight": "155g ± 5% /包",
+      "shipping": false
+    },
+    {
+      "id": 23,
+      "sku": "HP-23",
+      "slug": "23",
+      "name": "伯爵茶雪花酥",
+      "title": "伯爵茶雪花酥",
+      "category": "snowflake",
+      "unitPrice": 155,
+      "quantity": 1,
+      "price": 155,
+      "images": [
+        "02_01.png",
+        "02_02.png"
+      ],
+      "leadDays": 2,
+      "subtitle": "",
+      "description": "淨重155g／包。任選三包組合價450元。 常溫保存期限：取貨日起8-10天。 外包裝袋顏色隨機搭配不指定。 含雪花酥的整筆訂單僅限門市取貨。",
+      "ingredients": "唐寧伯爵紅茶、奇福餅、棉花糖、紐西蘭特級奶粉、法國無鹽奶油",
+      "netWeight": "155g ± 5% /包",
+      "shipping": false
+    },
+    {
+      "id": 24,
+      "sku": "HP-24",
+      "slug": "24",
+      "name": "OREO雪花酥",
+      "title": "OREO雪花酥",
+      "category": "snowflake",
+      "unitPrice": 155,
+      "quantity": 1,
+      "price": 155,
+      "images": [
+        "03_01.png",
+        "03_02.png"
+      ],
+      "leadDays": 2,
+      "subtitle": "",
+      "description": "淨重135g／包。任選三包組合價450元。 常溫保存期限：取貨日起8-10天。 外包裝袋顏色隨機搭配不指定。 含雪花酥的整筆訂單僅限門市取貨。",
+      "ingredients": "OREO餅乾、棉花糖、紐西蘭特級奶粉、法國無鹽奶油",
+      "netWeight": "135g ± 5% /包",
+      "shipping": false
+    },
+    {
+      "id": 100,
+      "sku": "HP-100",
+      "slug": "100",
+      "name": "綠葡萄鮮奶酪",
+      "title": "綠葡萄鮮奶酪（12杯組）",
+      "category": "panna",
+      "unitPrice": 65,
+      "quantity": 12,
+      "price": 780,
+      "images": [
+        "1111_01.jpg",
+        "1111_02.jpg"
+      ],
+      "leadDays": 2,
+      "subtitle": "",
+      "description": "清甜葡萄，滑嫩奶酪 (附 HappyBirthday 小卡)",
+      "ingredients": "台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、綠葡萄",
+      "netWeight": "100 ml ± 5%",
+      "shipping": true
+    },
+    {
+      "id": "gift-popular",
+      "sku": "HP-GIFT-POPULAR",
+      "slug": "gift-popular",
+      "name": "人氣六入鮮奶酪禮盒",
+      "title": "人氣六入鮮奶酪禮盒",
+      "category": "gift",
+      "quantity": 6,
+      "price": 320,
+      "images": [
+        "assets/gifts-20261123/gift-hero-1108.webp",
+        "230242.jpg",
+        "230240_0.jpg",
+        "230241_0.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "經典原味鮮奶酪×2杯、巧克力鮮奶酪×2杯、伯爵紅茶鮮奶酪×2杯",
+      "description": "六杯鮮奶酪裝盒，口味與數量依本頁組合。禮盒腰封依當期包裝安排，照片為盒裝示意。",
+      "ingredients": "經典原味鮮奶酪：台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁；巧克力鮮奶酪：台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、法國法芙娜可可粉；伯爵紅茶鮮奶酪：台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶",
+      "netWeight": "每杯規格依各口味標示，共6杯",
+      "shipping": true
+    },
+    {
+      "id": "gift-tea",
+      "sku": "HP-GIFT-TEA",
+      "slug": "gift-tea",
+      "name": "茶香六入鮮奶酪禮盒",
+      "title": "茶香六入鮮奶酪禮盒",
+      "category": "gift",
+      "quantity": 6,
+      "price": 330,
+      "images": [
+        "assets/gifts-20261123/gift-hero-1108.webp",
+        "230241_0.jpg",
+        "230243.jpg",
+        "230234_0.jpg"
+      ],
+      "leadDays": 1,
+      "subtitle": "伯爵紅茶鮮奶酪×2杯、十薰茉綠鮮奶酪×2杯、抹茶鮮奶酪×2杯",
+      "description": "六杯鮮奶酪裝盒，口味與數量依本頁組合。禮盒腰封依當期包裝安排，照片為盒裝示意。",
+      "ingredients": "伯爵紅茶鮮奶酪：台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、波蘭皇家伯爵紅茶；十薰茉綠鮮奶酪：台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、彰化花壇十薰茉莉綠；抹茶鮮奶酪：台灣100%純鮮奶、法國原產鮮奶油、日本製上白糖、德國吉利丁、日本靜岡原產抹茶粉",
+      "netWeight": "每杯規格依各口味標示，共6杯",
+      "shipping": true
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "origin": "https://www.hello-panna.com",
+  "brand": "Hello 好酪",
+  "email": "aikojoke588@gmail.com",
+  "phone": "0972-005-078",
+  "line": "https://lin.ee/UHEkfgW",
+  "source": "assets/product-catalog-20261109.js",
+  "schema": "WEB_PRODUCT_EDITOR_20261109_2",
+  "version": "WEB_PRODUCT_EDITOR_20261109_1",
+  "clientVersion": "2026-10-08-ecpay-bridge-v3",
+  "gifts": [
+    {"id": "gift-popular", "name": "人氣六入鮮奶酪禮盒", "products": {"1": 2, "2": 2, "7": 2}},
+    {"id": "gift-tea", "name": "茶香六入鮮奶酪禮盒", "products": {"7": 2, "10": 2, "4": 2}}
+  ]
+}

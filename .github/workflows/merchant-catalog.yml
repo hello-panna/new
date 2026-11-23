@@ -1,0 +1,37 @@
+name: Update public product pages and Merchant Center feed
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: merchant-catalog
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Read public catalog and render product pages
+        run: python3 scripts/sync-merchant-catalog.py
+      - name: Verify feed, product pages and shipping invariants
+        run: python3 -m unittest discover -s tests -p 'test_merchant_catalog.py'
+      - name: Publish changed public catalog files
+        id: publish
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/merchant-catalog.json products merchant-products.xml sitemap.xml contact.html returns.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Refresh public product pages and free-listings feed'
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+      - name: Request the existing GitHub Pages branch build
+        if: steps.publish.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
