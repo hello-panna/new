@@ -12,11 +12,28 @@ prices as the store. A product minimum quantity is represented by a purchasable
 pack, with the full pack price, on both its page and the feed.
 
 The workflow runs every six hours and can be run manually in GitHub Actions.
+Changes to its workflow, configuration, generator or tests also run the same
+validation job; generated-page commits do not trigger a synchronization loop.
 It regenerates product pages, `assets/merchant-catalog.json`, the sitemap,
 contact/returns pages and `merchant-products.xml`. GitHub Pages is explicitly
 rebuilt after a bot commit. Set Merchant Center to fetch the public XML every
 day after the overnight update. Neither schedule is instantaneous; allow for
 Google fetch/processing latency after changing a product.
+
+Merchant Center's `Hello好酪官網商品自動同步` URL source reads
+`https://www.hello-panna.com/merchant-products.xml` daily at 04:00 Asia/Taipei.
+The initial 19 records were imported without file or attribute errors on
+2026-11-23 and entered product review. Successful import is not approval.
+Keep the previous ten manual records until the replacement records are
+approved, then archive the manual records through Merchant Center's recoverable
+archive function. Do not permanently delete them or change paid campaign settings.
+
+The account customer-service URL points to `/contact.html`, using the email,
+phone and actual pickup-store address shown there. The registered business
+address is a separate account field. The standard Taiwan return policy points
+to `/returns.html` and accepts returns of defective products, consistent with
+the website. These Merchant Center account settings are separate from the
+generator and are not overwritten by scheduled runs.
 
 The feed includes shippable milk desserts, baked puddings and the two fixed
 six-cup gifts. Coffee and snowflake crisps have informational pages but are
