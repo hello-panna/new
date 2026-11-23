@@ -454,10 +454,8 @@
 }
 </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&amp;family=Noto+Serif+TC:wght@500;700&amp;display=optional" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&amp;family=Noto+Serif+TC:wght@500;700&amp;display=optional" rel="stylesheet"></noscript>
+    <!-- 首屏使用裝置字型，不必等待下載中文字型。 -->
+    <link rel="preload" as="script" href="assets/shop-20261123.js?v=20261123-first-paint-v1">
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18531924540"></script>
     <script>
@@ -501,7 +499,7 @@
             --shadow-float: 0 10px 30px rgba(140, 123, 117, 0.15); 
             --shadow-card: 0 4px 12px rgba(0,0,0,0.03);              
             --font-title: 'Noto Serif TC', serif;
-            --font-body: 'Noto Sans TC', sans-serif;
+            --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
             --max-w: 520px;          
         }
 
@@ -795,7 +793,14 @@
     </style>
     <meta name="twitter:image:alt" content="Hello 好酪經典原味鮮奶酪杯裝照片">
 <style>.hp-product-subtitle{font-size:.86rem;color:#766253;margin:4px 0;overflow-wrap:anywhere}</style>
-<link rel="stylesheet" href="assets/shop-20261029.css?v=20261103-snowflake-v1"><style>html.hp-pending #app-container{visibility:hidden}</style><noscript><style>html.hp-pending #app-container{visibility:visible}</style></noscript></head>   
+<link rel="stylesheet" href="assets/shop-20261029.css?v=20261123-first-paint-v1">
+<style>
+/* 只等待購物控制項，已輸出的品牌與主標題可立即顯示。 */
+html.hp-pending #step-1 > :not(#hp-home-hero),
+html.hp-pending #checkout-bottom-bar { display:none; }
+#step-1 { animation:none; }
+</style>
+<noscript><style>html.hp-pending #step-1 > :not(#hp-home-hero){display:revert}.hp-mode-placeholder{display:none}</style></noscript></head>
 <body>
 
     <div id="loading-overlay">
@@ -820,6 +825,15 @@
             <span>Hello 好酪</span>
         </header>
 
+        <section class="hp-mode-wrap" id="hp-mode-wrap">
+            <div class="hp-mode-heading"><span>這次想怎麼取貨？</span><a href="delivery.html" target="_blank" rel="noopener">查看配送說明 ↗</a></div>
+            <div class="delivery-method-group hp-mode-placeholder" aria-hidden="true">
+                <div class="radio-label"><span class="hp-mode-placeholder-dot hp-selected"></span><span><span class="hp-mode-name">門市自取</span><span class="hp-mode-sub">依商品起訂量</span></span></div>
+                <div class="radio-label"><span class="hp-mode-placeholder-dot"></span><span><span class="hp-mode-name">冷藏宅配</span><span class="hp-mode-sub">6杯的倍數出貨</span></span></div>
+                <div class="radio-label"><span class="hp-mode-placeholder-dot"></span><span><span class="hp-mode-name">預約外送</span><span class="hp-mode-sub">彰化指定區・12杯起</span></span></div>
+            </div>
+        </section>
+
         <div class="container" id="shop-view">
             
             <div class="step-indicator">
@@ -838,6 +852,10 @@
             </div>
 
             <div id="step-1" class="step-content active">
+                <section class="hp-hero" id="hp-home-hero" aria-labelledby="hp-home-heading">
+                    <div><div class="hp-eyebrow">HANDMADE IN CHANGHUA</div><h1 id="hp-home-heading">今天，想吃哪一種甜？</h1><p>鮮奶酪・烤布丁・六入禮盒，慢慢挑你喜歡的口味。</p></div>
+                    <div class="hp-hero-note">自取依各商品起訂量，六杯剛好成盒。<br>奶酪與布丁可混搭，價格依選購口味計算。</div>
+                </section>
                 <section class="seo-intro" aria-labelledby="seo-main-heading">
                     <h1 id="seo-main-heading">Hello 好酪｜彰化手工鮮奶酪</h1>
                     <p>鮮奶酪・烤布丁・六入禮盒，選一份喜歡的甜點。</p>
@@ -3562,7 +3580,7 @@
             <button onclick="closeBoxingModal()" class="action-btn" style="width: 100%; margin-top: 20px;">確認並返回</button>
         </div>
     </div>
-<script src="assets/pricing-20261029.js?v=20261112-minimum-order-v1"></script>
-<script src="assets/fulfillment-availability-20261103.js?v=20261109-add-product-v2"></script>
-<script src="assets/shop-20261123.js?v=20261123-media-performance-v1"></script></body>
+<script defer src="assets/pricing-20261029.js?v=20261112-minimum-order-v1"></script>
+<script defer src="assets/fulfillment-availability-20261103.js?v=20261109-add-product-v2"></script>
+<script defer src="assets/shop-20261123.js?v=20261123-first-paint-v1"></script></body>
 </html>
