@@ -800,7 +800,8 @@ html.hp-pending #step-1 > :not(#hp-home-hero),
 html.hp-pending #checkout-bottom-bar { display:none; }
 #step-1 { animation:none; }
 </style>
-<noscript><style>html.hp-pending #step-1 > :not(#hp-home-hero){display:revert}.hp-mode-placeholder{display:none}</style></noscript></head>
+<noscript><style>html.hp-pending #step-1 > :not(#hp-home-hero){display:revert}.hp-mode-placeholder{display:none}</style></noscript><script defer src="/assets/merchant-tracking-20261123.js?v=1"></script>
+</head>
 <body>
 
     <div id="loading-overlay">
@@ -3070,6 +3071,11 @@ html.hp-pending #checkout-bottom-bar { display:none; }
 
                     const orderId = String(result.orderId);
                     confirmedOrderId = orderId;
+                    // Only the backend-confirmed order can create this event; never send customer fields.
+                    try {
+                        window.helloPannaMerchant?.trackOrder({orderId, total: currentFinalTotal, shipping: currentShippingFee,
+                            items: cart.map(item => ({id: item.id, price: item.price, quantity: item.quantity}))});
+                    } catch (_) { /* Measurement must not block payment or receipt rendering. */ }
                     const needsEcpayRedirect = payment !== 'LinePay' && Number(currentFinalTotal) > 0;
                     if (needsEcpayRedirect) prepareEcpayPostForm(result.ecpayParams, orderId, currentFinalTotal, payment);
 

@@ -72,3 +72,36 @@ and run the updater when contact information changes. Product names, prices,
 descriptions, ingredients, net contents, photos, minimums and preparation times
 come from the live product editor; default definitions for built-in products
 remain in `config/merchant-defaults.json`.
+
+## Order measurement
+
+The website destination is `MC-6Y2092FM6B` (`Hello好酪官網訂單`, last click,
+30-day attribution). It receives an explicit `purchase` only after the order
+service confirms a valid 14-digit order ID. This measures established orders,
+including pending payments, not settled revenue. Page views, clicking checkout,
+failed submissions and historical-order lookups do not fire this event.
+
+`assets/merchant-tracking-20261123.js` reuses the existing Google tag loader on
+checkout and initializes the Merchant destination on public landing pages for
+free-listing click attribution. Events route explicitly to Merchant Center;
+the existing Google Ads conversion remains separate. Enhanced conversions and
+ad personalization are disabled for the new destination.
+
+The new event uses an explicit allowlist: transaction ID, currency TWD,
+merchandise value after discounts, shipping and actual cart product IDs,
+quantities and allocated unit prices. Merchandise value excludes shipping;
+discount allocation reconciles to the cent. Cart IDs use `HP-<catalog ID>`.
+Quantities represent actual cups, bags or individual purchased units; preset
+gift selections are represented by their component products. Items excluded
+from the shipping feed can contribute to overall orders without a matching
+free-listing product row. The event does not include customer names, email,
+phones, addresses, notes, payment details or coupon codes.
+
+The last 100 queued order IDs are retained locally to prevent repeat events;
+the Google transaction ID provides server-side deduplication too. A blocked
+tag, network or browser storage cannot block payment or receipt rendering.
+No live purchase is fabricated for installation testing.
+
+The verified Hello 好酪 profile at 彰化市中正路一段403號 was linked directly to
+Merchant Center on 2026-11-23. This does not add local inventory data or launch
+a local advertising campaign.

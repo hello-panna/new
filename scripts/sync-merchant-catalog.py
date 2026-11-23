@@ -223,7 +223,7 @@ def page(title, description, path, body, structured=None):
 <meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="{ORIGIN}{path}">
 <meta property="og:type" content="website"><meta property="og:locale" content="zh_TW"><meta property="og:title" content="{escape(title, quote=True)}｜Hello 好酪"><meta property="og:description" content="{escape(description, quote=True)}"><meta property="og:url" content="{ORIGIN}{path}">
 <meta property="og:image" content="{escape(social_image, quote=True)}"><meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/assets/product-pages.css">{data}<script defer src="/assets/product-pages.js"></script></head>
+<link rel="stylesheet" href="/assets/product-pages.css">{data}<script defer src="/assets/product-pages.js"></script><script defer src="/assets/merchant-tracking-20261123.js?v=1"></script></head>
 <body><header><a class="brand" href="/">Hello 好酪</a><nav aria-label="主要選單"><a href="/products/">商品詳情</a><a href="/delivery.html">配送說明</a><a href="/store.html">彰化門市</a><a href="/contact.html">聯絡好酪</a><a href="/#menu-list">線上訂購</a></nav></header>
 <main>{body}</main><footer><div><strong>Hello 好酪｜甲賀食品</strong><p>彰化市中正路一段403號<br>週二至週六10:00–18:00；週日、週一固定公休</p><p><a href="tel:0972005078">{CONFIG['phone']}</a> · <a href="mailto:{CONFIG['email']}">{CONFIG['email']}</a></p><p>統編94427773 · 食品登錄 N-194427773-00000-4 · 已投保產品責任險</p><nav><a href="/contact.html">聯絡好酪</a><a href="/returns.html">退貨、換貨與退款</a><a href="/delivery.html">配送說明</a><a href="{CONFIG['line']}">官方LINE</a></nav></div></footer></body></html>\n'''
 
@@ -278,6 +278,7 @@ def contact_page():
 <section class="panel"><h2>彰化門市</h2><p>彰化縣彰化市中正路一段403號</p><p>週二至週六10:00–18:00<br>週日、週一固定公休</p><p>門市地址為預訂取貨地點。取貨日期與時段請依官網開放選項安排。</p><p><a href="/store.html">門市資訊與導航</a></p></section></div>
 <h2>詢問訂單時，請提供</h2><p>訂單編號、訂購人姓名與聯絡手機。如有商品或包裝問題，可附上照片，方便我們核對。請勿提供信用卡安全碼、網銀密碼或簡訊驗證碼。</p>
 <h2>商家資訊</h2><p>Hello 好酪｜甲賀食品<br>統一編號：94427773<br>食品業者登錄字號：N-194427773-00000-4<br>已投保產品責任險</p>
+<h2>Google 搜尋與商品刊登成效統計</h2><p>為了解搜尋與商品刊登成效，本網站會向 Google 傳送瀏覽來源識別，以及訂單編號、商品代碼、數量、金額與幣別。這項訂單事件不包含姓名、手機、Email 或收件地址。資料使用相關問題可透過本頁客服管道聯絡。</p>
 <p><a href="/returns.html">退貨、換貨與退款政策</a> · <a href="/delivery.html">宅配運費與預約外送說明</a></p></article>'''
     structured = {'@context': 'https://schema.org', '@type': 'ContactPage', 'url': ORIGIN + '/contact.html',
         'name': '聯絡Hello 好酪', 'mainEntity': {'@type': 'Organization', 'name': CONFIG['brand'],
