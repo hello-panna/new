@@ -223,7 +223,7 @@ def page(title, description, path, body, structured=None):
 <meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="{ORIGIN}{path}">
 <meta property="og:type" content="website"><meta property="og:locale" content="zh_TW"><meta property="og:title" content="{escape(title, quote=True)}｜Hello 好酪"><meta property="og:description" content="{escape(description, quote=True)}"><meta property="og:url" content="{ORIGIN}{path}">
 <meta property="og:image" content="{escape(social_image, quote=True)}"><meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/assets/product-pages.css">{data}<script defer src="/assets/product-pages.js"></script><script defer src="/assets/merchant-tracking-20261123.js?v=1"></script></head>
+<link rel="stylesheet" href="/assets/product-pages.css">{data}<script defer src="/assets/product-pages.js"></script><script async src="https://www.googletagmanager.com/gtm.js?id=GTM-52WFLDZL"></script><script defer src="/assets/merchant-tracking-20261123.js?v=2"></script></head>
 <body><header><a class="brand" href="/">Hello 好酪</a><nav aria-label="主要選單"><a href="/products/">商品詳情</a><a href="/delivery.html">配送說明</a><a href="/store.html">彰化門市</a><a href="/contact.html">聯絡好酪</a><a href="/#menu-list">線上訂購</a></nav></header>
 <main>{body}</main><footer><div><strong>Hello 好酪｜甲賀食品</strong><p>彰化市中正路一段403號<br>週二至週六10:00–18:00；週日、週一固定公休</p><p><a href="tel:0972005078">{CONFIG['phone']}</a> · <a href="mailto:{CONFIG['email']}">{CONFIG['email']}</a></p><p>統編94427773 · 食品登錄 N-194427773-00000-4 · 已投保產品責任險</p><nav><a href="/contact.html">聯絡好酪</a><a href="/returns.html">退貨、換貨與退款</a><a href="/delivery.html">配送說明</a><a href="{CONFIG['line']}">官方LINE</a></nav></div></footer></body></html>\n'''
 

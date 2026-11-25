@@ -25,7 +25,7 @@ function order(overrides = {}) {
     items: [{id: 1, price: 50, quantity: 6}], ...overrides};
 }
 
-test('page initialization does not count a purchase and reuses the existing loader', () => {
+test('page initialization does not count a purchase or add a duplicate Merchant container', () => {
   const b = browser();
   assert.equal(b.purchases().length, 0);
   assert.equal(b.added.length, 0);
@@ -33,7 +33,7 @@ test('page initialization does not count a purchase and reuses the existing load
   assert.equal(b.calls[0][2].allow_enhanced_conversions, false);
   const landing = browser({existingTag: false});
   assert.equal(landing.added.length, 1);
-  assert.equal(landing.added[0].src, 'https://www.googletagmanager.com/gtag/js?id=MC-6Y2092FM6B');
+  assert.equal(landing.added[0].src, 'https://www.googletagmanager.com/gtm.js?id=GTM-52WFLDZL');
   assert.equal(landing.added[0].async, true);
 });
 
@@ -94,6 +94,7 @@ test('all public product landing pages contain attribution tracking after regene
     ...readdirSync(resolve(__dirname, '../products')).filter(x => x.endsWith('.html')).map(x => 'products/' + x)];
   for (const file of publicPages) {
     const html = readFileSync(resolve(__dirname, '..', file), 'utf8');
-    assert.equal((html.match(/src="\/assets\/merchant-tracking-20261123\.js\?v=1"/g) || []).length, 1, file);
+    assert.equal((html.match(/src="\/assets\/merchant-tracking-20261123\.js\?v=2"/g) || []).length, 1, file);
+    assert.equal((html.match(/src="https:\/\/www\.googletagmanager\.com\/gtm\.js\?id=GTM-52WFLDZL"/g) || []).length, 1, file);
   }
 });

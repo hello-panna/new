@@ -81,11 +81,15 @@ service confirms a valid 14-digit order ID. This measures established orders,
 including pending payments, not settled revenue. Page views, clicking checkout,
 failed submissions and historical-order lookups do not fire this event.
 
-`assets/merchant-tracking-20261123.js` reuses the existing Google tag loader on
-checkout and initializes the Merchant destination on public landing pages for
-free-listing click attribution. Events route explicitly to Merchant Center;
-the existing Google Ads conversion remains separate. Enhanced conversions and
-ad personalization are disabled for the new destination.
+Public pages load Merchant container `GTM-52WFLDZL` directly, following the
+current Google installation instructions. The existing Ads loader remains on
+checkout. `assets/merchant-tracking-20261123.js` initializes the Merchant
+destination and has a fallback that only loads the Merchant container if it is
+absent. Events route explicitly to Merchant Center; the existing Google Ads
+conversion remains separate. Enhanced conversions and ad personalization are
+disabled for the new destination. The container's user-provided-data collection
+and automatic detection were also disabled and published as version 2 on
+2026-11-25, so the container cannot extract customer fields automatically.
 
 The new event uses an explicit allowlist: transaction ID, currency TWD,
 merchandise value after discounts, shipping and actual cart product IDs,

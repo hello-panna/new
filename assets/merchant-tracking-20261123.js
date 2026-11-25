@@ -3,6 +3,7 @@
   if (window.helloPannaMerchant) return;
 
   const destination = 'MC-6Y2092FM6B';
+  const container = 'GTM-52WFLDZL';
   const storageKey = 'hp_merchant_orders_v1';
   const seen = new Set();
   const validOrderId = value => typeof value === 'string' && /^\d{14}$/.test(value);
@@ -80,12 +81,13 @@
     allow_enhanced_conversions: false,
     allow_ad_personalization_signals: false
   });
-  // Reuse the existing Google tag loader on checkout. Public landing pages
-  // load this destination too, so Google can retain free-listing attribution.
-  if (!document.querySelector('script[src^="https://www.googletagmanager.com/gtag/js"],script[src^="https://www.googletagmanager.com/gtm.js"]')) {
+  // Load the Merchant container shown in its installation instructions. An
+  // existing Ads loader does not establish that this container is installed.
+  // Public pages include it directly; this fallback never adds a second copy.
+  if (!document.querySelector('script[src^="https://www.googletagmanager.com/gtm.js?id=' + container + '"]')) {
     const script = document.createElement('script');
     script.async = true;
-    script.src = 'https://www.googletagmanager.com/gtag/js?id=' + destination;
+    script.src = 'https://www.googletagmanager.com/gtm.js?id=' + container;
     document.head.appendChild(script);
   }
 }());
