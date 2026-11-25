@@ -23,10 +23,11 @@ Google fetch/processing latency after changing a product.
 Merchant Center's `Hello好酪官網商品自動同步` URL source reads
 `https://www.hello-panna.com/merchant-products.xml` daily at 04:00 Asia/Taipei.
 The initial 19 records were imported without file or attribute errors on
-2026-11-23 and entered product review. Successful import is not approval.
-Keep the previous ten manual records until the replacement records are
-approved, then archive the manual records through Merchant Center's recoverable
-archive function. Do not permanently delete them or change paid campaign settings.
+2026-11-23. On 2026-11-25, all 19 replacement products showed approved status.
+The ten previous manual records were then archived through Merchant Center's
+recoverable archive function. The active list now contains 19 products, and
+the archived-products dialog confirms ten recoverable records. No products
+were permanently deleted and no paid campaign settings were changed.
 
 The account customer-service URL points to `/contact.html`, using the email,
 phone and actual pickup-store address shown there. The registered business
@@ -104,7 +105,12 @@ phones, addresses, notes, payment details or coupon codes.
 The last 100 queued order IDs are retained locally to prevent repeat events;
 the Google transaction ID provides server-side deduplication too. A blocked
 tag, network or browser storage cannot block payment or receipt rendering.
-No live purchase is fabricated for installation testing.
+No live purchase is fabricated for installation testing. On 2026-11-25,
+Google's website installation test displayed "網站上偵測到 Google 代碼。"
+after the dedicated container was deployed. The catalog validation and GitHub
+Pages deployment both passed. Detection confirms installation; actual order
+event receipt and attribution in Merchant Center still await a genuine new
+order and reporting processing.
 
 The verified Hello 好酪 profile at 彰化市中正路一段403號 was linked directly to
 Merchant Center on 2026-11-23. This does not add local inventory data or launch
