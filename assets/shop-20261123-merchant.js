@@ -106,7 +106,7 @@ function hpMount(){
   const err=hpEl('div','hp-error-summary');err.id='hp-form-error';err.setAttribute('role','alert');
   const formLayout=hpEl('div','hp-form-layout');formLayout.append(deliveryCard,buyerCard);s2.replaceChildren(err,formLayout);
   const select=hpId('pickup-slot-select');select.hidden=true;select.setAttribute('tabindex','-1');
-  const picker=hpEl('div','','<div class="hp-date-top"><button type="button" onclick="hpCalendarMove(-1)" aria-label="上一個月">‹</button><strong id="hp-calendar-month"></strong><button type="button" onclick="hpCalendarMove(1)" aria-label="下一個月">›</button></div><div class="hp-calendar" id="hp-calendar" aria-label="可選日期"></div><div class="hp-date-legend">淡色日期目前未開放；訂購超過18杯至少需D+2，部分菜色依備貨天數開放。含雪花酥的整筆訂單僅限門市取貨。</div><div class="hp-times" id="hp-times" aria-label="取貨時段"></div><div id="hp-date-selection" class="hp-date-selection" hidden></div><div class="hp-error" id="hp-date-error"></div>');select.after(picker);
+  const picker=hpEl('div','','<div class="hp-date-top"><button type="button" onclick="hpCalendarMove(-1)" aria-label="上一個月">‹</button><strong id="hp-calendar-month"></strong><button type="button" onclick="hpCalendarMove(1)" aria-label="下一個月">›</button></div><div class="hp-calendar" id="hp-calendar" aria-label="可選日期"></div><div class="hp-date-legend" id="hp-date-legend">取貨日期依杯數與各菜色備貨天數開放。含雪花酥的整筆訂單僅限門市取貨。</div><div class="hp-times" id="hp-times" aria-label="取貨時段"></div><div id="hp-date-selection" class="hp-date-selection" hidden></div><div class="hp-error" id="hp-date-error"></div>');select.after(picker);
   const same=hpId('same-as-cust');same.checked=true;same.closest('label').hidden=true;
   const other=hpEl('label','hp-switch','<input type="checkbox" id="hp-other-recipient" onchange="hpToggleRecipient()">寄給別人／由其他人收件');same.closest('label').after(other);hpToggleRecipient();
   const review=hpEl('div','hp-review-layout','<div><section class="hp-panel"><div class="hp-edit-heading"><h2>選購內容</h2><button class="hp-edit" onclick="openCartModal()">修改商品</button></div><div id="hp-review-items"></div><details class="hp-disclosure"><summary>裝盒方式：預設由好酪安排</summary><div style="padding:0 16px 16px"><p class="hp-subtle">有分盒或送禮需求時再設定；未設定會依口味混裝。</p><button class="action-btn secondary" onclick="openBoxingModal()">自訂每盒口味</button><div id="hp-box-summary" class="hp-subtle"></div></div></details></section><section class="hp-panel"><div class="hp-edit-heading"><h2>取貨與聯絡資料</h2><button class="hp-edit" onclick="hpEditDelivery()">修改資料</button></div><div id="hp-review-fulfillment"></div></section></div><section class="hp-panel" id="hp-payment-panel"><h2>確認金額與付款</h2><div id="hp-review-totals"></div><div id="hp-benefits"></div><div id="hp-discounts"></div><div id="hp-payments"></div><p class="hp-subtle">按下確認後，會先建立訂單，再帶你前往所選的付款頁面。</p><div class="hp-error" id="hp-submit-error" role="alert"></div></section>');
@@ -303,6 +303,12 @@ function hpRequestMode(value){
   if(value==='宅配'&&cart.some(isCoffeeItem)){hpShowDialog('<h2>改成冷藏宅配？</h2><p>咖啡不提供宅配。確認後會移除購物車中的咖啡，甜點會保留。</p><div class="hp-dialog-actions"><button class="action-btn secondary" id="hp-keep-mode">保留目前取貨方式</button><button class="action-btn" id="hp-confirm-mode">移除咖啡並改宅配</button></div>','變更取貨方式');hpId('hp-keep-mode').onclick=hpCloseDialog;hpId('hp-confirm-mode').onclick=()=>{apply();hpCloseDialog();};}else apply();
 }
 function hpUpdateDateSettings(mode){
+  const legend=hpId('hp-date-legend');
+  if(legend&&fulfillmentAvailability.loaded){
+    const limit=getFulfillmentLeadTime(cart).nextDayCupLimit;
+    const rule=limit===0?'奶酪或布丁 1 杯起至少需 D+2':'奶酪與布丁合計超過 '+limit+' 杯至少需 D+2';
+    legend.textContent='淡色日期目前未開放；'+rule+'，部分菜色依較長備貨天數開放。含雪花酥的整筆訂單僅限門市取貨。';
+  }
   if(cart.some(isSnowflakeItem)){hpEnsureSnowflakePickup();mode='pickup';}
   const previous=hpId('pickup-slot-select').value;hpOldDateSettings(mode);hpId('pickup-slot-select').hidden=true;
   const groups={};[...hpId('pickup-slot-select').options].filter(o=>o.value).forEach(o=>{const key=o.value.slice(0,10);(groups[key]||(groups[key]=[])).push({value:o.value,label:o.textContent});});hp.dateGroups=groups;if(hp.selectedDay&&!groups[hp.selectedDay])hp.selectedDay='';

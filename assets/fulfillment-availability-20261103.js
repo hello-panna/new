@@ -1,6 +1,6 @@
 /* 日期停用與商品備貨天數；前後端皆使用台灣日期與整筆訂單最長天數。 */
 'use strict';
-const fulfillmentAvailability={loaded:false,revision:0,closed:{'2026-11-17':7},productLeadDays:Object.create(null),calendarDay:'',lastFetch:0,pending:null,initialized:false,lastError:''};
+const fulfillmentAvailability={loaded:false,revision:0,closed:{'2026-11-17':7},productLeadDays:Object.create(null),nextDayCupLimit:18,calendarDay:'',lastFetch:0,pending:null,initialized:false,lastError:''};
 function fulfillmentModeBit(mode){return ({pickup:1,delivery:2,scheduled:4,'自取':1,'宅配':2,'預約外送':4})[mode]||0;}
 function fulfillmentDateKey(value){const m=String(value||'').match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?=\s|T|$)/);return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):'';}
 function fulfillmentToday(now=new Date()){const parts=new Date(now.getTime()+8*3600000).toISOString().slice(0,10).split('-').map(Number);return new Date(parts[0],parts[1]-1,parts[2],12);}
@@ -16,7 +16,7 @@ function getFulfillmentLeadTime(items){
     const name = webProductSettings[item.id]?.title ?? product.name;
     if(days>productDays){productDays=days;names=[name];}else if(days===productDays&&days>1&&!names.includes(name))names.push(name);
   });
-  const quantityDays=cups>18?2:1;return {days:Math.max(quantityDays,productDays),cups,quantityDays,productDays,names};
+  const nextDayCupLimit=fulfillmentAvailability.nextDayCupLimit,quantityDays=cups>nextDayCupLimit?2:1;return {days:Math.max(quantityDays,productDays),cups,quantityDays,productDays,names,nextDayCupLimit};
 }
 function isFulfillmentLeadDateValid(items,value,now=new Date()){
   if(!fulfillmentAvailability.loaded)return false;
@@ -26,13 +26,15 @@ function isFulfillmentLeadDateValid(items,value,now=new Date()){
 }
 function applyFulfillmentAvailability(data){
   if(!data||data.success!==true||data.version!=='FULFILLMENT_DATES_20261103_1'||!Number.isSafeInteger(data.revision)||data.revision<0||!Array.isArray(data.closed)||data.closed.length>400)throw new Error('取貨日期設定尚未同步，請稍後再試');
+  const cupLimit=data.nextDayCupLimit===undefined?18:data.nextDayCupLimit;
+  if(!Number.isSafeInteger(cupLimit)||cupLimit<0||cupLimit>9999)throw new Error('結帳杯數設定格式異常，請稍後重新同步');
   const next=Object.create(null),leads=Object.create(null);
   data.closed.forEach(row=>{if(!row||!/^\d{4}-\d{2}-\d{2}$/.test(row.date)||!Number.isSafeInteger(row.mask)||row.mask<1||row.mask>7||next[row.date]!==undefined)throw new Error('取貨日期設定格式異常');next[row.date]=row.mask;});
   const catalogChanged = applyWebProductCatalog(data.catalog);
   Object.values(webCatalogProducts).forEach(product => { leads[product.id] = product.leadDays; });
-  const calendarDay=new Date(Date.now()+8*3600000).toISOString().slice(0,10),changed=!fulfillmentAvailability.loaded||calendarDay!==fulfillmentAvailability.calendarDay||data.revision!==fulfillmentAvailability.revision||JSON.stringify(next)!==JSON.stringify(fulfillmentAvailability.closed)||JSON.stringify(leads)!==JSON.stringify(fulfillmentAvailability.productLeadDays);
+  const calendarDay=new Date(Date.now()+8*3600000).toISOString().slice(0,10),changed=!fulfillmentAvailability.loaded||calendarDay!==fulfillmentAvailability.calendarDay||data.revision!==fulfillmentAvailability.revision||cupLimit!==fulfillmentAvailability.nextDayCupLimit||JSON.stringify(next)!==JSON.stringify(fulfillmentAvailability.closed)||JSON.stringify(leads)!==JSON.stringify(fulfillmentAvailability.productLeadDays);
   const firstLoad = !fulfillmentAvailability.loaded;
-  fulfillmentAvailability.closed=next;fulfillmentAvailability.productLeadDays=leads;fulfillmentAvailability.calendarDay=calendarDay;fulfillmentAvailability.revision=data.revision;fulfillmentAvailability.loaded=true;fulfillmentAvailability.lastFetch=Date.now();fulfillmentAvailability.lastError='';
+  fulfillmentAvailability.closed=next;fulfillmentAvailability.productLeadDays=leads;fulfillmentAvailability.nextDayCupLimit=cupLimit;fulfillmentAvailability.calendarDay=calendarDay;fulfillmentAvailability.revision=data.revision;fulfillmentAvailability.loaded=true;fulfillmentAvailability.lastFetch=Date.now();fulfillmentAvailability.lastError='';
   if ((changed || catalogChanged) && typeof window.onFulfillmentAvailabilityUpdated === 'function') {
     window.onFulfillmentAvailabilityUpdated({catalogChanged,firstLoad});
   }

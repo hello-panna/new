@@ -1973,6 +1973,7 @@ html.hp-pending #checkout-bottom-bar { display:none; }
             
             // 備料與外送門檻只計算奶酪、烤布丁杯數
             let totalCups = cart.reduce((sum, item) => isDessertItem(item) ? sum + item.quantity : sum, 0);
+            const quantityRule=typeof getFulfillmentLeadTime==='function'?getFulfillmentLeadTime(cart):{quantityDays:totalCups>18?2:1,nextDayCupLimit:18};
             const today = typeof fulfillmentToday==='function'?fulfillmentToday():new Date();
             const todayKey = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
             hint.style.color = 'var(--c-danger)';
@@ -1993,9 +1994,9 @@ html.hp-pending #checkout-bottom-bar { display:none; }
                 let daysToAdd = 1; // 預設改為 D+1
                 if (cart.some(i => i.id === 12)) {
                     hint.innerText = "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 出貨。";
-                } else if (totalCups > 18) {
-                    daysToAdd = 2; // 超過 18 杯強制 D+2
-                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>超過 18 杯</strong> (需較長備料時間)，最快出貨日改為<strong>兩天後</strong> (週六至週一不出貨)";
+                } else if (quantityRule.quantityDays > 1) {
+                    daysToAdd = 2;
+                    hint.innerHTML = `⚠️ 提醒：因您預訂奶酪與布丁合計<strong>超過 ${quantityRule.nextDayCupLimit} 杯</strong>，最快出貨日改為<strong>兩天後</strong>（依可出貨日開放）`;
                 } else if (todayKey >= "2026/09/19" && todayKey <= "2026/09/23") {
                     daysToAdd = 2;
                     hint.innerText = "提醒：9/22～9/23 宅配出貨需提前兩天完成下單；9/24、9/25 暫停宅配出貨。";
@@ -2025,9 +2026,9 @@ html.hp-pending #checkout-bottom-bar { display:none; }
                 }
 
                 let daysToAdd = 1;
-                if (totalCups > 18) {
+                if (quantityRule.quantityDays > 1) {
                     daysToAdd = 2;
-                    hint.innerHTML = '訂購數量<strong>超過 18 杯</strong>，最快可選擇兩天後；所選時段為希望送達時段，實際時間將由店家聯絡確認。';
+                    hint.innerHTML = `奶酪與布丁合計<strong>超過 ${quantityRule.nextDayCupLimit} 杯</strong>，最快可選擇兩天後；所選時段為希望送達時段，實際時間將由店家聯絡確認。`;
                 } else {
                     hint.innerText = '最快可選擇隔天；所選時段為希望送達時段，實際時間可能依當日訂單與路線調整。';
                 }
@@ -2050,9 +2051,9 @@ html.hp-pending #checkout-bottom-bar { display:none; }
                 let daysToAdd = 1;
                 if (cart.some(i => i.id === 12)) {
                     hint.innerText = "提醒：包含預購商品(杜拜巧克力)，預計於 2026/02/25~02/26 自取。";
-                } else if (totalCups > 18) {
-                    daysToAdd = 2; // 超過 18 杯改為 D+2
-                    hint.innerHTML = "⚠️ 提醒：因您預訂數量<strong>超過 18 杯</strong> (需較長備料時間)，最快取貨日改為<strong>兩天後</strong> (週日、一公休)";
+                } else if (quantityRule.quantityDays > 1) {
+                    daysToAdd = 2;
+                    hint.innerHTML = `⚠️ 提醒：因您預訂奶酪與布丁合計<strong>超過 ${quantityRule.nextDayCupLimit} 杯</strong>，最快取貨日改為<strong>兩天後</strong>（依門市營業日開放）`;
                 } else if (todayKey >= "2026/09/19" && todayKey <= "2026/09/23") {
                     daysToAdd = 2;
                     hint.innerText = "提醒：9/22～9/24 門市取貨需於取貨日前兩天完成下單。";
@@ -3587,6 +3588,6 @@ html.hp-pending #checkout-bottom-bar { display:none; }
         </div>
     </div>
 <script defer src="assets/pricing-20261029.js?v=20261112-minimum-order-v1"></script>
-<script defer src="assets/fulfillment-availability-20261103.js?v=20261109-add-product-v2"></script>
-<script defer src="assets/shop-20261123-merchant.js?v=20261123-merchant-v1"></script></body>
+<script defer src="assets/fulfillment-availability-20261103.js?v=20261127-quantity-lead-v1"></script>
+<script defer src="assets/shop-20261123-merchant.js?v=20261127-quantity-lead-v1"></script></body>
 </html>
