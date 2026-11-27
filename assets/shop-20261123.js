@@ -87,7 +87,7 @@ function hpMount(){
   const modeDetails={自取:['門市自取','依商品起訂量'],宅配:['冷藏宅配','6杯的倍數出貨'],預約外送:['預約外送','彰化指定區・12杯起']};
   modes.querySelectorAll('label').forEach(label=>{const input=label.querySelector('input'),d=modeDetails[input.value];input.setAttribute('onchange','hpRequestMode(this.value)');label.querySelector('span').innerHTML='<span class="hp-mode-name">'+d[0]+'</span><span class="hp-mode-sub">'+d[1]+'</span>';});
   const oldModeLabel=delivery.querySelector(':scope > .form-label');if(oldModeLabel)oldModeLabel.remove();
-  const hero=hpId('hp-home-hero')||hpEl('section','hp-hero','<div><div class="hp-eyebrow">HANDMADE IN CHANGHUA</div><h1>今天，想吃哪一種甜？</h1><p>鮮奶酪・烤布丁・六入禮盒，慢慢挑你喜歡的口味。</p></div><div class="hp-hero-note">自取依各商品起訂量，六杯剛好成盒。<br>奶酪與布丁可混搭，價格依選購口味計算。</div>');
+  const hero=hpId('hp-home-hero')||hpEl('section','hp-hero','<div><div class="hp-eyebrow">HANDMADE IN CHANGHUA</div><h1>今天，想吃哪一杯呢？</h1><p>鮮奶酪・烤布丁・六入禮盒，慢慢挑你喜歡的口味。</p></div><div class="hp-hero-note">自取依各商品起訂量，六杯剛好成盒。<br>奶酪與布丁可混搭，價格依選購口味計算。</div>');
   const bundles=hpEl('section','','<h2 class="section-header">幫你搭好的一盒</h2><div class="hp-bundles" id="hp-bundles"></div>');
   const combo=hpEl('section','','<div id="hp-coffee-combos"></div>');
   const categories=hpEl('nav','hp-category-nav');categories.id='hp-categories';categories.setAttribute('aria-label','商品分類');
